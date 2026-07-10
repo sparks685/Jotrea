@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – S2 Dose Tracking</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1290px; height: 2796px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 54px 90px 0;
+    font-size: 42px; font-weight: 600; color: #1A1D3D;
+  }
+  .status-icons { display: flex; gap: 18px; align-items: center; }
+
+  .caption-band {
+    margin: 90px 90px 0;
+    background: linear-gradient(135deg, #1A1D3D 0%, #2D3163 100%);
+    border-radius: 48px;
+    padding: 72px 90px;
+    text-align: center;
+  }
+  .caption-band h1 { font-size: 96px; font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -2px; }
+  .caption-band p { font-size: 54px; font-weight: 500; color: rgba(255,255,255,0.75); margin-top: 24px; }
+
+  .greeting-bar {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin: 72px 90px 0; padding: 0;
+  }
+  .greeting-bar h2 { font-size: 84px; font-weight: 800; color: #1A1D3D; }
+  .greeting-bar p { font-size: 48px; color: #6E7585; margin-top: 12px; }
+  .freq-pill {
+    background: rgba(196,149,106,0.12); border-radius: 24px;
+    padding: 24px 48px; font-size: 42px; font-weight: 700; color: #C4956A;
+    white-space: nowrap; margin-top: 6px;
+  }
+
+  /* Countdown ring card */
+  .ring-card {
+    margin: 60px 90px 0;
+    background: #fff; border-radius: 60px;
+    padding: 72px;
+    box-shadow: 0 16px 60px rgba(196,149,106,0.14);
+    display: flex; flex-direction: column; align-items: center; gap: 48px;
+  }
+  .ring-label { font-size: 48px; font-weight: 600; color: #6E7585; }
+  .ring-days { font-size: 180px; font-weight: 800; color: #1A1D3D; letter-spacing: -4px; line-height: 1; }
+  .ring-sub { font-size: 54px; font-weight: 600; color: #C4956A; }
+
+  /* Log dose button */
+  .log-btn {
+    margin: 48px 90px 0;
+    background: linear-gradient(135deg, #C4956A, #D4A574);
+    border-radius: 48px; padding: 72px;
+    display: flex; align-items: center; justify-content: center; gap: 36px;
+    box-shadow: 0 16px 48px rgba(196,149,106,0.35);
+  }
+  .log-btn span { font-size: 72px; font-weight: 700; color: #fff; }
+
+  /* Stats row */
+  .stats-row {
+    display: flex; gap: 36px;
+    margin: 48px 90px 0;
+  }
+  .stat-card {
+    flex: 1; background: #fff; border-radius: 48px;
+    padding: 60px 48px; text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+  }
+  .stat-card .label { font-size: 42px; color: #6E7585; margin-bottom: 18px; }
+  .stat-card .value { font-size: 84px; font-weight: 800; color: #1A1D3D; }
+  .stat-card .unit { font-size: 42px; color: #C4956A; font-weight: 600; }
+
+  /* Upcoming doses */
+  .upcoming { margin: 48px 90px 0; }
+  .upcoming h3 { font-size: 54px; font-weight: 700; color: #1A1D3D; margin-bottom: 36px; }
+  .dose-item {
+    background: #fff; border-radius: 36px; padding: 48px 60px;
+    margin-bottom: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .dose-item .date { font-size: 54px; font-weight: 600; color: #1A1D3D; }
+  .dose-item .dose-amt { font-size: 48px; color: #6E7585; }
+  .dose-pill {
+    background: rgba(196,149,106,0.12); border-radius: 18px;
+    padding: 18px 36px; font-size: 42px; font-weight: 600; color: #C4956A;
+  }
+</style>
+</head>
+<body>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div class="status-icons">
+    <svg width="42" height="30" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="66" height="30" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="60" y="9" width="6" height="12" rx="3" fill="#1A1D3D" opacity="0.4"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<div class="caption-band">
+  <h1>Never Miss a Dose</h1>
+  <p>Your countdown. Your schedule. Your control.</p>
+</div>
+
+<div class="greeting-bar">
+  <div>
+    <div class="greeting-bar" style="margin:0; flex-direction:column; gap:0;">
+      <h2>Good Morning</h2>
+      <p>Ozempic · 0.5 mg · Weekly</p>
+    </div>
+  </div>
+  <div class="freq-pill">Weekly</div>
+</div>
+
+<div class="ring-card">
+  <div class="ring-label">Next dose in</div>
+  <svg width="480" height="480" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#F7F2EA" stroke-width="16"/>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#C4956A" stroke-width="16"
+      stroke-dasharray="553" stroke-dashoffset="138"
+      stroke-linecap="round" transform="rotate(-90 100 100)"/>
+    <text x="100" y="88" text-anchor="middle" font-size="54" font-weight="800" fill="#1A1D3D" font-family="Inter, sans-serif">5</text>
+    <text x="100" y="126" text-anchor="middle" font-size="20" fill="#6E7585" font-family="Inter, sans-serif">days</text>
+  </svg>
+  <div class="ring-sub">Next dose: Friday, Jul 11</div>
+</div>
+
+<div class="log-btn">
+  <svg width="72" height="72" viewBox="0 0 24 24" fill="none"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="#fff" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+  <span>Log Today's Dose</span>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="label">Streak</div>
+    <div class="value">4</div>
+    <div class="unit">weeks 🔥</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Last dose</div>
+    <div class="value">Jul 4</div>
+    <div class="unit">abdomen</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Current</div>
+    <div class="value">0.5</div>
+    <div class="unit">mg dose</div>
+  </div>
+</div>
+
+<div class="upcoming">
+  <h3>Upcoming Doses</h3>
+  <div class="dose-item">
+    <div>
+      <div class="date">Fri, Jul 11</div>
+      <div class="dose-amt">Ozempic · 0.5 mg</div>
+    </div>
+    <div class="dose-pill">In 5 days</div>
+  </div>
+  <div class="dose-item">
+    <div>
+      <div class="date">Fri, Jul 18</div>
+      <div class="dose-amt">Ozempic · 0.5 mg</div>
+    </div>
+    <div class="dose-pill">In 12 days</div>
+  </div>
+  <div class="dose-item">
+    <div>
+      <div class="date">Fri, Jul 25</div>
+      <div class="dose-amt">Ozempic · 1.0 mg</div>
+    </div>
+    <div class="dose-pill">In 19 days</div>
+  </div>
+</div>
+
+</body>
+</html>
