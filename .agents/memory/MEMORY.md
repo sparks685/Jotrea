@@ -1,0 +1,4 @@
+- [Feature gates pattern](feature-gates.md) — all free-tier enforcement lives in `src/utils/featureGates.ts`; import from there, never inline.
+- [getNextDoseDate returns Date](dose-date-type.md) — `getNextDoseDate()` returns a `Date` object; format to string before passing to gate functions or JSX.
+- [Framer Motion ease typing](framer-ease.md) — `ease` in framer-motion must be typed as `Easing[]` or `[number,number,number,number] as const`, not a plain string.
+- [useMedication exports](use-medication-exports.md) — file exports 4 separate hooks: `useMedication`, `useDoses`, `useWeights`, `useUser`.

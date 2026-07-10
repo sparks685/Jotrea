@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { trackEvent } from "@/lib/analytics";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountdownRing } from "@/components/CountdownRing";
-import { useMedication, useDoses, useWeights } from "@/hooks/useMedication";
+import { useMedication, useDoses, useWeights, useUser } from "@/hooks/useMedication";
 import {
   getNextDoseDate,
   getDaysUntilDose,
@@ -19,20 +19,29 @@ import {
   getLastDose,
   getLast7WeightEntries,
 } from "@/utils/calculations";
+import { trackEvent } from "@/lib/analytics";
 import { medications } from "@/data/medications";
-import type { DoseEntry } from "@/types";
+import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 
 export default function Dashboard() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
-  const { weights } = useWeights();
+  const { weights, setWeights } = useWeights();
+  const { user } = useUser();
+  const [, navigate] = useLocation();
+
   const [showLogForm, setShowLogForm] = useState(false);
   const [logDate, setLogDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
   const [logNotes, setLogNotes] = useState("");
+
+  const [showWeightForm, setShowWeightForm] = useState(false);
+  const [weightValue, setWeightValue] = useState("");
+  const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [weightNotes, setWeightNotes] = useState("");
 
   if (!medication) return null;
 
@@ -44,6 +53,10 @@ export default function Dashboard() {
   const lastDose = getLastDose(doses);
   const weightEntries = getLast7WeightEntries(weights);
   const nextThree = getNextThreeDoses(medication.startDate, medication.frequency, doses);
+  const latestWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
+  const prevWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[1] ?? null;
+  const weightDelta =
+    latestWeight && prevWeight ? latestWeight.weight - prevWeight.weight : null;
 
   const intervalDays =
     medication.frequency === "weekly" ? 7 : medication.frequency === "twice-daily" ? 0.5 : 1;
@@ -69,8 +82,25 @@ export default function Dashboard() {
     setLogNotes("");
   };
 
+  const handleAddWeight = () => {
+    const w = parseFloat(weightValue);
+    if (!w || isNaN(w)) return;
+    const entry: WeightEntry = {
+      id: Date.now().toString(),
+      date: weightDate,
+      weight: w,
+      notes: weightNotes || undefined,
+    };
+    setWeights([...weights, entry]);
+    trackEvent("weight_logged");
+    setShowWeightForm(false);
+    setWeightValue("");
+    setWeightNotes("");
+  };
+
   return (
     <div className="px-5 pt-8 pb-4 space-y-5">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Good {getGreeting()}</h1>
@@ -83,6 +113,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Countdown ring + primary CTA */}
       <div className="bg-card rounded-3xl p-5 shadow-md border border-border flex flex-col items-center gap-4">
         <p className="text-sm font-medium text-muted-foreground">
           {isDueToday ? "Your dose is due today" : "Next dose in"}
@@ -105,6 +136,49 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* Quick action row */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setShowWeightForm(true)}
+          data-testid="add-weight-quick-btn"
+          className="flex items-center gap-2.5 bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:bg-muted/40 transition-colors"
+        >
+          <div className="w-8 h-8 rounded-xl bg-secondary/10 flex items-center justify-center">
+            <Scale size={16} className="text-secondary" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Add Weight</p>
+            {latestWeight ? (
+              <p className="text-[11px] text-muted-foreground">
+                {latestWeight.weight} {user.units}
+                {weightDelta !== null && (
+                  <span className={weightDelta < 0 ? "text-secondary ml-1" : "text-destructive ml-1"}>
+                    {weightDelta > 0 ? "+" : ""}{weightDelta.toFixed(1)}
+                  </span>
+                )}
+              </p>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">No entries yet</p>
+            )}
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigate("/med-info")}
+          data-testid="med-info-quick-btn"
+          className="flex items-center gap-2.5 bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:bg-muted/40 transition-colors"
+        >
+          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <BookOpen size={16} className="text-primary" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Med Info</p>
+            <p className="text-[11px] text-muted-foreground">{medication.brandName}</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         <StatCard
           label="Last Dose"
@@ -124,6 +198,7 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Mini weight chart */}
       {chartData.length > 0 && (
         <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
           <div className="flex items-center justify-between">
@@ -140,7 +215,7 @@ export default function Dashboard() {
                   borderRadius: "12px",
                   fontSize: "12px",
                 }}
-                formatter={(val) => [`${val} lbs`, "Weight"]}
+                formatter={(val) => [`${val} ${user.units}`, "Weight"]}
               />
               <Line
                 type="monotone"
@@ -155,6 +230,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Upcoming doses */}
       {nextThree.length > 0 && (
         <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
           <p className="text-sm font-semibold text-foreground">Upcoming Doses</p>
@@ -192,6 +268,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Log Dose bottom sheet */}
       <AnimatePresence>
         {showLogForm && (
           <motion.div
@@ -282,6 +359,84 @@ export default function Dashboard() {
               >
                 <Plus size={16} className="mr-2" />
                 Log This Dose
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Weight bottom sheet */}
+      <AnimatePresence>
+        {showWeightForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-end"
+            onClick={(e) => e.target === e.currentTarget && setShowWeightForm(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="w-full max-w-md mx-auto bg-card rounded-t-3xl p-6 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-foreground">Add Weight</h3>
+                <button
+                  className="p-1.5 rounded-xl bg-muted"
+                  onClick={() => setShowWeightForm(false)}
+                  data-testid="close-weight-form"
+                >
+                  <X size={16} className="text-muted-foreground" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Weight ({user.units})
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder={user.units === "lbs" ? "e.g. 195" : "e.g. 88"}
+                    value={weightValue}
+                    onChange={(e) => setWeightValue(e.target.value)}
+                    className="rounded-xl"
+                    data-testid="quick-weight-value"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                  <Input
+                    type="date"
+                    value={weightDate}
+                    onChange={(e) => setWeightDate(e.target.value)}
+                    className="rounded-xl"
+                    data-testid="quick-weight-date"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
+                <Input
+                  placeholder="Morning weight, post-workout..."
+                  value={weightNotes}
+                  onChange={(e) => setWeightNotes(e.target.value)}
+                  className="rounded-xl"
+                  data-testid="quick-weight-notes"
+                />
+              </div>
+
+              <Button
+                className="w-full h-12 rounded-2xl font-semibold"
+                onClick={handleAddWeight}
+                data-testid="submit-weight-btn"
+              >
+                <Scale size={16} className="mr-2" />
+                Save Entry
               </Button>
             </motion.div>
           </motion.div>

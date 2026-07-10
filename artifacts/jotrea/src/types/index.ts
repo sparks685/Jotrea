@@ -4,6 +4,10 @@ export interface UserData {
   units: "lbs" | "kg";
   subscription: "free" | "premium";
   trialEndDate?: string;
+  goalWeight?: number;
+  notificationsEnabled?: boolean;
+  notificationTime?: string;
+  notificationAdvance?: string;
 }
 
 export interface MedicationData {
@@ -31,5 +35,6 @@ export interface WeightEntry {
   id: string;
   date: string;
   weight: number;
+  notes?: string;
   photoUrl?: string;
 }

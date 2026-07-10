@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -9,25 +9,79 @@ import {
   Crown,
   Info,
   RefreshCw,
+  Download,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useMedication } from "@/hooks/useMedication";
+import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
 import { PremiumBadge } from "@/components/PremiumBadge";
 import { PremiumModal } from "@/components/PremiumModal";
 import { medications } from "@/data/medications";
-import { getFrequencyLabel } from "@/utils/dates";
+import { format } from "date-fns";
+import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
+import { buildDoseCSV, buildWeightCSV, downloadCSV, scheduleNextDoseNotification } from "@/utils/featureGates";
+import { useNotifications } from "@/hooks/useNotifications";
+import { trackEvent } from "@/lib/analytics";
+
+const ADVANCE_OPTIONS = [
+  { value: "1", label: "1 hour before" },
+  { value: "2", label: "2 hours before" },
+  { value: "24", label: "Day before" },
+];
 
 export default function Settings() {
   const { user, setUser } = useUser();
   const { medication, setMedication } = useMedication();
+  const { doses } = useDoses();
+  const { weights } = useWeights();
   const [, setLocation] = useLocation();
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [notifTime, setNotifTime] = useState("09:00");
-  const [notifAdvance, setNotifAdvance] = useState("1hr");
-  const [pushEnabled, setPushEnabled] = useState(false);
+  const { permission, requestPermission } = useNotifications();
+
+  const notifTime = user.notificationTime ?? "09:00";
+  const notifAdvance = user.notificationAdvance ?? "1";
+  const pushEnabled = user.notificationsEnabled ?? false;
 
   const medInfo = medications.find((m) => m.id === medication?.id);
   const isPremium = user.subscription === "premium";
+
+  const nextDoseDateObj =
+    medication ? getNextDoseDate(medication.startDate, medication.frequency, doses) : null;
+  const nextDoseDate = nextDoseDateObj ? format(nextDoseDateObj, "yyyy-MM-dd") : null;
+
+  useEffect(() => {
+    if (!pushEnabled || !medication || !nextDoseDate) return;
+    scheduleNextDoseNotification(
+      nextDoseDate,
+      medication.brandName,
+      medication.dose,
+      medInfo?.unit ?? "mg",
+      parseInt(notifAdvance, 10)
+    );
+  }, [pushEnabled, medication, nextDoseDate, notifAdvance, medInfo]);
+
+  const handlePushToggle = async () => {
+    if (pushEnabled) {
+      setUser({ ...user, notificationsEnabled: false });
+      return;
+    }
+    const result = await requestPermission();
+    if (result === "granted") {
+      setUser({ ...user, notificationsEnabled: true });
+      trackEvent("notifications_enabled");
+    }
+  };
+
+  const handleExport = () => {
+    if (!isPremium) { setShowUpgrade(true); return; }
+    const doseCsv = buildDoseCSV(doses);
+    const weightCsv = buildWeightCSV(weights, user.units);
+    downloadCSV("jotrea-doses.csv", doseCsv);
+    setTimeout(() => downloadCSV("jotrea-weights.csv", weightCsv), 300);
+    trackEvent("data_exported");
+  };
 
   const handleChangeMed = () => {
     setMedication(null);
@@ -37,6 +91,18 @@ export default function Settings() {
   const handleDowngrade = () => {
     setUser({ ...user, subscription: "free" });
   };
+
+  const permissionIcon =
+    permission === "granted" ? (
+      <CheckCircle2 size={14} className="text-secondary" />
+    ) : permission === "denied" ? (
+      <XCircle size={14} className="text-destructive" />
+    ) : (
+      <AlertCircle size={14} className="text-muted-foreground" />
+    );
+
+  const permissionLabel =
+    permission === "granted" ? "Allowed" : permission === "denied" ? "Blocked in browser" : "Not set";
 
   return (
     <div className="px-5 pt-8 pb-4 space-y-5">
@@ -67,7 +133,8 @@ export default function Settings() {
         </motion.button>
       )}
 
-      <SettingsSection title="Medication">
+      {/* Medication */}
+      <SettingsSection title="Medication" icon={<Syringe size={14} className="text-muted-foreground" />}>
         {medication ? (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -104,74 +171,122 @@ export default function Settings() {
         )}
       </SettingsSection>
 
+      {/* Notifications */}
       <SettingsSection title="Notifications" icon={<Bell size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
-          <SettingsRow label="Reminder Time">
-            <input
-              type="time"
-              value={notifTime}
-              onChange={(e) => setNotifTime(e.target.value)}
-              className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none"
-              data-testid="notif-time"
-            />
-          </SettingsRow>
-          <SettingsRow label="Advance Warning">
-            <select
-              value={notifAdvance}
-              onChange={(e) => setNotifAdvance(e.target.value)}
-              className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none"
-              data-testid="notif-advance"
-            >
-              <option value="1hr">1 hour before</option>
-              <option value="2hr">2 hours before</option>
-              <option value="day">Day before</option>
-            </select>
-          </SettingsRow>
           <SettingsRow label="Push Notifications">
-            <button
-              data-testid="push-toggle"
-              className={`w-12 h-6 rounded-full transition-colors duration-200 relative ${
-                pushEnabled ? "bg-primary" : "bg-muted"
-              }`}
-              onClick={() => setPushEnabled(!pushEnabled)}
-            >
-              <span
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                  pushEnabled ? "translate-x-6" : "translate-x-0.5"
-                }`}
-              />
-            </button>
-          </SettingsRow>
-        </div>
-      </SettingsSection>
-
-      <SettingsSection title="Units" icon={<Ruler size={14} className="text-muted-foreground" />}>
-        <div className="space-y-3">
-          <SettingsRow label="Weight">
-            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                {permissionIcon}
+                <span>{permissionLabel}</span>
+              </div>
               <button
-                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  user.units === "lbs" ? "bg-card shadow text-foreground" : "text-muted-foreground"
+                data-testid="push-toggle"
+                className={`w-12 h-6 rounded-full transition-colors duration-200 relative flex-shrink-0 ${
+                  pushEnabled && permission === "granted" ? "bg-primary" : "bg-muted"
                 }`}
-                onClick={() => setUser({ ...user, units: "lbs" })}
-                data-testid="setting-units-lbs"
+                onClick={handlePushToggle}
               >
-                lbs
-              </button>
-              <button
-                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                  user.units === "kg" ? "bg-card shadow text-foreground" : "text-muted-foreground"
-                }`}
-                onClick={() => setUser({ ...user, units: "kg" })}
-                data-testid="setting-units-kg"
-              >
-                kg
+                <span
+                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    pushEnabled && permission === "granted" ? "translate-x-6" : "translate-x-0.5"
+                  }`}
+                />
               </button>
             </div>
           </SettingsRow>
+
+          {pushEnabled && permission === "granted" && (
+            <>
+              <SettingsRow label="Reminder Time">
+                <input
+                  type="time"
+                  value={notifTime}
+                  onChange={(e) => setUser({ ...user, notificationTime: e.target.value })}
+                  className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none"
+                  data-testid="notif-time"
+                />
+              </SettingsRow>
+              <SettingsRow label="Advance Warning">
+                <select
+                  value={notifAdvance}
+                  onChange={(e) => setUser({ ...user, notificationAdvance: e.target.value })}
+                  className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none"
+                  data-testid="notif-advance"
+                >
+                  {ADVANCE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </SettingsRow>
+              {nextDoseDate && (
+                <div className="text-xs text-muted-foreground bg-muted rounded-xl px-3 py-2">
+                  Next reminder: {nextDoseDate} at {notifTime}
+                </div>
+              )}
+            </>
+          )}
+
+          {permission === "denied" && (
+            <p className="text-xs text-muted-foreground bg-destructive/10 rounded-xl px-3 py-2">
+              Notifications are blocked. Enable them in your browser settings to receive dose reminders.
+            </p>
+          )}
         </div>
       </SettingsSection>
 
+      {/* Units */}
+      <SettingsSection title="Units" icon={<Ruler size={14} className="text-muted-foreground" />}>
+        <SettingsRow label="Weight">
+          <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+            <button
+              className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                user.units === "lbs" ? "bg-card shadow text-foreground" : "text-muted-foreground"
+              }`}
+              onClick={() => setUser({ ...user, units: "lbs" })}
+              data-testid="setting-units-lbs"
+            >
+              lbs
+            </button>
+            <button
+              className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                user.units === "kg" ? "bg-card shadow text-foreground" : "text-muted-foreground"
+              }`}
+              onClick={() => setUser({ ...user, units: "kg" })}
+              data-testid="setting-units-kg"
+            >
+              kg
+            </button>
+          </div>
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* Data Export */}
+      <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Export your full dose and weight history as CSV files for your healthcare provider.
+          </p>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full rounded-xl gap-2"
+              onClick={handleExport}
+              data-testid="export-data-btn"
+            >
+              <Download size={14} />
+              Export Data (CSV)
+              {!isPremium && <Crown size={12} className="text-amber-500 ml-auto" />}
+            </Button>
+          </div>
+          {!isPremium && (
+            <p className="text-[11px] text-amber-600 text-center">Premium feature — upgrade to export</p>
+          )}
+        </div>
+      </SettingsSection>
+
+      {/* Subscription */}
       <SettingsSection title="Subscription">
         {isPremium ? (
           <div className="space-y-3">
@@ -206,7 +321,7 @@ export default function Settings() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Free Plan</p>
-                <p className="text-xs text-muted-foreground">1 medication, basic tracking</p>
+                <p className="text-xs text-muted-foreground">1 medication · 30-day history</p>
               </div>
             </div>
             <Button
@@ -222,6 +337,7 @@ export default function Settings() {
         )}
       </SettingsSection>
 
+      {/* About */}
       <SettingsSection title="About" icon={<Info size={14} className="text-muted-foreground" />}>
         <div className="space-y-1">
           <div className="flex items-center justify-between py-1">
@@ -235,7 +351,7 @@ export default function Settings() {
           <div className="flex items-center justify-between py-1">
             <span className="text-sm text-muted-foreground">Tagline</span>
             <span className="text-sm font-semibold text-foreground text-right max-w-[180px]">
-              Your GLP-1 Journey, Simplified
+              Jot your dose. Read your progress.
             </span>
           </div>
         </div>
@@ -272,7 +388,7 @@ function SettingsRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3">
       <span className="text-sm text-foreground">{label}</span>
       {children}
     </div>

@@ -10,11 +10,13 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays, Lock, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMedication, useDoses } from "@/hooks/useMedication";
+import { useMedication, useDoses, useUser } from "@/hooks/useMedication";
+import { PremiumModal } from "@/components/PremiumModal";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
+import { filterForFreeTier, isCalendarMonthLocked } from "@/utils/featureGates";
 import { medications } from "@/data/medications";
 import type { DoseEntry } from "@/types";
 
@@ -23,6 +25,7 @@ const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 export default function DoseLog() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
+  const { user } = useUser();
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -31,13 +34,16 @@ export default function DoseLog() {
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
   const [logNotes, setLogNotes] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   if (!medication) return null;
 
+  const isPremium = user.subscription === "premium";
   const medInfo = medications.find((m) => m.id === medication.id);
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
   const scheduledDates = getScheduledDatesInMonth(medication.startDate, medication.frequency, year, month);
+  const monthLocked = isCalendarMonthLocked(year, month, user.subscription);
 
   const firstDay = startOfMonth(viewMonth);
   const lastDay = endOfMonth(viewMonth);
@@ -88,9 +94,12 @@ export default function DoseLog() {
   };
 
   const sortedDoses = [...doses].sort((a, b) => b.date.localeCompare(a.date));
+  const { visible: visibleDoses, locked: lockedDoses } = filterForFreeTier(sortedDoses, user.subscription);
 
   return (
     <div className="pb-4">
+      <PremiumModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
+
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Dose Log</h1>
         <div className="flex gap-2 items-center">
@@ -124,7 +133,7 @@ export default function DoseLog() {
 
       {view === "calendar" ? (
         <div className="px-5 space-y-4">
-          <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
+          <div className="bg-card rounded-3xl p-4 shadow-sm border border-border relative">
             <div className="flex items-center justify-between mb-4">
               <button
                 data-testid="prev-month"
@@ -205,9 +214,30 @@ export default function DoseLog() {
                 </div>
               ))}
             </div>
+
+            {/* Lock overlay for old months */}
+            {monthLocked && (
+              <div className="absolute inset-0 rounded-3xl backdrop-blur-sm bg-background/75 flex flex-col items-center justify-center gap-3 z-10">
+                <div className="bg-amber-100 rounded-full p-3">
+                  <Lock size={20} className="text-amber-600" />
+                </div>
+                <p className="font-semibold text-foreground text-sm">History locked</p>
+                <p className="text-xs text-muted-foreground text-center px-6">
+                  Free plan shows last 30 days only
+                </p>
+                <Button
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl gap-1.5"
+                  onClick={() => setShowUpgrade(true)}
+                >
+                  <Crown size={12} />
+                  Unlock with Premium
+                </Button>
+              </div>
+            )}
           </div>
 
-          {selectedDate && (
+          {selectedDate && !monthLocked && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -249,9 +279,29 @@ export default function DoseLog() {
               <p className="text-sm text-muted-foreground mt-1">Start tracking by logging your first dose</p>
             </div>
           ) : (
-            sortedDoses.map((dose) => (
-              <DoseCard key={dose.id} dose={dose} unit={medInfo?.unit ?? "mg"} onEdit={openEdit} onDelete={deleteDose} />
-            ))
+            <>
+              {(isPremium ? sortedDoses : visibleDoses).map((dose) => (
+                <DoseCard key={dose.id} dose={dose} unit={medInfo?.unit ?? "mg"} onEdit={openEdit} onDelete={deleteDose} />
+              ))}
+
+              {!isPremium && lockedDoses.length > 0 && (
+                <button
+                  onClick={() => setShowUpgrade(true)}
+                  className="w-full bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 hover:from-amber-100 hover:to-amber-200 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Lock size={14} className="text-amber-600" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-sm font-semibold text-amber-900">
+                      {lockedDoses.length} older {lockedDoses.length === 1 ? "dose" : "doses"} locked
+                    </p>
+                    <p className="text-xs text-amber-700">Upgrade to see full history beyond 30 days</p>
+                  </div>
+                  <Crown size={14} className="text-amber-600" />
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
