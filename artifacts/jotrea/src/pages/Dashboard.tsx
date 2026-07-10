@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { Syringe, Flame, Calendar, Plus, X } from "lucide-react";
@@ -63,6 +64,7 @@ export default function Dashboard() {
       taken: true,
     };
     setDoses([...doses, newDose]);
+    trackEvent("dose_logged");
     setShowLogForm(false);
     setLogNotes("");
   };

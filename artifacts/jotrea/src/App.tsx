@@ -1,9 +1,12 @@
+import { useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { useMedication } from "@/hooks/useMedication";
+import { initGA, pageView } from "@/lib/analytics";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import DoseLog from "@/pages/DoseLog";
@@ -34,6 +37,14 @@ function AnimatedPage({ children }: { children: React.ReactNode }) {
   );
 }
 
+function RouteTracker() {
+  const [location] = useLocation();
+  useEffect(() => {
+    pageView(location);
+  }, [location]);
+  return null;
+}
+
 function AppRoutes() {
   const { medication } = useMedication();
   const [location] = useLocation();
@@ -42,6 +53,7 @@ function AppRoutes() {
 
   return (
     <>
+      <RouteTracker />
       <div className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}>
         <AnimatePresence mode="wait">
           <Switch key={location}>
@@ -105,6 +117,10 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    initGA();
+  }, []);
+
   return (
     <TooltipProvider>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
@@ -113,6 +129,7 @@ function App() {
         </div>
       </WouterRouter>
       <Toaster />
+      <SpeedInsights />
     </TooltipProvider>
   );
 }

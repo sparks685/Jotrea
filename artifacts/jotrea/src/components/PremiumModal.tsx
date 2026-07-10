@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Crown, Check } from "lucide-react";
 import { useUser } from "@/hooks/useMedication";
 import { addMonths, format } from "date-fns";
+import { trackEvent } from "@/lib/analytics";
 
 const features = [
   "Track multiple medications",
@@ -20,6 +22,10 @@ interface PremiumModalProps {
 
 export function PremiumModal({ open, onClose }: PremiumModalProps) {
   const { user, setUser } = useUser();
+
+  useEffect(() => {
+    if (open) trackEvent("premium_modal_open");
+  }, [open]);
 
   const handleUpgrade = () => {
     setUser({

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Search, Syringe, Pill, Check } from "lucide-react";
@@ -104,6 +105,7 @@ export default function Onboarding() {
     setMedication(medData);
     setUser({ name: "", units: "lbs", subscription: "free" });
     seedDemoData(selectedMed.id, selectedMed.frequency, selectedDose, setDoses, setWeights);
+    trackEvent("onboarding_complete", { medication: selectedMed.genericName });
     setLocation("/");
   };
 
@@ -156,7 +158,7 @@ export default function Onboarding() {
               </div>
               <Button
                 className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg"
-                onClick={() => setStep(1)}
+                onClick={() => { trackEvent("start_journey_click"); setStep(1); }}
                 data-testid="start-journey-btn"
               >
                 Start Your Journey
