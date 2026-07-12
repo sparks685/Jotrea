@@ -2,3 +2,4 @@
 - [getNextDoseDate returns Date](dose-date-type.md) — `getNextDoseDate()` returns a `Date` object; format to string before passing to gate functions or JSX.
 - [Framer Motion ease typing](framer-ease.md) — `ease` in framer-motion must be typed as `Easing[]` or `[number,number,number,number] as const`, not a plain string.
 - [useMedication exports](use-medication-exports.md) — file exports 4 separate hooks: `useMedication`, `useDoses`, `useWeights`, `useUser`.
+- [localStorage screenshot seeding](ls-screenshot-seeding.md) — seed localStorage then call window.location.replace(path) in a useEffect; the full-page reload forces all hooks to re-initialize with the seeded data before the screenshot is captured.

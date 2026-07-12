@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Syringe, Pill, Crown, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
-import { useMedication, useUser } from "@/hooks/useMedication";
-import { LockOverlay } from "@/components/LockOverlay";
-import { PremiumModal } from "@/components/PremiumModal";
+import { ChevronDown, Syringe, Pill, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
+import { useMedication } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
 
 const SIDE_EFFECTS: Record<string, string[]> = {
@@ -46,24 +44,54 @@ const WHEN_TO_CALL: string[] = [
   "Vision changes",
 ];
 
+const DRUG_INTERACTIONS = [
+  {
+    name: "Insulin & Sulfonylureas",
+    detail: "Increased risk of low blood sugar (hypoglycemia). Your doctor may adjust your insulin dose.",
+    severity: "high",
+  },
+  {
+    name: "Oral Medications",
+    detail: "GLP-1 drugs slow digestion, which can delay absorption of other oral medications. Take time-sensitive pills at consistent times.",
+    severity: "moderate",
+  },
+  {
+    name: "Warfarin (blood thinners)",
+    detail: "Monitor INR more frequently when starting or changing dose — GLP-1 drugs can affect warfarin levels.",
+    severity: "moderate",
+  },
+  {
+    name: "Cyclosporine",
+    detail: "Slower gastric emptying may reduce cyclosporine absorption. Take cyclosporine consistently with meals.",
+    severity: "moderate",
+  },
+  {
+    name: "Alcohol",
+    detail: "Alcohol can worsen GI side effects (nausea, vomiting) and may affect blood sugar levels unpredictably.",
+    severity: "low",
+  },
+];
+
+const severityColor: Record<string, string> = {
+  high: "bg-destructive",
+  moderate: "bg-amber-400",
+  low: "bg-secondary",
+};
+
 interface Section {
   id: string;
   title: string;
   icon: React.ElementType;
-  premium: boolean;
-  content?: React.ReactNode;
+  content: React.ReactNode;
 }
 
 export default function MedInfo() {
   const { medication } = useMedication();
-  const { user } = useUser();
   const [openSection, setOpenSection] = useState<string | null>("dosing");
-  const [showUpgrade, setShowUpgrade] = useState(false);
 
   if (!medication) return null;
 
   const medInfo = medications.find((m) => m.id === medication.id);
-  const isPremium = user.subscription === "premium";
   const frequency = medication.frequency as keyof typeof DOSING_TIPS;
   const dosingTips = DOSING_TIPS[frequency] ?? DOSING_TIPS.daily;
 
@@ -72,7 +100,6 @@ export default function MedInfo() {
       id: "dosing",
       title: "Dosing Tips",
       icon: Syringe,
-      premium: false,
       content: (
         <ul className="space-y-2">
           {dosingTips.map((tip) => (
@@ -94,7 +121,6 @@ export default function MedInfo() {
       id: "side-effects",
       title: "Common Side Effects",
       icon: AlertTriangle,
-      premium: false,
       content: (
         <ul className="space-y-2">
           {SIDE_EFFECTS.default.map((se) => (
@@ -110,10 +136,35 @@ export default function MedInfo() {
       ),
     },
     {
+      id: "interactions",
+      title: "Drug Interactions",
+      icon: BookOpen,
+      content: (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Always tell your doctor and pharmacist about all medications you take. Key interactions to know:
+          </p>
+          <ul className="space-y-2.5">
+            {DRUG_INTERACTIONS.map((item) => (
+              <li key={item.name} className="flex items-start gap-2.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${severityColor[item.severity]} flex-shrink-0 mt-1.5`} />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] text-muted-foreground italic pt-1">
+            This is for informational purposes only. Always consult your healthcare provider.
+          </p>
+        </div>
+      ),
+    },
+    {
       id: "call-doctor",
-      title: "When to Call Doctor",
+      title: "When to Call Your Doctor",
       icon: Phone,
-      premium: false,
       content: (
         <ul className="space-y-2">
           {WHEN_TO_CALL.map((item) => (
@@ -129,7 +180,6 @@ export default function MedInfo() {
       id: "storage",
       title: "Storage Instructions",
       icon: Thermometer,
-      premium: false,
       content: (
         <div className="space-y-2 text-sm text-foreground">
           <p>Store your medication properly to maintain effectiveness:</p>
@@ -150,24 +200,10 @@ export default function MedInfo() {
         </div>
       ),
     },
-    {
-      id: "interactions",
-      title: "Drug Interaction Checker",
-      icon: BookOpen,
-      premium: true,
-    },
-    {
-      id: "symptom-journal",
-      title: "Symptom Journal",
-      icon: BookOpen,
-      premium: true,
-    },
   ];
 
   return (
     <div className="px-5 pt-8 pb-4 space-y-5">
-      <PremiumModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
-
       <h1 className="text-2xl font-bold text-foreground">Med Info</h1>
 
       <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
@@ -215,53 +251,29 @@ export default function MedInfo() {
           <div
             key={section.id}
             data-testid={`section-${section.id}`}
-            className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm relative"
+            className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm"
           >
-            {section.premium && !isPremium && (
-              <LockOverlay
-                label={section.title}
-                onUpgrade={() => setShowUpgrade(true)}
-              />
-            )}
             <button
               className="w-full flex items-center justify-between p-4 text-left"
-              onClick={() =>
-                section.premium && !isPremium
-                  ? setShowUpgrade(true)
-                  : setOpenSection(openSection === section.id ? null : section.id)
-              }
+              onClick={() => setOpenSection(openSection === section.id ? null : section.id)}
               data-testid={`toggle-section-${section.id}`}
             >
               <div className="flex items-center gap-3">
-                <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                    section.premium ? "bg-amber-100" : "bg-muted"
-                  }`}
-                >
-                  {section.premium ? (
-                    <Crown size={15} className="text-amber-600 fill-amber-400" />
-                  ) : (
-                    <section.icon size={15} className="text-muted-foreground" />
-                  )}
+                <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
+                  <section.icon size={15} className="text-muted-foreground" />
                 </div>
                 <span className="text-sm font-semibold text-foreground">{section.title}</span>
               </div>
-              {section.premium ? (
-                <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                  Premium
-                </span>
-              ) : (
-                <motion.div
-                  animate={{ rotate: openSection === section.id ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown size={16} className="text-muted-foreground" />
-                </motion.div>
-              )}
+              <motion.div
+                animate={{ rotate: openSection === section.id ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown size={16} className="text-muted-foreground" />
+              </motion.div>
             </button>
 
             <AnimatePresence>
-              {!section.premium && openSection === section.id && (
+              {openSection === section.id && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}

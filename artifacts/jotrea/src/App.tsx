@@ -15,6 +15,7 @@ import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
+
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },

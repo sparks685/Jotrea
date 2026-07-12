@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
 import {
   Bell,
   Ruler,
-  ChevronRight,
   Syringe,
-  Crown,
   Info,
   RefreshCw,
   Download,
@@ -16,8 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
-import { PremiumBadge } from "@/components/PremiumBadge";
-import { PremiumModal } from "@/components/PremiumModal";
 import { medications } from "@/data/medications";
 import { format } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
@@ -37,7 +32,6 @@ export default function Settings() {
   const { doses } = useDoses();
   const { weights } = useWeights();
   const [, setLocation] = useLocation();
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const { permission, requestPermission } = useNotifications();
 
   const notifTime = user.notificationTime ?? "09:00";
@@ -45,7 +39,6 @@ export default function Settings() {
   const pushEnabled = user.notificationsEnabled ?? false;
 
   const medInfo = medications.find((m) => m.id === medication?.id);
-  const isPremium = user.subscription === "premium";
 
   const nextDoseDateObj =
     medication ? getNextDoseDate(medication.startDate, medication.frequency, doses) : null;
@@ -75,7 +68,6 @@ export default function Settings() {
   };
 
   const handleExport = () => {
-    if (!isPremium) { setShowUpgrade(true); return; }
     const doseCsv = buildDoseCSV(doses);
     const weightCsv = buildWeightCSV(weights, user.units);
     downloadCSV("jotrea-doses.csv", doseCsv);
@@ -86,10 +78,6 @@ export default function Settings() {
   const handleChangeMed = () => {
     setMedication(null);
     setLocation("/onboarding");
-  };
-
-  const handleDowngrade = () => {
-    setUser({ ...user, subscription: "free" });
   };
 
   const permissionIcon =
@@ -106,32 +94,7 @@ export default function Settings() {
 
   return (
     <div className="px-5 pt-8 pb-4 space-y-5">
-      <PremiumModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
-
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <PremiumBadge variant={isPremium ? "premium" : "free"} />
-      </div>
-
-      {!isPremium && (
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          className="w-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-2xl p-4 flex items-center justify-between text-white shadow-lg"
-          onClick={() => setShowUpgrade(true)}
-          data-testid="upgrade-banner"
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 rounded-xl p-1.5">
-              <Crown size={18} className="fill-white text-white" />
-            </div>
-            <div className="text-left">
-              <p className="font-bold text-sm">Upgrade to Premium</p>
-              <p className="text-amber-100 text-xs">1-month free trial, cancel anytime</p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-white/80" />
-        </motion.button>
-      )}
+      <h1 className="text-2xl font-bold text-foreground">Settings</h1>
 
       {/* Medication */}
       <SettingsSection title="Medication" icon={<Syringe size={14} className="text-muted-foreground" />}>
@@ -267,74 +230,17 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground">
             Export your full dose and weight history as CSV files for your healthcare provider.
           </p>
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full rounded-xl gap-2"
-              onClick={handleExport}
-              data-testid="export-data-btn"
-            >
-              <Download size={14} />
-              Export Data (CSV)
-              {!isPremium && <Crown size={12} className="text-amber-500 ml-auto" />}
-            </Button>
-          </div>
-          {!isPremium && (
-            <p className="text-[11px] text-amber-600 text-center">Premium feature — upgrade to export</p>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full rounded-xl gap-2"
+            onClick={handleExport}
+            data-testid="export-data-btn"
+          >
+            <Download size={14} />
+            Export Data (CSV)
+          </Button>
         </div>
-      </SettingsSection>
-
-      {/* Subscription */}
-      <SettingsSection title="Subscription">
-        {isPremium ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                <Crown size={18} className="text-amber-600 fill-amber-400" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Jotrea Premium</p>
-                {user.trialEndDate && (
-                  <p className="text-xs text-muted-foreground">
-                    Trial ends {user.trialEndDate}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full rounded-xl text-muted-foreground"
-              onClick={handleDowngrade}
-              data-testid="cancel-premium-btn"
-            >
-              Cancel Premium
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-                <Info size={18} className="text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Free Plan</p>
-                <p className="text-xs text-muted-foreground">1 medication · 30-day history</p>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-white gap-1.5"
-              onClick={() => setShowUpgrade(true)}
-              data-testid="upgrade-btn"
-            >
-              <Crown size={14} />
-              Upgrade to Premium
-            </Button>
-          </div>
-        )}
       </SettingsSection>
 
       {/* About */}

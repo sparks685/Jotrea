@@ -1,0 +1,26 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "El9U4mYEp1FAZtzUuw_LF"
+uri = "file://marketing/screenshots/Jotrea-S1.png"
+type = "image"
+title = "S1 — Onboarding"
+
+[[outputs]]
+id = "StmXVrDB1eeiuNnJ86Jlb"
+uri = "file://marketing/screenshots/Jotrea-S2.png"
+type = "image"
+title = "S2 — Dose Tracking (Dashboard)"
+
+[[outputs]]
+id = "thdPf_42KLHWNckAhFHsP"
+uri = "file://marketing/screenshots/Jotrea-S3.png"
+type = "image"
+title = "S3 — Weight Chart"
+
+[[outputs]]
+id = "YQtsIOJZaEh4PJXCdS-QT"
+uri = "file://marketing/screenshots/Jotrea-S4.png"
+type = "image"
+title = "S4 — Medication Info (no paywall)"
