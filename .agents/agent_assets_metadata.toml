@@ -24,3 +24,27 @@ id = "YQtsIOJZaEh4PJXCdS-QT"
 uri = "file://marketing/screenshots/Jotrea-S4.png"
 type = "image"
 title = "S4 — Medication Info (no paywall)"
+
+[[outputs]]
+id = "XqfI3DUu7gOgpXUTLLWdY"
+uri = "file://marketing/screenshots/Jotrea-iPad-S1.png"
+type = "image"
+title = "iPad S1 — Onboarding"
+
+[[outputs]]
+id = "WNmuWsP3kOH68gr2QOp79"
+uri = "file://marketing/screenshots/Jotrea-iPad-S2.png"
+type = "image"
+title = "iPad S2 — Dashboard"
+
+[[outputs]]
+id = "-ga2q6FuW31-8X9F2p11c"
+uri = "file://marketing/screenshots/Jotrea-iPad-S3.png"
+type = "image"
+title = "iPad S3 — Weight Tracker"
+
+[[outputs]]
+id = "9P3TKXiGpxUFQfL9wwDIk"
+uri = "file://marketing/screenshots/Jotrea-iPad-S4.png"
+type = "image"
+title = "iPad S4 — Med Info"
