@@ -29,22 +29,22 @@ title = "S4 — Medication Info (no paywall)"
 id = "XqfI3DUu7gOgpXUTLLWdY"
 uri = "file://marketing/screenshots/Jotrea-iPad-S1.png"
 type = "image"
-title = "iPad S1 — Onboarding"
+title = "iPad S1 — Onboarding (2064×2752)"
 
 [[outputs]]
 id = "WNmuWsP3kOH68gr2QOp79"
 uri = "file://marketing/screenshots/Jotrea-iPad-S2.png"
 type = "image"
-title = "iPad S2 — Dashboard"
+title = "iPad S2 — Dashboard (2064×2752)"
 
 [[outputs]]
 id = "-ga2q6FuW31-8X9F2p11c"
 uri = "file://marketing/screenshots/Jotrea-iPad-S3.png"
 type = "image"
-title = "iPad S3 — Weight Tracker"
+title = "iPad S3 — Weight Tracker (2064×2752)"
 
 [[outputs]]
 id = "9P3TKXiGpxUFQfL9wwDIk"
 uri = "file://marketing/screenshots/Jotrea-iPad-S4.png"
 type = "image"
-title = "iPad S4 — Med Info"
+title = "iPad S4 — Med Info (2064×2752)"
