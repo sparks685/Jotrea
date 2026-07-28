@@ -311,7 +311,7 @@ export default function Onboarding() {
         {step === 1 && (
           <motion.div
             key="s1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Gender</h2>
             <p className="text-muted-foreground mb-8">Help us get the basics right.</p>
@@ -350,7 +350,7 @@ export default function Onboarding() {
         {step === 2 && (
           <motion.div
             key="s2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Birthday</h2>
             <p className="text-muted-foreground mb-8">When's your birthday?</p>
@@ -382,7 +382,7 @@ export default function Onboarding() {
         {step === 3 && (
           <motion.div
             key="s3" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Height & Weight</h2>
             <p className="text-muted-foreground mb-8">Your Height & Weight.</p>
@@ -470,7 +470,7 @@ export default function Onboarding() {
         {step === 4 && (
           <motion.div
             key="s4" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Start Weight & Date</h2>
             <p className="text-muted-foreground mb-8">Tell us where you started. This helps us calculate your total progress.</p>
@@ -510,7 +510,7 @@ export default function Onboarding() {
         {step === 5 && (
           <motion.div
             key="s5" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
             <p className="text-muted-foreground mb-12">Set your goal weight.</p>
@@ -586,7 +586,7 @@ export default function Onboarding() {
         {step === 6 && (
           <motion.div
             key="s6" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Pace</h2>
             <p className="text-muted-foreground mb-12">How quickly do you want to reach your goal?</p>
@@ -640,7 +640,7 @@ export default function Onboarding() {
         {step === 7 && (
           <motion.div
             key="s7" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Activity Level</h2>
             <p className="text-muted-foreground mb-8">Tell us about your daily routine.</p>
@@ -680,7 +680,7 @@ export default function Onboarding() {
         {step === 8 && (
           <motion.div
             key="s8" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Motivation</h2>
             <p className="text-muted-foreground mb-6">What's driving you to reach your goal?</p>
@@ -729,7 +729,7 @@ export default function Onboarding() {
         {step === 9 && (
           <motion.div
             key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Side Effects</h2>
             <p className="text-muted-foreground mb-8">What side effects are giving you the most trouble?</p>
@@ -838,7 +838,7 @@ export default function Onboarding() {
         {step === 11 && selectedMed && (
           <motion.div
             key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 overflow-y-auto"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center overflow-y-auto"
           >
             <h2 className="text-3xl font-bold text-foreground mb-1">Set Your Dose</h2>
             <p className="text-muted-foreground mb-8">{selectedMed.brandNames[0]}</p>
@@ -964,7 +964,7 @@ export default function Onboarding() {
         {step === 13 && (
           <motion.div
             key="s13" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
             <div className="w-16 h-16 bg-[#D4A574]/20 rounded-full flex items-center justify-center mb-6">
               <Target size={32} className="text-[#D4A574]" />
