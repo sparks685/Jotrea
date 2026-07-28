@@ -229,22 +229,32 @@ export default function Onboarding() {
   }, [step]);
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col relative overflow-hidden">
-      {/* Progress Bar */}
+    <div
+      className="min-h-[100dvh] bg-background flex flex-col relative overflow-hidden"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
+      {/* Progress Bar — sits just below the safe area */}
       {step > 0 && step <= 14 && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-muted z-50">
-          <div 
+        <div
+          className="absolute left-0 w-full h-1 bg-muted z-50"
+          style={{ top: "env(safe-area-inset-top)" }}
+        >
+          <div
             className="h-full bg-[#D4A574] transition-all duration-300 ease-out"
             style={{ width: `${(step / 14) * 100}%` }}
           />
         </div>
       )}
-      
-      {/* Back Button */}
+
+      {/* Back Button — stays below the notch */}
       {step > 0 && step < 12 && (
-        <button 
+        <button
           onClick={handleBack}
-          className="absolute top-4 left-4 z-50 text-sm font-medium text-muted-foreground flex items-center gap-1 p-2"
+          className="absolute left-4 z-50 text-sm font-medium text-muted-foreground flex items-center gap-1 p-2"
+          style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}
         >
           &larr; Back
         </button>
@@ -262,7 +272,7 @@ export default function Onboarding() {
             transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-8"
           >
-            <div className="space-y-2 mt-8">
+            <div className="space-y-2">
               <div className="w-24 h-24 rounded-3xl bg-[#D4A574] flex items-center justify-center mx-auto mb-6 shadow-xl">
                 <Syringe size={42} className="text-white" />
               </div>
