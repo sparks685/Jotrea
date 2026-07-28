@@ -246,17 +246,6 @@ export default function Onboarding() {
         )}
       </div>
 
-      {/* Back button — always occupies 56px in flow so every step gets identical top spacing */}
-      <div className="flex-shrink-0 h-14 flex items-center px-4">
-        {step > 0 && step < 12 && (
-          <button
-            onClick={handleBack}
-            className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95"
-          >
-            <ChevronLeft size={20} className="text-foreground" />
-          </button>
-        )}
-      </div>
 
       <AnimatePresence mode="wait" initial={false} custom={direction}>
         {step === 0 && (
@@ -313,6 +302,11 @@ export default function Onboarding() {
             key="s1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Gender</h2>
             <p className="text-muted-foreground mb-8">Help us get the basics right.</p>
             
@@ -352,6 +346,11 @@ export default function Onboarding() {
             key="s2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Birthday</h2>
             <p className="text-muted-foreground mb-8">When's your birthday?</p>
             
@@ -384,6 +383,11 @@ export default function Onboarding() {
             key="s3" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Height & Weight</h2>
             <p className="text-muted-foreground mb-8">Your Height & Weight.</p>
             
@@ -472,6 +476,11 @@ export default function Onboarding() {
             key="s4" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Start Weight & Date</h2>
             <p className="text-muted-foreground mb-8">Tell us where you started. This helps us calculate your total progress.</p>
             
@@ -512,6 +521,11 @@ export default function Onboarding() {
             key="s5" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
             <p className="text-muted-foreground mb-12">Set your goal weight.</p>
             
@@ -588,6 +602,11 @@ export default function Onboarding() {
             key="s6" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Pace</h2>
             <p className="text-muted-foreground mb-12">How quickly do you want to reach your goal?</p>
             
@@ -642,6 +661,11 @@ export default function Onboarding() {
             key="s7" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Activity Level</h2>
             <p className="text-muted-foreground mb-8">Tell us about your daily routine.</p>
             
@@ -682,6 +706,11 @@ export default function Onboarding() {
             key="s8" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Motivation</h2>
             <p className="text-muted-foreground mb-6">What's driving you to reach your goal?</p>
             
@@ -731,6 +760,11 @@ export default function Onboarding() {
             key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Side Effects</h2>
             <p className="text-muted-foreground mb-8">What side effects are giving you the most trouble?</p>
             
@@ -784,6 +818,11 @@ export default function Onboarding() {
             className="flex-1 flex flex-col"
           >
             <div className="px-6 pt-2 pb-4 space-y-1">
+              <div className="mb-5">
+                <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                  <ChevronLeft size={20} className="text-foreground" />
+                </button>
+              </div>
               <h2 className="text-3xl font-bold text-foreground">Select Medication</h2>
             </div>
             <div className="px-6 pb-3">
@@ -840,6 +879,11 @@ export default function Onboarding() {
             key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center overflow-y-auto"
           >
+            <div className="mb-5">
+              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
+                <ChevronLeft size={20} className="text-foreground" />
+              </button>
+            </div>
             <h2 className="text-3xl font-bold text-foreground mb-1">Set Your Dose</h2>
             <p className="text-muted-foreground mb-8">{selectedMed.brandNames[0]}</p>
 
