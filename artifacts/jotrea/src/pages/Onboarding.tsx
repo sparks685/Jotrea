@@ -298,7 +298,7 @@ export default function Onboarding() {
               ))}
             </div>
 
-            <div className="w-full max-w-xs mt-auto pb-8">
+            <div className="w-full max-w-xs">
               <Button
                 className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white hover:opacity-90"
                 style={{ backgroundColor: '#D4A574' }}
