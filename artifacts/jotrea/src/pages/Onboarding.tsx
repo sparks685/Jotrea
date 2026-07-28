@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Search, Syringe, Pill, Check, Info, Bell, Droplets, Target, Activity, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Search, Syringe, Pill, Check, Info, Bell, Droplets, Target, Activity, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
@@ -246,14 +246,14 @@ export default function Onboarding() {
         )}
       </div>
 
-      {/* Back button — always occupies 48px in flow so every step gets identical top spacing */}
-      <div className="flex-shrink-0 h-12 flex items-center px-2">
+      {/* Back button — always occupies 56px in flow so every step gets identical top spacing */}
+      <div className="flex-shrink-0 h-14 flex items-center px-4">
         {step > 0 && step < 12 && (
           <button
             onClick={handleBack}
-            className="text-sm font-medium text-muted-foreground flex items-center gap-1 px-2 py-2"
+            className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95"
           >
-            &larr; Back
+            <ChevronLeft size={20} className="text-foreground" />
           </button>
         )}
       </div>
@@ -337,7 +337,7 @@ export default function Onboarding() {
             </div>
             
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={!gender}
               onClick={() => handleNext(2)}
@@ -370,7 +370,7 @@ export default function Onboarding() {
             </div>
             
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => handleNext(3)}
             >
@@ -454,7 +454,7 @@ export default function Onboarding() {
             })()}
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => {
                 if(!startWeight) setStartWeight(currentWeight);
@@ -497,7 +497,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={!startWeight}
               onClick={() => handleNext(5)}
@@ -574,7 +574,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => handleNext(6)}
             >
@@ -628,7 +628,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => handleNext(7)}
             >
@@ -667,7 +667,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={!activity}
               onClick={() => handleNext(8)}
@@ -716,7 +716,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={motivations.length === 0}
               onClick={() => handleNext(9)}
@@ -769,7 +769,7 @@ export default function Onboarding() {
             </AnimatePresence>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => handleNext(10)}
             >
@@ -1012,7 +1012,7 @@ export default function Onboarding() {
             </div>
 
             <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-auto hover:opacity-90"
+              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => handleNext(14)}
             >
