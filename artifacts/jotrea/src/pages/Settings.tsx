@@ -10,10 +10,23 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
 import { buildDoseCSV, buildWeightCSV, downloadCSV, scheduleNextDoseNotification } from "@/utils/featureGates";
@@ -96,6 +109,60 @@ export default function Settings() {
     <div className="px-5 pt-8 pb-4 space-y-5">
       <h1 className="text-2xl font-bold text-foreground">Settings</h1>
 
+      {/* Profile */}
+      <SettingsSection title="Profile" icon={<User size={14} className="text-muted-foreground" />}>
+        <SettingsRow label="Name">
+          <input
+            type="text"
+            value={user.name || ""}
+            onChange={(e) => setUser({ ...user, name: e.target.value })}
+            placeholder="Your Name"
+            className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right max-w-[150px]"
+          />
+        </SettingsRow>
+        <SettingsRow label="Gender">
+          <span className="text-sm text-muted-foreground capitalize">{user.gender?.replace(/_/g, " ") || "Not set"}</span>
+        </SettingsRow>
+        
+        <div className="pt-2 pb-1 border-t border-border mt-2">
+          <SettingsRow label="Weight Units">
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+              <button
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                  user.units === "lbs" ? "bg-card shadow text-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setUser({ ...user, units: "lbs" })}
+                data-testid="setting-units-lbs"
+              >
+                lbs
+              </button>
+              <button
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
+                  user.units === "kg" ? "bg-card shadow text-foreground" : "text-muted-foreground"
+                }`}
+                onClick={() => setUser({ ...user, units: "kg" })}
+                data-testid="setting-units-kg"
+              >
+                kg
+              </button>
+            </div>
+          </SettingsRow>
+        </div>
+
+        <div className="pt-2 pb-1 border-t border-border mt-2 space-y-2">
+          <p className="text-sm font-semibold text-foreground">Injection History</p>
+          {user.injectionSiteHistory && user.injectionSiteHistory.length > 0 ? (
+            <div className="space-y-1">
+              {[...user.injectionSiteHistory].reverse().slice(0, 5).map((entry, i) => (
+                <p key={i} className="text-xs text-muted-foreground">{entry.site} · {entry.date}</p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No injection history yet.</p>
+          )}
+        </div>
+      </SettingsSection>
+
       {/* Medication */}
       <SettingsSection title="Medication" icon={<Syringe size={14} className="text-muted-foreground" />}>
         {medication ? (
@@ -145,15 +212,15 @@ export default function Settings() {
               </div>
               <button
                 data-testid="push-toggle"
-                className={`w-12 h-6 rounded-full transition-colors duration-200 relative flex-shrink-0 ${
-                  pushEnabled && permission === "granted" ? "bg-primary" : "bg-muted"
-                }`}
+                className="relative w-12 h-6 rounded-full flex-shrink-0 overflow-hidden"
+                style={{ backgroundColor: pushEnabled && permission === "granted" ? '#D4A574' : 'var(--color-muted)' }}
                 onClick={handlePushToggle}
               >
-                <span
-                  className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                    pushEnabled && permission === "granted" ? "translate-x-6" : "translate-x-0.5"
-                  }`}
+                <motion.span
+                  layout
+                  transition={{ type: "spring", stiffness: 700, damping: 30 }}
+                  className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+                  style={{ left: pushEnabled && permission === "granted" ? 'calc(100% - 22px)' : '2px' }}
                 />
               </button>
             </div>
@@ -198,32 +265,6 @@ export default function Settings() {
         </div>
       </SettingsSection>
 
-      {/* Units */}
-      <SettingsSection title="Units" icon={<Ruler size={14} className="text-muted-foreground" />}>
-        <SettingsRow label="Weight">
-          <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-            <button
-              className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                user.units === "lbs" ? "bg-card shadow text-foreground" : "text-muted-foreground"
-              }`}
-              onClick={() => setUser({ ...user, units: "lbs" })}
-              data-testid="setting-units-lbs"
-            >
-              lbs
-            </button>
-            <button
-              className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
-                user.units === "kg" ? "bg-card shadow text-foreground" : "text-muted-foreground"
-              }`}
-              onClick={() => setUser({ ...user, units: "kg" })}
-              data-testid="setting-units-kg"
-            >
-              kg
-            </button>
-          </div>
-        </SettingsRow>
-      </SettingsSection>
-
       {/* Data Export */}
       <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
@@ -245,23 +286,62 @@ export default function Settings() {
 
       {/* About */}
       <SettingsSection title="About" icon={<Info size={14} className="text-muted-foreground" />}>
-        <div className="space-y-1">
-          <div className="flex items-center justify-between py-1">
-            <span className="text-sm text-muted-foreground">App Name</span>
-            <span className="text-sm font-semibold text-foreground">Jotrea</span>
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Built by a team of pharmacists and developers dedicated to your GLP-1 journey.
+          </p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-muted-foreground">App Name</span>
+              <span className="text-sm font-semibold text-foreground">Jotrea</span>
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm text-muted-foreground">Version</span>
+              <span className="text-sm font-semibold text-foreground">1.0.0</span>
+            </div>
           </div>
-          <div className="flex items-center justify-between py-1">
-            <span className="text-sm text-muted-foreground">Version</span>
-            <span className="text-sm font-semibold text-foreground">1.0.0</span>
-          </div>
-          <div className="flex items-center justify-between py-1">
-            <span className="text-sm text-muted-foreground">Tagline</span>
-            <span className="text-sm font-semibold text-foreground text-right max-w-[180px]">
-              Jot your dose. Read your progress.
-            </span>
+          <div className="pt-2 border-t border-border flex gap-4 text-xs font-medium text-muted-foreground">
+            <span>Privacy Policy</span>
+            <span>·</span>
+            <span>Terms of Service</span>
           </div>
         </div>
       </SettingsSection>
+
+      {/* Account Deletion */}
+      <div className="pt-8 pb-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="w-full rounded-2xl h-14 font-semibold shadow-lg">
+              Delete Account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="rounded-3xl max-w-[calc(100%-40px)] w-full mx-auto p-6">
+            <AlertDialogHeader className="space-y-3">
+              <AlertDialogTitle className="text-xl">Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription className="text-base text-muted-foreground">
+                This will permanently delete all your data. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="mt-6 flex-col-reverse sm:flex-col-reverse gap-3 sm:gap-0">
+              <AlertDialogCancel className="mt-0 w-full h-12 rounded-xl text-base font-semibold border-0 bg-muted hover:bg-muted/80">Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                className="w-full h-12 rounded-xl text-base font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg" 
+                onClick={() => {
+                  localStorage.removeItem("jotrea_medication");
+                  localStorage.removeItem("jotrea_doses");
+                  localStorage.removeItem("jotrea_weights");
+                  localStorage.removeItem("jotrea_user");
+                  localStorage.removeItem("jotrea_onboarding");
+                  setLocation("/onboarding", { replace: true });
+                }}
+              >
+                Delete Account
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

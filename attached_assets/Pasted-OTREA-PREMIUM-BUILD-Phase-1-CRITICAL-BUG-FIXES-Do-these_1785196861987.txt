@@ -1,0 +1,33 @@
+OTREA PREMIUM BUILD — Phase 1
+CRITICAL BUG FIXES (Do these first):
+Fix the Injection Reminders toggle on "Set Your Dose." When ON, the knob must slide to the RIGHT edge of the track and the track fills with Jotrea gold (#D4A574). When OFF, knob slides to LEFT, track is light gray. Use 200ms spring animation. Knob must never overflow the track.
+Fix navigation: Tapping "Begin My Journey" must push to the main Dashboard and CLEAR the onboarding navigation stack. The back button on Dashboard must NOT return to onboarding. Use navigation.reset().
+Add Account Deletion in Dashboard → Settings. Add a red "Delete Account" button at the bottom of Settings that permanently deletes all user data and logs out. Required for App Store approval.
+PREMIUM ONBOARDING FLOW (Rebuild in this exact order):
+Use a horizontal progress bar (thin line or dots) at the top of every onboarding screen.
+Screen 1: Welcome — Keep current. Add 4th bullet: "Pharmacist-curated guidance." Button: "Start Your Journey."
+Screen 2: Gender — "Help us get the basics right." Large tappable cards: Female, Male, Other, Prefer not to say.
+Screen 3: Birthday — "When's your birthday?" 3-column picker: Month / Day / Year.
+Screen 4: Height & Weight — "Your Height & Weight." Dual vertical picker. Left = Height (ft/in or cm). Right = Weight (lbs or kg). Imperial/metric toggle at bottom. Show live BMI badge below picker (e.g., "BMI: 24.2 — Healthy").
+Screen 5: Start Weight & Date — "Tell us where you started." Input for starting weight + date picker for GLP-1 start date.
+Screen 6: Goal Weight — "Set your goal weight." Horizontal scrollable ruler/ticker picker (not plain input). Show "Dream Weight" label. Live badge: "At this pace, you'll reach this by [Date]."
+Screen 7: Goal Pace — "How quickly do you want to reach your goal?" Slider 0.5–2.5 lbs/week. Icons: 🚶 slow, 🚗 medium, 🚀 fast. Live-updating "Est. Goal Date."
+Screen 8: Activity Level — "Tell us about your daily routine." 4 cards: Sedentary, Lightly Active, Active, Very Active. Each with icon + short description.
+Screen 9: Motivation — "What's driving you to reach your goal?" 8 selectable cards: I want to feel more confident, I'm ready for a fresh start, I want to boost energy, To improve my health/manage PCOS, I want to show up for loved ones, I have a special event coming up, To feel good in my clothes again, Other.
+Screen 10: Side Effects — "What side effects are giving you the most trouble?" Multi-select: Nausea, Fatigue, Hair Loss, Constipation, Bloating, Sulfur Burps, Heartburn, Food Noise. After selection, show micro-tooltip: "Our pharmacy team will provide personalized tips for managing your selected side effects."
+Screen 11: Select Medication — Keep current design. Search bar. Group by drug class. "injection" or "pill" tags.
+Screen 12: Set Your Dose — Keep layout. Dose pills (0.25mg, 0.5mg, 1mg, 2mg). Start Date picker. Injection Site: Abdomen, Thigh, Upper Arm, Buttocks. Add a simple body silhouette icon showing selected site. Fix toggle here. Keep Premium trial banner.
+Screen 13: Plan Crafting Loader — "Crafting your custom Jotrea plan..." Circular progress ring 0%→100% over 2.5 seconds. Animated checklist: "Building your dose schedule..." ✓, "Calculating your weight timeline..." ✓, "Preparing side effect tips..." ✓, "Setting reminder preferences..." ✓. Use Jotrea gold for the ring.
+Screen 14: Your Plan is Ready — "Congratulations! Your personal Jotrea plan is ready." Summary card: Timeline bar (Start → Goal with date), Shot Schedule (day), Next Injection Site. 3 mini-cards: Daily Water Goal, Daily Protein Goal, Daily Step Goal. Button: "Let's Get Started."
+Screen 15: Push Notifications — "Reach Your Goal with Notifications." Dialog: "Turn on Push Notifications to unlock smart reminders." Buttons: "Don't Allow" / "Allow."
+Then → Dashboard.
+DASHBOARD & SETTINGS:
+Add a "Tip from Our Pharmacy Team" card on the Dashboard that rotates daily tips.
+Add Settings screen with: Profile, Notifications, About (version + team copy + links), Account Deletion.
+Add "Injection Site History" in Profile to help users rotate sites.
+UI POLISH:
+Use Jotrea gold (#D4A574) for all active states, selected pills, progress indicators.
+Subtle card shadows (0 4px 12px rgba(0,0,0,0.05)).
+Continue buttons disabled (gray) until valid input, then active (gold).
+Haptic feedback (light tap) on all selections.
+Use SF Pro or system font for native iOS feel.

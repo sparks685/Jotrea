@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,7 @@ export default function Dashboard() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
   const { weights, setWeights } = useWeights();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const [, navigate] = useLocation();
 
   const [showLogForm, setShowLogForm] = useState(false);
@@ -66,17 +66,47 @@ export default function Dashboard() {
     weight: w.weight,
   }));
 
+  const PHARMACY_TIPS = [
+    "Take semaglutide on the same day each week for best results.",
+    "Inject into a new area within the same site to avoid lipodystrophy.",
+    "Stay hydrated — at least 8 glasses of water daily reduces nausea.",
+    "Eating slowly and stopping at 80% full helps maximize GLP-1 effects.",
+    "Protein at every meal preserves muscle while losing fat on GLP-1s.",
+    "If you forget a dose, take it within 5 days (weekly) or skip if too late.",
+    "Nausea usually improves after 4–8 weeks as your body adjusts.",
+    "Tirzepatide works on both GLP-1 and GIP receptors for enhanced effect.",
+    "Rotating injection sites reduces scar tissue buildup over time.",
+    "Log your dose within 2 hours for the most accurate streak tracking.",
+    "Sulfur burps? Avoid high-fat foods and eat smaller, more frequent meals.",
+    "Constipation on GLP-1? Try fiber-rich foods and magnesium citrate.",
+    "Hair loss on GLP-1s is usually temporary — ensure adequate protein intake.",
+    "Always store pen injectors in the refrigerator until opened.",
+  ];
+  
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const tip = PHARMACY_TIPS[dayOfYear % PHARMACY_TIPS.length];
+
   const handleLogDose = () => {
+    const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
     const newDose: DoseEntry = {
       id: Date.now().toString(),
       date: logDate,
       time: logTime,
       doseAmount: medication.dose,
-      site: medication.id.includes("rybelsus") ? "oral" : logSite,
+      site: finalSite,
       notes: logNotes,
       taken: true,
     };
     setDoses([...doses, newDose]);
+
+    if (finalSite !== "oral") {
+      const newHistoryEntry = { site: finalSite, date: format(parseISO(logDate), "MMM d") };
+      setUser({
+        ...user,
+        injectionSiteHistory: [...(user.injectionSiteHistory || []), newHistoryEntry]
+      });
+    }
+
     trackEvent("dose_logged");
     setShowLogForm(false);
     setLogNotes("");
@@ -196,6 +226,17 @@ export default function Dashboard() {
           sub="in a row"
           icon={<Flame size={14} className="text-amber-500" />}
         />
+      </div>
+
+      {/* Pharmacy Tip */}
+      <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
+            <FlaskConical size={16} className="text-amber-600" />
+          </div>
+          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Tip from Our Pharmacy Team</p>
+        </div>
+        <p className="text-sm text-amber-900 leading-relaxed">{tip}</p>
       </div>
 
       {/* Mini weight chart */}
