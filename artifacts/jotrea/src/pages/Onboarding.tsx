@@ -230,35 +230,33 @@ export default function Onboarding() {
 
   return (
     <div
-      className="min-h-[100dvh] bg-background flex flex-col relative overflow-hidden"
+      className="min-h-[100dvh] bg-background flex flex-col overflow-hidden"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* Progress Bar — sits just below the safe area */}
-      {step > 0 && step <= 14 && (
-        <div
-          className="absolute left-0 w-full h-1 bg-muted z-50"
-          style={{ top: "env(safe-area-inset-top)" }}
-        >
+      {/* Progress bar — always in layout flow (4px height) */}
+      <div className="flex-shrink-0 h-1 bg-muted">
+        {step > 0 && step <= 14 && (
           <div
             className="h-full bg-[#D4A574] transition-all duration-300 ease-out"
             style={{ width: `${(step / 14) * 100}%` }}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Back Button — stays below the notch */}
-      {step > 0 && step < 12 && (
-        <button
-          onClick={handleBack}
-          className="absolute left-4 z-50 text-sm font-medium text-muted-foreground flex items-center gap-1 p-2"
-          style={{ top: "calc(env(safe-area-inset-top) + 12px)" }}
-        >
-          &larr; Back
-        </button>
-      )}
+      {/* Back button — always occupies 48px in flow so every step gets identical top spacing */}
+      <div className="flex-shrink-0 h-12 flex items-center px-2">
+        {step > 0 && step < 12 && (
+          <button
+            onClick={handleBack}
+            className="text-sm font-medium text-muted-foreground flex items-center gap-1 px-2 py-2"
+          >
+            &larr; Back
+          </button>
+        )}
+      </div>
 
       <AnimatePresence mode="wait" initial={false} custom={direction}>
         {step === 0 && (
@@ -313,12 +311,12 @@ export default function Onboarding() {
         {step === 1 && (
           <motion.div
             key="s1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Gender</h2>
             <p className="text-muted-foreground mb-8">Help us get the basics right.</p>
             
-            <div className="grid grid-cols-2 gap-4 flex-1">
+            <div className="grid grid-cols-2 gap-4">
               {[
                 { id: "female", label: "Female", icon: "♀" },
                 { id: "male", label: "Male", icon: "♂" },
@@ -328,7 +326,7 @@ export default function Onboarding() {
                 <button
                   key={opt.id}
                   onClick={() => { setGender(opt.id); haptic(); }}
-                  className={`flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all shadow-sm ${
+                  className={`h-[120px] flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all shadow-sm ${
                     gender === opt.id ? "bg-[#D4A574] border-[#D4A574] text-white" : "bg-card border-border text-foreground"
                   }`}
                 >
@@ -352,7 +350,7 @@ export default function Onboarding() {
         {step === 2 && (
           <motion.div
             key="s2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Birthday</h2>
             <p className="text-muted-foreground mb-8">When's your birthday?</p>
@@ -384,7 +382,7 @@ export default function Onboarding() {
         {step === 3 && (
           <motion.div
             key="s3" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Height & Weight</h2>
             <p className="text-muted-foreground mb-8">Your Height & Weight.</p>
@@ -472,12 +470,12 @@ export default function Onboarding() {
         {step === 4 && (
           <motion.div
             key="s4" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Start Weight & Date</h2>
             <p className="text-muted-foreground mb-8">Tell us where you started. This helps us calculate your total progress.</p>
             
-            <div className="space-y-6 flex-1">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold">Starting Weight ({heightUnit === "imperial" ? "lbs" : "kg"})</label>
                 <Input 
@@ -512,7 +510,7 @@ export default function Onboarding() {
         {step === 5 && (
           <motion.div
             key="s5" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
             <p className="text-muted-foreground mb-12">Set your goal weight.</p>
@@ -588,7 +586,7 @@ export default function Onboarding() {
         {step === 6 && (
           <motion.div
             key="s6" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Pace</h2>
             <p className="text-muted-foreground mb-12">How quickly do you want to reach your goal?</p>
@@ -642,12 +640,12 @@ export default function Onboarding() {
         {step === 7 && (
           <motion.div
             key="s7" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Activity Level</h2>
             <p className="text-muted-foreground mb-8">Tell us about your daily routine.</p>
             
-            <div className="grid grid-cols-2 gap-4 flex-1">
+            <div className="grid grid-cols-2 gap-4">
               {[
                 { id: "sedentary", label: "Sedentary", desc: "Mostly desk work or resting", icon: "💺" },
                 { id: "lightly_active", label: "Lightly Active", desc: "Light walks, casual movement", icon: "🚶" },
@@ -657,7 +655,7 @@ export default function Onboarding() {
                 <button
                   key={opt.id}
                   onClick={() => { setActivity(opt.id); haptic(); }}
-                  className={`flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all shadow-sm text-center ${
+                  className={`h-[130px] flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all shadow-sm text-center ${
                     activity === opt.id ? "bg-[#D4A574]/10 border-[#D4A574]" : "bg-card border-border"
                   }`}
                 >
@@ -682,12 +680,12 @@ export default function Onboarding() {
         {step === 8 && (
           <motion.div
             key="s8" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Motivation</h2>
             <p className="text-muted-foreground mb-6">What's driving you to reach your goal?</p>
             
-            <div className="grid grid-cols-2 gap-3 flex-1 content-start">
+            <div className="grid grid-cols-2 gap-3 content-start">
               {[
                 "I want to feel more confident",
                 "I'm ready for a fresh start",
@@ -731,7 +729,7 @@ export default function Onboarding() {
         {step === 9 && (
           <motion.div
             key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <h2 className="text-3xl font-bold text-foreground mb-2">Side Effects</h2>
             <p className="text-muted-foreground mb-8">What side effects are giving you the most trouble?</p>
@@ -785,7 +783,7 @@ export default function Onboarding() {
             key="s10" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
             className="flex-1 flex flex-col"
           >
-            <div className="px-6 pt-20 pb-4 space-y-1">
+            <div className="px-6 pt-2 pb-4 space-y-1">
               <h2 className="text-3xl font-bold text-foreground">Select Medication</h2>
             </div>
             <div className="px-6 pb-3">
@@ -840,12 +838,12 @@ export default function Onboarding() {
         {step === 11 && selectedMed && (
           <motion.div
             key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8 overflow-y-auto"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6 overflow-y-auto"
           >
             <h2 className="text-3xl font-bold text-foreground mb-1">Set Your Dose</h2>
             <p className="text-muted-foreground mb-8">{selectedMed.brandNames[0]}</p>
 
-            <div className="space-y-8 flex-1">
+            <div className="space-y-8">
               <div className="space-y-3">
                 <label className="text-sm font-bold text-foreground uppercase tracking-wider">Starting Dose</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -966,7 +964,7 @@ export default function Onboarding() {
         {step === 13 && (
           <motion.div
             key="s13" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-20 pb-8"
+            className="flex-1 flex flex-col px-6 pt-2 pb-6"
           >
             <div className="w-16 h-16 bg-[#D4A574]/20 rounded-full flex items-center justify-center mb-6">
               <Target size={32} className="text-[#D4A574]" />
