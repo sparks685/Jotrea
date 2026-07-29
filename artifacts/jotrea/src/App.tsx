@@ -45,13 +45,7 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Erro
 
 
 
-const pageVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-};
-
-const pageTransition = { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const };
+const pageTransition = { duration: 0.15 };
 
 
 function ResetAndRedirect() {
@@ -84,15 +78,14 @@ function AppRoutes() {
         className={`flex-1 overflow-y-auto`}
         style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)", paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.div
             key={location}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, position: "absolute", top: 0, left: 0, right: 0 }}
             transition={pageTransition}
-            className="min-h-full"
+            className="min-h-full w-full"
           >
             <PageErrorBoundary>
               <Switch>
