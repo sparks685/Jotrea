@@ -813,7 +813,7 @@ export default function Onboarding() {
             className="flex-1 flex flex-col min-h-0">
 
             {/* Fixed header */}
-            <div className="px-6 pt-6 pb-3 flex-shrink-0">
+            <div className="px-6 pt-14 pb-3 flex-shrink-0">
               <div className="mb-5">
                 <BackBtn onBack={() => { if (isCustomMed) { setIsCustomMed(false); } else { back(); } }} />
               </div>
