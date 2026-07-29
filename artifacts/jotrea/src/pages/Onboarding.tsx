@@ -536,30 +536,40 @@ export default function Onboarding() {
             <p className="text-muted-foreground mb-8">Set your goal weight.</p>
 
             {/* Dream weight display */}
-            <div className="text-center mb-14">
-              <span className="text-xs font-semibold text-[#D4A574] tracking-widest">Dream weight</span>
+            <div className="text-center mb-10">
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.1em' }}>Dream weight</span>
               <div className="mt-2 flex items-baseline justify-center gap-2">
                 <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
                 <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
               </div>
             </div>
 
-            {/* Premium ruler — 140px tall: ~100px tick zone + 8px gap + ~32px label zone */}
+            {/*
+              Premium ruler — strictly fixed layout so scrolling never causes reflow.
+              Total height = 56px tick zone + 6px gap + 22px label zone = 84px.
+              Tick heights are FIXED (not distance-based):
+                center (active) = 52px, 5-lb marks = 20px, 1-lb marks = 10px.
+              Only color changes on scroll — no height transitions, no layout shift.
+            */}
             <div
               className="relative w-full"
               style={{
-                height: '140px',
-                WebkitMaskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
-                maskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
+                height: '84px',
+                overflow: 'hidden',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
+                maskImage: 'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
               }}
             >
-              {/* Center needle — glows in brand tan */}
+              {/* Center needle — spans tick zone only (top 56px), elevated with glow + shadow */}
               <div
-                className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none rounded-full"
+                className="absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none"
                 style={{
-                  width: '2.5px',
-                  background: 'linear-gradient(to bottom, rgba(212,165,116,0) 0%, #D4A574 12%, #D4A574 72%, rgba(212,165,116,0.15) 100%)',
-                  boxShadow: '0 0 10px rgba(212,165,116,0.55), 0 2px 6px rgba(212,165,116,0.3)',
+                  top: 0,
+                  height: '56px',
+                  width: '3px',
+                  borderRadius: '9999px',
+                  background: 'linear-gradient(to bottom, rgba(212,165,116,0.05) 0%, #D4A574 18%, #D4A574 82%, rgba(212,165,116,0.1) 100%)',
+                  boxShadow: '0 0 0 1.5px rgba(212,165,116,0.18), 0 0 10px rgba(212,165,116,0.55), 0 2px 8px rgba(212,165,116,0.35)',
                 }}
               />
 
@@ -586,53 +596,49 @@ export default function Onboarding() {
                     const activeLb = parseInt(goalWeight);
                     const dist = Math.abs(n - activeLb);
                     const is5 = n % 5 === 0;
+                    const isActive = dist === 0;
 
-                    // Height — tall needle at center, tapering outward
-                    let tickH: number;
-                    if      (dist === 0)  tickH = 72;
-                    else if (dist === 1)  tickH = is5 ? 52 : 38;
-                    else if (dist === 2)  tickH = is5 ? 42 : 28;
-                    else if (dist <= 4)   tickH = is5 ? 32 : 18;
-                    else if (dist <= 8)   tickH = is5 ? 24 : 12;
-                    else                  tickH = is5 ? 18 : 8;
+                    // Fixed tick heights — never change on scroll
+                    const tickH = isActive ? 52 : is5 ? 20 : 10;
+                    const tickW = isActive ? '3px' : is5 ? '2px' : '1.5px';
 
-                    // Color: active tick = brand tan; all others = plain light gray
-                    const ca = dist === 0 ? 1 : Math.max(0.38, 0.85 - dist * 0.07);
+                    // Only color/opacity changes on scroll (no layout impact)
+                    const alpha = isActive ? 1 : Math.max(0.32, 0.78 - dist * 0.06);
+                    const bgColor = isActive
+                      ? 'rgba(212,165,116,1)'
+                      : `rgba(156,163,175,${alpha})`;
 
                     return (
                       <div
                         key={n}
                         className="snap-center flex-shrink-0"
-                        style={{
-                          width: '40px',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                        }}
+                        style={{ width: '40px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
                       >
-                        {/* Tick bar */}
-                        <div style={{
-                          width:  dist === 0 ? '3px' : is5 ? '2.5px' : '2px',
-                          height: `${tickH}px`,
-                          backgroundColor: dist === 0
-                            ? `rgba(212,165,116,${ca})`
-                            : `rgba(156,163,175,${ca})`,
-                          borderRadius: '9999px',
-                          flexShrink: 0,
-                          boxShadow: dist === 0 ? '0 0 10px rgba(212,165,116,0.5)' : 'none',
-                          transition: 'height 0.12s ease, background-color 0.12s ease',
-                        }} />
-                        {/* Label zone — fixed 32px so all bar-bottoms align on the same baseline */}
-                        <div style={{ height: '32px', marginTop: '8px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        {/* Tick zone: fixed 56px, ticks bottom-aligned */}
+                        <div style={{ width: '40px', height: '56px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                          <div style={{
+                            width: tickW,
+                            height: `${tickH}px`,
+                            backgroundColor: bgColor,
+                            borderRadius: '9999px',
+                            transition: 'background-color 0.1s ease',
+                            boxShadow: isActive ? '0 0 8px rgba(212,165,116,0.5)' : 'none',
+                          }} />
+                        </div>
+                        {/* Gap: fixed 6px */}
+                        <div style={{ height: '6px', flexShrink: 0 }} />
+                        {/* Label zone: fixed 22px, number centered in the 40px slot */}
+                        <div style={{ width: '40px', height: '22px', flexShrink: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                           {is5 && (
                             <span style={{
-                              fontSize: '13px',
-                              fontWeight: dist === 0 ? 700 : dist <= 2 ? 500 : 400,
-                              color: dist === 0
+                              display: 'block',
+                              width: '40px',
+                              textAlign: 'center',
+                              fontSize: '12px',
+                              fontWeight: isActive ? 600 : 400,
+                              color: isActive
                                 ? 'hsl(var(--foreground))'
-                                : `rgba(156,163,175,${Math.max(0.45, 0.88 - dist * 0.07)})`,
+                                : `rgba(156,163,175,${Math.max(0.45, 0.82 - dist * 0.055)})`,
                               userSelect: 'none',
                               lineHeight: 1,
                             }}>{n}</span>
