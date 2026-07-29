@@ -153,41 +153,23 @@ export default function Onboarding() {
     trackEvent("onboarding_complete", { medication: selectedMed.genericName });
   };
 
-  // ── Goal Weight Ruler ────────────────────────────────────────────────────
-  const rulerRef = useRef<HTMLDivElement>(null);
-  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // While true, ALL onScroll events are dropped. Set around every programmatic scroll.
-  const suppressScrollRef = useRef(false);
+  // ── Goal Weight Ruler — state-driven drag (no scroll position math) ────────
+  // goalWeight is the single source of truth. Ticks render around it; drag updates it.
+  // This eliminates all scrollLeft timing bugs that afflict programmatic scroll in iframes.
+  const dragStartXRef = useRef<number | null>(null);
+  const dragStartValRef = useRef<number>(150);
+  const lastDragValRef = useRef<number>(150);
 
-  const rulerNumbers: number[] = [];
-  for (let i = rMin; i <= rMax; i++) rulerNumbers.push(i);
-
+  // Initialise goalWeight whenever step 5 is entered going forward.
+  // Going backward preserves whatever the user already chose.
   useEffect(() => {
-    if (step !== 5) return;
-    const raw = goalWeight || startWeight || currentWeight || "150";
-    const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || rMin)).toString();
-    if (!goalWeight) setGoalWeight(clamped);
-    const index = parseInt(clamped) - rMin;
-
-    // Suppress scroll events during + after programmatic positioning
-    suppressScrollRef.current = true;
-    if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const el = rulerRef.current;
-        if (el) {
-          // spacer = calc(50vw - 20px); each tick 40px wide; tick centre at +20px
-          const spacer = window.innerWidth / 2 - 20;
-          el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
-        }
-        // Release suppression 200ms after setting — comfortably after any delayed snap timers
-        setTimeout(() => { suppressScrollRef.current = false; }, 200);
-      });
-    });
-  // goalWeight intentionally excluded — onScroll owns goalWeight updates
+    if (step === 5 && direction === 1) {
+      const raw = startWeight || currentWeight || "150";
+      const val = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150));
+      setGoalWeight(val.toString());
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, heightUnit]);
+  }, [step]);
 
   const [loadingTicks, setLoadingTicks] = useState(0);
   useEffect(() => {
@@ -439,119 +421,178 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Target size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your dream weight</h2>
-            <p className="text-muted-foreground mb-5 text-sm">Scroll the ruler to set your goal.</p>
+            <p className="text-muted-foreground mb-5 text-sm">Drag the ruler or tap +/− to set your goal.</p>
 
-            {/* Display */}
-            <div className="text-center mb-5">
-              <span style={{ fontSize:'12px', fontWeight:800, color:BRAND, letterSpacing:'0.1em', textTransform:'uppercase' }}>Dream weight</span>
-              <div className="mt-1 flex items-baseline justify-center gap-2">
-                <motion.span key={goalWeight} initial={{ opacity:0.6, y:-4 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.08 }}
-                  className="text-7xl font-black text-foreground tracking-tight">
-                  {goalWeight}
-                </motion.span>
-                <span className="text-xl text-muted-foreground font-normal">{heightUnit==="imperial"?"lbs":"kg"}</span>
-              </div>
-              {(() => {
-                const sw=parseFloat(startWeight||currentWeight), gw=parseFloat(goalWeight), diff=sw-gw;
-                if(isNaN(diff)||diff<=0) return null;
-                return <p className="text-xs text-muted-foreground mt-1">That's <strong className="text-foreground">{diff.toFixed(0)} {heightUnit==="imperial"?"lbs":"kg"}</strong> from your starting weight</p>;
-              })()}
-            </div>
-
-            {/* Ruler card */}
-            <div className="relative w-full rounded-2xl overflow-hidden" style={{
-              height:'144px',
-              border:`1.5px solid ${BRAND}38`,
-              boxShadow:`0 6px 32px ${BRAND}18, 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)`,
-              background:'rgba(255,252,248,0.7)',
-            }}>
-              {/* iOS-style selection band */}
-              <div className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none rounded-xl" style={{
-                top:'12px', bottom:'38px', width:'54px',
-                background:`${BRAND}0e`, border:`1px solid ${BRAND}2e`,
-              }}/>
-              {/* Centre needle */}
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-full" style={{
-                width:'2.5px',
-                background:`linear-gradient(to bottom, transparent 0%, ${BRAND} 12%, ${BRAND} 72%, ${BRAND}20 100%)`,
-                boxShadow:`0 0 12px ${BRAND}55, 0 2px 6px ${BRAND}35`,
-              }}/>
-
-              {/* Scroll container */}
-              <div ref={rulerRef} className="ruler-scroll w-full h-full overflow-x-auto"
-                style={{
-                  scrollbarWidth:'none', msOverflowStyle:'none', scrollSnapType:'none',
-                  WebkitMaskImage:'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
-                  maskImage:'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
-                } as React.CSSProperties}
-                onScroll={e => {
-                  // Drop all events while we're programmatically positioning the ruler
-                  if (suppressScrollRef.current) return;
-
-                  const el = e.currentTarget;
-                  // spacer = calc(50vw - 20px); tick width = 40px; tick centre offset = 20px
-                  const spacer = window.innerWidth / 2 - 20;
-                  const index = Math.round((el.scrollLeft + el.clientWidth / 2 - spacer - 20) / 40);
-                  let val = Math.min(rMax, Math.max(rMin, rMin + index));
-                  if (val.toString() !== goalWeight) { setGoalWeight(val.toString()); haptic(4); }
-
-                  // Manual snap-on-end (CSS snap is disabled to avoid snap-on-mount bug)
-                  if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
-                  snapTimerRef.current = setTimeout(() => {
-                    const target = spacer + (val - rMin) * 40 + 20 - el.clientWidth / 2;
-                    if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left:target, behavior:'smooth' });
-                  }, 60);
-                }}
-              >
-                <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
-                <div className="h-full flex" style={{ width:'max-content' }}>
-                  <div style={{ width:'calc(50vw - 20px)', flexShrink:0 }}/>
-                  {rulerNumbers.map(n => {
-                    const active = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
-                    const dist = Math.abs(n - active);
-                    const is5 = n % 5 === 0;
-                    let tickH: number;
-                    if      (dist===0) tickH=70;
-                    else if (dist===1) tickH=is5?50:36;
-                    else if (dist===2) tickH=is5?40:26;
-                    else if (dist<=4)  tickH=is5?30:16;
-                    else if (dist<=8)  tickH=is5?22:10;
-                    else               tickH=is5?16:6;
-
-                    const t=Math.min(1,dist/8);
-                    const cr=Math.round(212+(200-212)*t), cg=Math.round(165+(210-165)*t), cb=Math.round(116+(210-116)*t);
-                    const ca=dist===0?1:Math.max(0.15,0.9-dist*0.1);
-
-                    return (
-                      <div key={n} className="flex-shrink-0" style={{ width:'40px', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
-                        <div style={{
-                          width:dist===0?'3px':is5?'2.5px':'2px', height:`${tickH}px`,
-                          backgroundColor:`rgba(${cr},${cg},${cb},${ca})`, borderRadius:'9999px', flexShrink:0,
-                          boxShadow:dist===0?`0 0 12px ${BRAND}55`:'none',
-                          transition:'height 0.08s ease, background-color 0.08s ease', willChange:'height',
-                        }}/>
-                        <div style={{ height:'34px', marginTop:'7px', display:'flex', alignItems:'flex-start', justifyContent:'center' }}>
-                          {is5 && <span style={{ fontSize:'12px', fontWeight:dist===0?800:dist<=2?500:400,
-                            color:dist===0?'hsl(var(--foreground))':`rgba(156,163,175,${Math.max(0.25,0.7-dist*0.08)})`,
-                            userSelect:'none', lineHeight:1 }}>{n}</span>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ width:'calc(50vw - 20px)', flexShrink:0 }}/>
+            {/* Large number display */}
+            {(() => {
+              const gw = Math.min(rMax, Math.max(rMin, parseInt(goalWeight) || rMin));
+              const sw = parseFloat(startWeight || currentWeight);
+              const diff = sw - gw;
+              return (
+                <div className="text-center mb-4">
+                  <span style={{ fontSize:'12px', fontWeight:800, color:BRAND, letterSpacing:'0.1em', textTransform:'uppercase' }}>Dream weight</span>
+                  <div className="mt-1 flex items-baseline justify-center gap-2">
+                    <motion.span key={goalWeight} initial={{ opacity:0.7, y:-6 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.1 }}
+                      className="text-7xl font-black text-foreground tracking-tight">{gw}</motion.span>
+                    <span className="text-xl text-muted-foreground font-normal">{heightUnit==="imperial"?"lbs":"kg"}</span>
+                  </div>
+                  {!isNaN(diff) && diff > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      That's <strong className="text-foreground">{diff.toFixed(0)} {heightUnit==="imperial"?"lbs":"kg"}</strong> from your starting weight
+                    </p>
+                  )}
                 </div>
-              </div>
-            </div>
+              );
+            })()}
+
+            {/* ── Drag ruler — state-driven, no scrollLeft ─────────────────── */}
+            {(() => {
+              const gw = Math.min(rMax, Math.max(rMin, parseInt(goalWeight) || rMin));
+              const HALF = 20; // ticks shown either side of centre
+              const TOTAL = HALF * 2 + 1;
+
+              const changeBy = (delta: number) => {
+                const next = Math.min(rMax, Math.max(rMin, gw + delta));
+                setGoalWeight(next.toString());
+                haptic(5);
+              };
+
+              return (
+                <>
+                  {/* Ruler card */}
+                  <div className="relative w-full rounded-2xl overflow-hidden select-none" style={{
+                    height:'140px',
+                    border:`1.5px solid ${BRAND}38`,
+                    boxShadow:`0 6px 32px ${BRAND}18, 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)`,
+                    background:'rgba(255,252,248,0.7)',
+                    touchAction:'none',
+                    cursor:'ew-resize',
+                  }}
+                    onPointerDown={e => {
+                      dragStartXRef.current = e.clientX;
+                      dragStartValRef.current = gw;
+                      lastDragValRef.current = gw;
+                      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                    }}
+                    onPointerMove={e => {
+                      if (dragStartXRef.current === null) return;
+                      // drag left → higher value (ruler moves right → number goes up)
+                      const dx = dragStartXRef.current - e.clientX;
+                      const delta = Math.round(dx / 7); // 7 px per unit
+                      const next = Math.min(rMax, Math.max(rMin, dragStartValRef.current + delta));
+                      if (next !== lastDragValRef.current) {
+                        lastDragValRef.current = next;
+                        setGoalWeight(next.toString());
+                        haptic(3);
+                      }
+                    }}
+                    onPointerUp={() => { dragStartXRef.current = null; }}
+                    onPointerCancel={() => { dragStartXRef.current = null; }}
+                  >
+                    {/* iOS-style selection band */}
+                    <div className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none rounded-xl" style={{
+                      top:'10px', bottom:'36px', width:'52px',
+                      background:`${BRAND}0e`, border:`1px solid ${BRAND}2e`,
+                    }}/>
+                    {/* Centre needle */}
+                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-full" style={{
+                      width:'2.5px',
+                      background:`linear-gradient(to bottom, transparent 0%, ${BRAND} 10%, ${BRAND} 74%, ${BRAND}20 100%)`,
+                      boxShadow:`0 0 12px ${BRAND}55, 0 2px 6px ${BRAND}35`,
+                    }}/>
+                    {/* Edge fade */}
+                    <div className="absolute inset-0 z-10 pointer-events-none" style={{
+                      background:`linear-gradient(to right, rgba(255,252,248,0.85) 0%, transparent 18%, transparent 82%, rgba(255,252,248,0.85) 100%)`,
+                    }}/>
+
+                    {/* Ticks — state-driven, always centred on gw */}
+                    <div className="absolute inset-0 flex items-end pb-[34px]" style={{ paddingBottom:'34px' }}>
+                      {Array.from({ length: TOTAL }, (_, i) => {
+                        const offset = i - HALF;
+                        const val = gw + offset;
+                        const is5 = val % 5 === 0;
+                        const dist = Math.abs(offset);
+                        const inRange = val >= rMin && val <= rMax;
+
+                        if (!inRange) return <div key={i} style={{ flex:1 }} />;
+
+                        let tickH: number;
+                        if      (dist===0) tickH=68;
+                        else if (dist===1) tickH=is5?48:34;
+                        else if (dist===2) tickH=is5?38:24;
+                        else if (dist<=4)  tickH=is5?28:14;
+                        else if (dist<=8)  tickH=is5?20:8;
+                        else               tickH=is5?14:5;
+
+                        const t = Math.min(1, dist / 8);
+                        const cr = Math.round(212 + (200-212)*t);
+                        const cg = Math.round(165 + (210-165)*t);
+                        const cb = Math.round(116 + (210-116)*t);
+                        const ca = dist===0 ? 1 : Math.max(0.12, 0.88 - dist*0.1);
+
+                        return (
+                          <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
+                            <div style={{
+                              width: dist===0 ? '3px' : is5 ? '2.5px' : '2px',
+                              height:`${tickH}px`,
+                              backgroundColor:`rgba(${cr},${cg},${cb},${ca})`,
+                              borderRadius:'9999px',
+                              boxShadow: dist===0 ? `0 0 10px ${BRAND}55` : 'none',
+                              transition:'height 0.09s ease, background-color 0.09s ease',
+                            }}/>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Labels row */}
+                    <div className="absolute bottom-[6px] left-0 right-0 flex pointer-events-none">
+                      {Array.from({ length: TOTAL }, (_, i) => {
+                        const offset = i - HALF;
+                        const val = gw + offset;
+                        const dist = Math.abs(offset);
+                        if (val % 5 !== 0 || val < rMin || val > rMax) return <div key={i} style={{ flex:1 }}/>;
+                        return (
+                          <div key={i} style={{ flex:1, display:'flex', justifyContent:'center' }}>
+                            <span style={{
+                              fontSize:'11px',
+                              fontWeight: dist===0 ? 800 : 500,
+                              color: dist===0 ? 'hsl(var(--foreground))' : `rgba(156,163,175,${Math.max(0.2, 0.65-dist*0.05)})`,
+                              userSelect:'none',
+                            }}>{val}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* +/− stepper buttons */}
+                  <div className="flex items-center justify-center gap-4 mt-3">
+                    {[
+                      { label:"−5", delta:-5 }, { label:"−1", delta:-1 },
+                      { label:"+1", delta:1 }, { label:"+5", delta:5 },
+                    ].map(btn => (
+                      <motion.button key={btn.label} whileTap={{ scale:0.92 }}
+                        onClick={() => changeBy(btn.delta)}
+                        className="w-14 h-10 rounded-xl text-sm font-bold border-2 transition-all"
+                        style={{ borderColor:`${BRAND}40`, color:BRAND, background:`${BRAND}0a` }}>
+                        {btn.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Timeline badge */}
             {(() => {
-              const diff=parseFloat(currentWeight)-parseFloat(goalWeight);
-              const weeks=Math.max(0,diff/goalPace);
+              const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
+              const weeks = Math.max(0, diff / goalPace);
               return (
-                <div className="text-center mt-5">
+                <div className="text-center mt-4">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ background:`${BRAND}14`, color:BRAND }}>
                     <Target size={13}/>
-                    At this pace, you'll reach this by {format(addWeeks(new Date(),weeks),"MMMM yyyy")}
+                    At this pace, you'll reach this by {format(addWeeks(new Date(), weeks), "MMMM yyyy")}
                   </div>
                 </div>
               );
