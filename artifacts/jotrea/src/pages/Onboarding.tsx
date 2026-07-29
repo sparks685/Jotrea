@@ -194,6 +194,7 @@ export default function Onboarding() {
   
   // Custom scroll sync for ruler
   const rulerRef = useRef<HTMLDivElement>(null);
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Set initial ruler scroll position only when entering step 5 or changing units.
   // goalWeight is pre-initialized by step 4's Continue button so it is never "" here.
@@ -595,8 +596,8 @@ export default function Onboarding() {
 
               <div
                 ref={rulerRef}
-                className="w-full h-full overflow-x-auto snap-x snap-mandatory"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+                className="w-full h-full overflow-x-auto"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'none' } as React.CSSProperties}
                 onScroll={(e) => {
                   const el = e.currentTarget;
                   const spacer = window.innerWidth / 2 - 20;
@@ -608,6 +609,16 @@ export default function Onboarding() {
                     setGoalWeight(val.toString());
                     haptic(5);
                   }
+                  // Manual snap-on-end: after scrolling stops (~60 ms) snap to nearest tick.
+                  // This replaces CSS snap-mandatory which fires an unwanted scroll event on
+                  // mount (snapping from scrollLeft=0 to the first valid position = 80 lbs).
+                  if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+                  snapTimerRef.current = setTimeout(() => {
+                    const target = spacer + (val - rMin) * 40 + 20 - el.clientWidth / 2;
+                    if (Math.abs(el.scrollLeft - target) > 1) {
+                      el.scrollTo({ left: target, behavior: 'smooth' });
+                    }
+                  }, 60);
                 }}
               >
                 <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
@@ -632,7 +643,7 @@ export default function Onboarding() {
                     return (
                       <div
                         key={n}
-                        className="snap-center flex-shrink-0"
+                        className="flex-shrink-0"
                         style={{ width: '40px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}
                       >
                         {/* Tick zone: fixed 56px, ticks bottom-aligned */}
