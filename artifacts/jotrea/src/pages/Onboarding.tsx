@@ -48,12 +48,7 @@ function seedDemoData(
   setWeights(demoWeights);
 }
 
-const BODY_SVG = (
-  <svg viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-80">
-    <path d="M40 20 C40 10 60 10 60 20 C60 30 55 35 50 35 C45 35 40 30 40 20 Z" fill="hsl(var(--muted))" />
-    <path d="M35 40 Q50 35 65 40 L85 80 L75 85 L60 55 L60 100 L65 190 L55 190 L50 110 L45 190 L35 190 L40 100 L40 55 L25 85 L15 80 Z" fill="hsl(var(--muted))" />
-  </svg>
-);
+// BODY_SVG replaced by inline SVG in the injection site section
 
 const stepVariants = {
   enter: (direction: number) => ({ x: direction > 0 ? 48 : -48, opacity: 0 }),
@@ -951,8 +946,8 @@ export default function Onboarding() {
         {/* ─── Step 11: Set Dose ───────────────────────────────────── */}
         {step === 11 && (selectedMed || isCustomMed) && (
           <motion.div key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col px-6 pt-3 pb-6 overflow-y-auto">
-            <div className="mb-6 mt-2"><BackBtn onBack={back} /></div>
+            className="flex-1 flex flex-col px-6 pt-10 pb-6 overflow-y-auto">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Pill size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-0.5 leading-tight">Set your dose</h2>
             <p className="text-muted-foreground text-sm mb-7">
@@ -1038,24 +1033,90 @@ export default function Onboarding() {
               {((!isCustomMed && selectedMed?.formulation==="injection") || (isCustomMed && customFormulation==="injection")) && (
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">First Injection Site</label>
-                  <div className="flex gap-3 items-center">
-                    <div className="flex-1 grid grid-cols-1 gap-2">
-                      {INJECTION_SITES.map(site => (
+
+                  {/* ── Premium body diagram ── */}
+                  <div className="relative w-full rounded-3xl flex items-center justify-center" style={{
+                    height:'224px',
+                    background:'linear-gradient(145deg,#fef9f4,#fdf5ee)',
+                    border:`1.5px solid ${BRAND}28`,
+                    boxShadow:`0 10px 40px ${BRAND}18, 0 2px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.85)`,
+                  }}>
+                    <svg viewBox="0 0 100 240" style={{ height:'212px', width:'auto' }} fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <filter id="bodyShadow" x="-20%" y="-8%" width="140%" height="120%">
+                          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor={BRAND} floodOpacity="0.12"/>
+                        </filter>
+                      </defs>
+
+                      {/* Silhouette */}
+                      <g filter="url(#bodyShadow)">
+                        {/* Head */}
+                        <ellipse cx="50" cy="19" rx="13" ry="16" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.8"/>
+                        {/* Hair cap */}
+                        <ellipse cx="50" cy="10" rx="13" ry="9" fill="#E0D5CA"/>
+                        {/* Neck */}
+                        <path d="M 44 33 L 56 33 L 57.5 46 L 42.5 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Torso */}
+                        <path d="M 28 46 C 18 50 15 62 15 74 L 15 144 C 15 154 21 158 31 158 L 69 158 C 79 158 85 154 85 144 L 85 74 C 85 62 82 50 72 46 Q 62 43 50 43 Q 38 43 28 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.8"/>
+                        {/* Left arm */}
+                        <rect x="4" y="54" width="12" height="82" rx="6" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Right arm */}
+                        <rect x="84" y="54" width="12" height="82" rx="6" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Left leg */}
+                        <rect x="26" y="155" width="17" height="82" rx="8.5" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Right leg */}
+                        <rect x="57" y="155" width="17" height="82" rx="8.5" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Subtle waist line */}
+                        <path d="M 20 105 Q 50 112 80 105" stroke="#D2C5B8" strokeWidth="0.5" fill="none" opacity="0.5"/>
+                        {/* Collar line */}
+                        <path d="M 43 50 Q 50 52 57 50" stroke="#D2C5B8" strokeWidth="0.6" fill="none" opacity="0.45"/>
+                      </g>
+
+                      {/* Injection site markers */}
+                      {([
+                        { name:"Abdomen",   cx:50,   cy:107 },
+                        { name:"Upper Arm", cx:10,   cy:72  },
+                        { name:"Thigh",     cx:34.5, cy:178 },
+                        { name:"Buttocks",  cx:84,   cy:145 },
+                      ] as { name:string; cx:number; cy:number }[]).map(site => {
+                        const active = injectionSite === site.name;
+                        return (
+                          <g key={site.name}>
+                            {/* Glow halo */}
+                            {active && <circle cx={site.cx} cy={site.cy} r="9" fill={BRAND} fillOpacity="0.18"/>}
+                            {/* Animated pulse ring */}
+                            <motion.circle cx={site.cx} cy={site.cy}
+                              fill="none" stroke={BRAND} strokeWidth="1.5"
+                              initial={{ r: 6, opacity: 0 }}
+                              animate={active ? { r:[6,18], opacity:[0.75,0] } : { r:6, opacity:0 }}
+                              transition={{ duration:1.8, repeat:active?Infinity:0, ease:"easeOut", repeatDelay:0.15 }}
+                            />
+                            {/* Site dot */}
+                            <circle cx={site.cx} cy={site.cy}
+                              r={active ? 5 : 3.5}
+                              fill={active ? BRAND : "rgba(176,158,140,0.5)"}
+                            />
+                            {/* Inner white pip */}
+                            {active && <circle cx={site.cx} cy={site.cy} r="1.8" fill="white"/>}
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* 2×2 site picker */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {INJECTION_SITES.map(site => {
+                      const sel = injectionSite === site;
+                      return (
                         <motion.button key={site} whileTap={{ scale:0.97 }}
-                          className="rounded-xl py-2.5 text-sm font-bold border-2 transition-all"
-                          style={{ backgroundColor:injectionSite===site?`${BRAND}14`:"hsl(var(--card))", borderColor:injectionSite===site?BRAND:"hsl(var(--border))", color:injectionSite===site?BRAND:"hsl(var(--foreground))" }}
+                          className="rounded-2xl py-3.5 text-sm font-bold border-2 transition-all"
+                          style={{ backgroundColor:sel?`${BRAND}14`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", color:sel?BRAND:"hsl(var(--foreground))", boxShadow:sel?`0 2px 10px ${BRAND}28`:"0 1px 3px rgba(0,0,0,0.04)" }}
                           onClick={() => { setInjectionSite(site); haptic(); }}>
                           {site}
                         </motion.button>
-                      ))}
-                    </div>
-                    <div className="w-20 h-36 bg-muted/30 rounded-2xl flex items-center justify-center p-2 relative">
-                      {BODY_SVG}
-                      {injectionSite==="Abdomen" && <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-4 h-3 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
-                      {injectionSite==="Thigh" && <div className="absolute top-[65%] left-[38%] w-3 h-5 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
-                      {injectionSite==="Upper Arm" && <div className="absolute top-[35%] left-[22%] w-3 h-5 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
-                      {injectionSite==="Buttocks" && <div className="absolute top-[55%] left-[38%] w-4 h-4 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
