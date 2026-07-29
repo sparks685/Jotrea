@@ -1250,6 +1250,22 @@ export default function Onboarding() {
                     style={{ left:reminderEnabled?"calc(100% - 22px)":"2px" }}/>
                 </button>
               </div>
+
+              {/* Pharmacist note */}
+              {((!isCustomMed && selectedMed?.pharmacistNote) || isCustomMed) && (
+                <div className="flex items-start gap-3 px-4 py-3.5 rounded-2xl"
+                  style={{ background:`${BRAND}12`, border:`1px solid ${BRAND}30` }}>
+                  <Info size={15} style={{ color:BRAND }} className="flex-shrink-0 mt-0.5"/>
+                  <div>
+                    <p className="text-xs font-bold mb-1" style={{ color:BRAND }}>Pharmacist Note</p>
+                    <p className="text-xs leading-relaxed" style={{ color:BRAND }}>
+                      {isCustomMed
+                        ? "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist."
+                        : selectedMed?.pharmacistNote}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <ContinueBtn
