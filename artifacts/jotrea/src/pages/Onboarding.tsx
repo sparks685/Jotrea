@@ -178,14 +178,26 @@ export default function Onboarding() {
   const dragStartXRef = useRef<number | null>(null);
   const dragStartValRef = useRef<number>(150);
   const lastDragValRef = useRef<number>(150);
+  // Tracks whether the first-entry bounce hint has already played.
+  const hintPlayedRef = useRef(false);
 
   // Initialise goalWeight whenever step 5 is entered going forward.
   // Going backward preserves whatever the user already chose.
+  // On first entry, plays a one-time nudge left then snap back so users
+  // discover the ruler is interactive.
   useEffect(() => {
     if (step === 5 && direction === 1) {
       const raw = startWeight || currentWeight || "150";
       const val = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150));
       setGoalWeight(val.toString());
+
+      if (!hintPlayedRef.current) {
+        hintPlayedRef.current = true;
+        // Nudge to a lower value (visually slides left) then snap back
+        const t1 = setTimeout(() => { setGoalWeight((val - 1).toString()); haptic(4); }, 400);
+        const t2 = setTimeout(() => { setGoalWeight(val.toString()); haptic(4); }, 800);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
