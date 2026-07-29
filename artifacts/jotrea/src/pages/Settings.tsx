@@ -128,6 +128,7 @@ export default function Settings() {
         onOpenChange={setChangeMedOpen}
         onConfirm={handleMedConfirmed}
         injectionSiteHistory={user.injectionSiteHistory}
+        currentMedication={medication}
       />
     )}
     <div className="px-5 pt-14 pb-4 space-y-5">

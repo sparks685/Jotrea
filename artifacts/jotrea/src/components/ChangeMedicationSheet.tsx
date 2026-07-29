@@ -23,6 +23,7 @@ interface ChangeMedicationSheetProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (medication: MedicationData) => void;
   injectionSiteHistory?: { site: string; date: string }[];
+  currentMedication?: MedicationData | null;
 }
 
 type View = "select" | "dose";
@@ -32,6 +33,7 @@ export function ChangeMedicationSheet({
   onOpenChange,
   onConfirm,
   injectionSiteHistory,
+  currentMedication,
 }: ChangeMedicationSheetProps) {
   const [view, setView] = useState<View>("select");
   const [search, setSearch] = useState("");
@@ -146,6 +148,30 @@ export function ChangeMedicationSheet({
   const showInjectionSite =
     (!isCustomMed && selectedMed?.formulation === "injection") ||
     (isCustomMed && customFormulation === "injection");
+
+  // Detect whether the newly-selected medication differs from the current one,
+  // so we can warn the user that their dose history will be preserved as-is.
+  const historyWillLookInconsistent = (() => {
+    if (!currentMedication) return false;
+    if (isCustomMed) {
+      // Any custom med is by definition different from whatever is stored
+      return customBrand.trim() !== "" && (
+        customBrand.trim().toLowerCase() !== currentMedication.brandName.toLowerCase() ||
+        parseFloat(customDoseAmt) !== currentMedication.dose
+      );
+    }
+    if (!selectedMed || selectedDose === null) return false;
+    return (
+      selectedMed.id !== currentMedication.id ||
+      selectedDose !== currentMedication.dose
+    );
+  })();
+
+  const historyNoteText = (() => {
+    if (!currentMedication) return "";
+    const oldLabel = `${currentMedication.dose} mg ${currentMedication.brandName}`;
+    return `Your past doses will still show as ${oldLabel}. History is never deleted when you switch.`;
+  })();
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -603,7 +629,34 @@ export function ChangeMedicationSheet({
               </div>
 
               {/* Confirm button */}
-              <div className="px-4 pb-6 pt-2 flex-shrink-0">
+              <div className="px-4 pb-6 pt-2 flex-shrink-0 space-y-3">
+                <AnimatePresence>
+                  {historyWillLookInconsistent && (
+                    <motion.div
+                      key="history-note"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-start gap-2.5 rounded-2xl px-4 py-3"
+                      style={{ backgroundColor: `${BRAND}18` }}
+                      data-testid="history-inconsistency-note"
+                    >
+                      <span
+                        className="text-base leading-none mt-0.5 flex-shrink-0"
+                        aria-hidden="true"
+                      >
+                        📋
+                      </span>
+                      <p
+                        className="text-xs font-medium leading-relaxed"
+                        style={{ color: BRAND }}
+                      >
+                        {historyNoteText}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <Button
                   className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-lg disabled:opacity-40"
                   style={{ backgroundColor: BRAND }}
