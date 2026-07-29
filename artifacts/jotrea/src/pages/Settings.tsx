@@ -48,6 +48,7 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
+  const [changeMedMounted, setChangeMedMounted] = useState(false);
 
   const notifTime = user.notificationTime ?? "09:00";
   const notifAdvance = user.notificationAdvance ?? "1";
@@ -99,6 +100,7 @@ export default function Settings() {
   };
 
   const handleChangeMed = () => {
+    setChangeMedMounted(true);
     setChangeMedOpen(true);
   };
 
@@ -120,11 +122,13 @@ export default function Settings() {
 
   return (
     <>
-    <ChangeMedicationSheet
-      open={changeMedOpen}
-      onOpenChange={setChangeMedOpen}
-      onConfirm={handleMedConfirmed}
-    />
+    {changeMedMounted && (
+      <ChangeMedicationSheet
+        open={changeMedOpen}
+        onOpenChange={setChangeMedOpen}
+        onConfirm={handleMedConfirmed}
+      />
+    )}
     <div className="px-5 pt-14 pb-4 space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
@@ -221,7 +225,7 @@ export default function Settings() {
           <Button
             size="sm"
             className="rounded-xl gap-2"
-            onClick={() => setChangeMedOpen(true)}
+            onClick={handleChangeMed}
             data-testid="setup-med-btn"
           >
             <Syringe size={14} />
