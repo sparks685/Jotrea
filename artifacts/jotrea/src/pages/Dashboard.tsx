@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2 } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
 
   const [showLogForm, setShowLogForm] = useState(false);
+  const [showDoseConfirm, setShowDoseConfirm] = useState(false);
   const [logDate, setLogDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
@@ -86,6 +87,9 @@ export default function Dashboard() {
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const tip = PHARMACY_TIPS[dayOfYear % PHARMACY_TIPS.length];
 
+  const GENERIC_PHARMACIST_NOTE =
+    "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
+
   const handleLogDose = () => {
     const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
     const newDose: DoseEntry = {
@@ -108,8 +112,13 @@ export default function Dashboard() {
     }
 
     trackEvent("dose_logged");
-    setShowLogForm(false);
     setLogNotes("");
+    setShowDoseConfirm(true);
+  };
+
+  const handleCloseLogForm = () => {
+    setShowLogForm(false);
+    setShowDoseConfirm(false);
   };
 
   const handleAddWeight = () => {
@@ -332,7 +341,7 @@ export default function Dashboard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-end"
-            onClick={(e) => e.target === e.currentTarget && setShowLogForm(false)}
+            onClick={(e) => e.target === e.currentTarget && handleCloseLogForm()}
           >
             <motion.div
               initial={{ y: "100%" }}
@@ -342,80 +351,118 @@ export default function Dashboard() {
               className="w-full max-w-md mx-auto bg-card rounded-t-3xl p-6 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-foreground">Log Dose</h3>
+                <h3 className="text-lg font-bold text-foreground">
+                  {showDoseConfirm ? "Dose Logged" : "Log Dose"}
+                </h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
-                  onClick={() => setShowLogForm(false)}
+                  onClick={handleCloseLogForm}
                   data-testid="close-log-form"
                 >
                   <X size={16} className="text-muted-foreground" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                  <Input
-                    type="date"
-                    value={logDate}
-                    onChange={(e) => setLogDate(e.target.value)}
-                    className="rounded-xl"
-                    data-testid="log-date"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Time</label>
-                  <Input
-                    type="time"
-                    value={logTime}
-                    onChange={(e) => setLogTime(e.target.value)}
-                    className="rounded-xl"
-                    data-testid="log-time"
-                  />
-                </div>
-              </div>
-
-              {medInfo?.formulation === "injection" && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {INJECTION_SITES.map((site) => (
-                      <button
-                        key={site}
-                        data-testid={`log-site-${site.toLowerCase().replace(" ", "-")}`}
-                        className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                          logSite === site
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-background text-foreground"
-                        }`}
-                        onClick={() => setLogSite(site)}
-                      >
-                        {site}
-                      </button>
-                    ))}
+              {showDoseConfirm ? (
+                <div className="space-y-4" data-testid="dose-confirm-screen">
+                  <div className="flex flex-col items-center gap-3 py-2">
+                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                      <CheckCircle2 size={28} className="text-secondary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-foreground">
+                        {medication.dose} {medInfo?.unit ?? "mg"} logged
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
+                    </div>
                   </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
+                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                      {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
+                    </p>
+                  </div>
+
+                  <Button
+                    className="w-full h-12 rounded-2xl font-semibold"
+                    onClick={handleCloseLogForm}
+                    data-testid="done-dose-confirm"
+                  >
+                    Done
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                      <Input
+                        type="date"
+                        value={logDate}
+                        onChange={(e) => setLogDate(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="log-date"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Time</label>
+                      <Input
+                        type="time"
+                        value={logTime}
+                        onChange={(e) => setLogTime(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="log-time"
+                      />
+                    </div>
+                  </div>
+
+                  {medInfo?.formulation === "injection" && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {INJECTION_SITES.map((site) => (
+                          <button
+                            key={site}
+                            data-testid={`log-site-${site.toLowerCase().replace(" ", "-")}`}
+                            className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
+                              logSite === site
+                                ? "border-secondary bg-secondary/10 text-secondary"
+                                : "border-border bg-background text-foreground"
+                            }`}
+                            onClick={() => setLogSite(site)}
+                          >
+                            {site}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
+                    <Input
+                      placeholder="How are you feeling?"
+                      value={logNotes}
+                      onChange={(e) => setLogNotes(e.target.value)}
+                      className="rounded-xl"
+                      data-testid="log-notes"
+                    />
+                  </div>
+
+                  <Button
+                    className="w-full h-12 rounded-2xl font-semibold"
+                    onClick={handleLogDose}
+                    data-testid="submit-log-dose"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Log This Dose
+                  </Button>
+                </>
               )}
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
-                <Input
-                  placeholder="How are you feeling?"
-                  value={logNotes}
-                  onChange={(e) => setLogNotes(e.target.value)}
-                  className="rounded-xl"
-                  data-testid="log-notes"
-                />
-              </div>
-
-              <Button
-                className="w-full h-12 rounded-2xl font-semibold"
-                onClick={handleLogDose}
-                data-testid="submit-log-dose"
-              >
-                <Plus size={16} className="mr-2" />
-                Log This Dose
-              </Button>
             </motion.div>
           </motion.div>
         )}

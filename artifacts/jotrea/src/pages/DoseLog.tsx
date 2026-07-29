@@ -10,7 +10,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays, CheckCircle2, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
@@ -26,11 +26,15 @@ export default function DoseLog() {
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showDoseConfirm, setShowDoseConfirm] = useState(false);
   const [view, setView] = useState<"calendar" | "list">("calendar");
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
   const [logNotes, setLogNotes] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const GENERIC_PHARMACIST_NOTE =
+    "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
 
   if (!medication) return null;
 
@@ -58,11 +62,17 @@ export default function DoseLog() {
     if (editingId) {
       setDoses(doses.map((d) => (d.id === editingId ? { ...newDose, id: editingId } : d)));
       setEditingId(null);
+      setShowAdd(false);
     } else {
       setDoses([...doses, newDose]);
+      setShowDoseConfirm(true);
     }
-    setShowAdd(false);
     setLogNotes("");
+  };
+
+  const handleCloseAddForm = () => {
+    setShowAdd(false);
+    setShowDoseConfirm(false);
   };
 
   const openAdd = (dateStr?: string) => {
@@ -265,7 +275,7 @@ export default function DoseLog() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-end"
-            onClick={(e) => e.target === e.currentTarget && setShowAdd(false)}
+            onClick={(e) => e.target === e.currentTarget && handleCloseAddForm()}
           >
             <motion.div
               initial={{ y: "100%" }}
@@ -276,76 +286,112 @@ export default function DoseLog() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-foreground">
-                  {editingId ? "Edit Dose" : "Log Dose"}
+                  {showDoseConfirm ? "Dose Logged" : editingId ? "Edit Dose" : "Log Dose"}
                 </h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
-                  onClick={() => setShowAdd(false)}
+                  onClick={handleCloseAddForm}
                   data-testid="close-add-form"
                 >
                   <X size={16} className="text-muted-foreground" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                  <Input
-                    type="date"
-                    value={selectedDate ?? ""}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="rounded-xl"
-                    data-testid="dose-date-input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Time</label>
-                  <Input
-                    type="time"
-                    value={logTime}
-                    onChange={(e) => setLogTime(e.target.value)}
-                    className="rounded-xl"
-                    data-testid="dose-time-input"
-                  />
-                </div>
-              </div>
-
-              {medInfo?.formulation === "injection" && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {INJECTION_SITES.map((site) => (
-                      <button
-                        key={site}
-                        data-testid={`site-select-${site.toLowerCase().replace(" ", "-")}`}
-                        className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                          logSite === site
-                            ? "border-secondary bg-secondary/10 text-secondary"
-                            : "border-border bg-background text-foreground"
-                        }`}
-                        onClick={() => setLogSite(site)}
-                      >
-                        {site}
-                      </button>
-                    ))}
+              {showDoseConfirm ? (
+                <div className="space-y-4" data-testid="dose-confirm-screen">
+                  <div className="flex flex-col items-center gap-3 py-2">
+                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                      <CheckCircle2 size={28} className="text-secondary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-foreground">
+                        {medication.dose} {medInfo?.unit ?? "mg"} logged
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
+                    </div>
                   </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
+                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                    </div>
+                    <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                      {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
+                    </p>
+                  </div>
+
+                  <Button
+                    className="w-full h-12 rounded-2xl font-semibold"
+                    onClick={handleCloseAddForm}
+                    data-testid="done-dose-confirm"
+                  >
+                    Done
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                      <Input
+                        type="date"
+                        value={selectedDate ?? ""}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="dose-date-input"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Time</label>
+                      <Input
+                        type="time"
+                        value={logTime}
+                        onChange={(e) => setLogTime(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="dose-time-input"
+                      />
+                    </div>
+                  </div>
+
+                  {medInfo?.formulation === "injection" && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {INJECTION_SITES.map((site) => (
+                          <button
+                            key={site}
+                            data-testid={`site-select-${site.toLowerCase().replace(" ", "-")}`}
+                            className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
+                              logSite === site
+                                ? "border-secondary bg-secondary/10 text-secondary"
+                                : "border-border bg-background text-foreground"
+                            }`}
+                            onClick={() => setLogSite(site)}
+                          >
+                            {site}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Notes</label>
+                    <Input
+                      placeholder="Side effects, feelings..."
+                      value={logNotes}
+                      onChange={(e) => setLogNotes(e.target.value)}
+                      className="rounded-xl"
+                      data-testid="dose-notes-input"
+                    />
+                  </div>
+
+                  <Button className="w-full h-12 rounded-2xl font-semibold" onClick={handleAddDose} data-testid="save-dose-btn">
+                    {editingId ? "Save Changes" : "Log Dose"}
+                  </Button>
+                </>
               )}
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Notes</label>
-                <Input
-                  placeholder="Side effects, feelings..."
-                  value={logNotes}
-                  onChange={(e) => setLogNotes(e.target.value)}
-                  className="rounded-xl"
-                  data-testid="dose-notes-input"
-                />
-              </div>
-
-              <Button className="w-full h-12 rounded-2xl font-semibold" onClick={handleAddDose} data-testid="save-dose-btn">
-                {editingId ? "Save Changes" : "Log Dose"}
-              </Button>
             </motion.div>
           </motion.div>
         )}
