@@ -96,7 +96,7 @@ export default function Onboarding() {
   const [startWeight, setStartWeight] = useState("");
   const [startDateGlp, setStartDateGlp] = useState(format(new Date(), "yyyy-MM-dd"));
   
-  const [goalWeight, setGoalWeight] = useState("150");
+  const [goalWeight, setGoalWeight] = useState("");
   const [goalPace, setGoalPace] = useState(1.0);
   
   const [activity, setActivity] = useState("");
@@ -194,20 +194,32 @@ export default function Onboarding() {
   
   // Custom scroll sync for ruler
   const rulerRef = useRef<HTMLDivElement>(null);
-  
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Set initial ruler scroll position only when entering step 5 or changing units.
-  // goalWeight is intentionally NOT a dep — the onScroll handler owns goalWeight updates
-  // and re-running this effect on every goalWeight change creates a runaway feedback loop.
+  // goalWeight/startWeight/currentWeight are intentionally NOT deps — onScroll owns
+  // goalWeight updates; adding them creates a runaway scroll feedback loop.
+  // Double-RAF: first frame lets Framer Motion mount the entering element;
+  // second frame applies scrollLeft after layout is fully computed.
   useEffect(() => {
     if (step === 5) {
-      const minW = heightUnit === "imperial" ? 80 : 30;
-      const index = parseInt(goalWeight) - minW;
-      // Each tick is 40px wide; the left spacer is calc(50% - 20px) so
-      // the center of tick `index` lands at scrollLeft = index * 40.
+      const rMin = heightUnit === "imperial" ? 80 : 30;
+      const rMax = heightUnit === "imperial" ? 400 : 200;
+      // Priority: already-chosen goalWeight → startWeight → currentWeight → 150
+      const raw = goalWeight || startWeight || currentWeight || "150";
+      const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString();
+      if (!goalWeight) setGoalWeight(clamped);
+      const index = parseInt(clamped) - rMin;
+      // Spacer = calc(50vw - 20px); ruler clientWidth = viewport − 48px (px-6 both sides).
+      // Correct formula: scrollLeft = spacer + index×40 + 20 − clientWidth/2
       requestAnimationFrame(() => {
-        if (rulerRef.current) {
-          rulerRef.current.scrollLeft = index * 40;
-        }
+        requestAnimationFrame(() => {
+          if (rulerRef.current) {
+            const el = rulerRef.current;
+            const spacer = window.innerWidth / 2 - 20;
+            el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
+          }
+        });
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -468,7 +480,6 @@ export default function Onboarding() {
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => {
                 if(!startWeight) setStartWeight(currentWeight);
-                if(!goalWeight) setGoalWeight((parseFloat(currentWeight) * 0.8).toFixed(0));
                 handleNext(4);
               }}
             >
@@ -515,7 +526,17 @@ export default function Onboarding() {
               className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={!startWeight}
-              onClick={() => handleNext(5)}
+              onClick={() => {
+                // Pre-initialize goalWeight before step 5 mounts so the ruler opens
+                // centred on the user's starting weight, not on rMin (80 lbs).
+                if (!goalWeight) {
+                  const rMin = heightUnit === "imperial" ? 80 : 30;
+                  const rMax = heightUnit === "imperial" ? 400 : 200;
+                  const raw = startWeight || currentWeight || "150";
+                  setGoalWeight(Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString());
+                }
+                handleNext(5);
+              }}
             >
               Continue
             </Button>
@@ -537,39 +558,60 @@ export default function Onboarding() {
 
             {/* Dream weight display */}
             <div className="text-center mb-6">
-              <span className="text-xs font-medium text-[#D4A574] tracking-widest">Dream weight</span>
+              <span style={{ fontSize: '18px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.06em' }}>Dream weight</span>
               <div className="mt-2 flex items-baseline justify-center gap-2">
                 <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
                 <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
               </div>
             </div>
 
-            {/* Premium ruler — 140px tall: ~100px tick zone + 8px gap + ~32px label zone */}
+            {/* Premium scroll wheel — bordered card + selection band + correct scroll math */}
             <div
-              className="relative w-full"
+              className="relative w-full rounded-2xl overflow-hidden"
               style={{
                 height: '140px',
-                WebkitMaskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
-                maskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
+                border: '1.5px solid rgba(212,165,116,0.35)',
+                boxShadow: '0 4px 24px rgba(212,165,116,0.14), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
+                background: 'rgba(255,252,248,0.65)',
               }}
             >
-              {/* Center needle — glows in brand tan */}
+              {/* Selection band — highlights the chosen tick slot like an iOS picker */}
               <div
-                className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none rounded-full"
+                className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+                style={{
+                  top: '14px',
+                  bottom: '36px',
+                  width: '52px',
+                  background: 'rgba(212,165,116,0.08)',
+                  border: '1px solid rgba(212,165,116,0.28)',
+                  borderRadius: '9px',
+                }}
+              />
+              {/* Center needle */}
+              <div
+                className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-full"
                 style={{
                   width: '2.5px',
                   background: 'linear-gradient(to bottom, rgba(212,165,116,0) 0%, #D4A574 12%, #D4A574 72%, rgba(212,165,116,0.15) 100%)',
                   boxShadow: '0 0 10px rgba(212,165,116,0.55), 0 2px 6px rgba(212,165,116,0.3)',
                 }}
               />
-
+              {/* Scroll container — ruler-scroll targets ::-webkit-scrollbar; mask fades edges */}
               <div
                 ref={rulerRef}
-                className="w-full h-full overflow-x-auto snap-x snap-mandatory"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+                className="ruler-scroll w-full h-full overflow-x-auto"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  scrollSnapType: 'none',
+                  WebkitMaskImage: 'linear-gradient(to right, transparent, black 18%, black 82%, transparent)',
+                  maskImage: 'linear-gradient(to right, transparent, black 18%, black 82%, transparent)',
+                } as React.CSSProperties}
                 onScroll={(e) => {
                   const el = e.currentTarget;
-                  const index = Math.round(el.scrollLeft / 40);
+                  // Spacer = calc(50vw - 20px); correct formula accounts for it:
+                  const spacer = window.innerWidth / 2 - 20;
+                  const index = Math.round((el.scrollLeft + el.clientWidth / 2 - spacer - 20) / 40);
                   let val = rMin + index;
                   if (val < rMin) val = rMin;
                   if (val > rMax) val = rMax;
@@ -577,17 +619,25 @@ export default function Onboarding() {
                     setGoalWeight(val.toString());
                     haptic(5);
                   }
+                  // Manual snap-on-end (replaces CSS snap-mandatory to prevent snap-on-mount)
+                  if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+                  snapTimerRef.current = setTimeout(() => {
+                    const target = spacer + (val - rMin) * 40 + 20 - el.clientWidth / 2;
+                    if (Math.abs(el.scrollLeft - target) > 1) {
+                      el.scrollTo({ left: target, behavior: 'smooth' });
+                    }
+                  }, 60);
                 }}
               >
                 <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
-                <div className="ruler-scroll h-full flex" style={{ width: 'max-content' }}>
+                <div className="h-full flex" style={{ width: 'max-content' }}>
                   <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
                   {rulerNumbers.map(n => {
-                    const activeLb = parseInt(goalWeight);
+                    const activeLb = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
                     const dist = Math.abs(n - activeLb);
                     const is5 = n % 5 === 0;
 
-                    // Height — tall needle at center, tapering outward
+                    // Variable heights for premium 3D drum-wheel illusion
                     let tickH: number;
                     if      (dist === 0)  tickH = 72;
                     else if (dist === 1)  tickH = is5 ? 52 : 38;
@@ -596,17 +646,17 @@ export default function Onboarding() {
                     else if (dist <= 8)   tickH = is5 ? 24 : 12;
                     else                  tickH = is5 ? 18 : 8;
 
-                    // Color: tan → cool gray interpolated by distance
+                    // Color: brand tan at center → cool gray at edges
                     const t  = Math.min(1, dist / 8);
                     const cr = Math.round(212 + (209 - 212) * t);
                     const cg = Math.round(165 + (213 - 165) * t);
                     const cb = Math.round(116 + (219 - 116) * t);
-                    const ca = dist === 0 ? 1 : Math.max(0.14, 0.88 - dist * 0.09);
+                    const ca = dist === 0 ? 1 : Math.max(0.18, 0.88 - dist * 0.09);
 
                     return (
                       <div
                         key={n}
-                        className="snap-center flex-shrink-0"
+                        className="flex-shrink-0"
                         style={{
                           width: '40px',
                           height: '100%',
@@ -616,7 +666,6 @@ export default function Onboarding() {
                           justifyContent: 'flex-end',
                         }}
                       >
-                        {/* Tick bar */}
                         <div style={{
                           width:  dist === 0 ? '3px' : is5 ? '2.5px' : '2px',
                           height: `${tickH}px`,
@@ -624,9 +673,9 @@ export default function Onboarding() {
                           borderRadius: '9999px',
                           flexShrink: 0,
                           boxShadow: dist === 0 ? '0 0 10px rgba(212,165,116,0.5)' : 'none',
-                          transition: 'height 0.12s ease, background-color 0.12s ease',
+                          transition: 'height 0.08s ease, background-color 0.08s ease',
+                          willChange: 'height',
                         }} />
-                        {/* Label zone — fixed 32px so all bar-bottoms align on the same baseline */}
                         <div style={{ height: '32px', marginTop: '8px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
                           {is5 && (
                             <span style={{
@@ -634,7 +683,7 @@ export default function Onboarding() {
                               fontWeight: dist === 0 ? 700 : dist <= 2 ? 500 : 400,
                               color: dist === 0
                                 ? 'hsl(var(--foreground))'
-                                : `rgba(156,163,175,${Math.max(0.25, 0.75 - dist * 0.08)})`,
+                                : `rgba(156,163,175,${Math.max(0.3, 0.75 - dist * 0.08)})`,
                               userSelect: 'none',
                               lineHeight: 1,
                             }}>{n}</span>
