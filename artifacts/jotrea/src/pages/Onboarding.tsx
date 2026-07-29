@@ -352,9 +352,9 @@ export default function Onboarding() {
               </button>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Birthday</h2>
-            <p className="text-muted-foreground mb-8">When's your birthday?</p>
+            <p className="text-muted-foreground mb-6">When's your birthday?</p>
             
-            <div className="flex gap-2 justify-center my-auto bg-card p-6 rounded-3xl border border-border shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+            <div className="flex gap-2 justify-center bg-card p-6 rounded-3xl border border-border shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
               <select value={bMonth} onChange={e => {setBMonth(e.target.value); haptic();}} className="bg-transparent text-2xl font-bold text-center appearance-none outline-none flex-1">
                 {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(2000, i, 1).toLocaleString('default', { month: 'short' })}</option>)}
               </select>
