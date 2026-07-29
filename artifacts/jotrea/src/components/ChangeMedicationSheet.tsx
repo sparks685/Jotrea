@@ -22,6 +22,7 @@ interface ChangeMedicationSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (medication: MedicationData) => void;
+  injectionSiteHistory?: { site: string; date: string }[];
 }
 
 type View = "select" | "dose";
@@ -30,6 +31,7 @@ export function ChangeMedicationSheet({
   open,
   onOpenChange,
   onConfirm,
+  injectionSiteHistory,
 }: ChangeMedicationSheetProps) {
   const [view, setView] = useState<View>("select");
   const [search, setSearch] = useState("");
@@ -50,7 +52,16 @@ export function ChangeMedicationSheet({
 
   // Shared dose-step fields
   const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [injectionSite, setInjectionSite] = useState(INJECTION_SITES[0]);
+
+  const lastUsedSite = (() => {
+    if (!injectionSiteHistory || injectionSiteHistory.length === 0) return INJECTION_SITES[0];
+    // History is append-ordered; the last entry is the most recently used site.
+    const lastSite = injectionSiteHistory[injectionSiteHistory.length - 1].site;
+    // Validate against known sites to guard against stale/unknown legacy values.
+    return INJECTION_SITES.includes(lastSite) ? lastSite : INJECTION_SITES[0];
+  })();
+
+  const [injectionSite, setInjectionSite] = useState(lastUsedSite);
 
   const resetState = () => {
     setView("select");
@@ -66,7 +77,7 @@ export function ChangeMedicationSheet({
     setCustomFrequency("weekly");
     setCustomFreqOther("");
     setStartDate(format(new Date(), "yyyy-MM-dd"));
-    setInjectionSite(INJECTION_SITES[0]);
+    setInjectionSite(lastUsedSite);
   };
 
   const handleOpenChange = (val: boolean) => {
