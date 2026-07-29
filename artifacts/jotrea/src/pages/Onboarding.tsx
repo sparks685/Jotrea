@@ -175,6 +175,8 @@ export default function Onboarding() {
   const lastDragValRef = useRef<number>(150);
   // Tracks whether the first-entry bounce hint has already played.
   const hintPlayedRef = useRef(false);
+  // CSS translateX (px) applied to the ruler card during the drag hint — purely visual.
+  const [rulerHintX, setRulerHintX] = useState(0);
 
   // Initialise goalWeight whenever step 5 is entered going forward.
   // Going backward preserves whatever the user already chose.
@@ -188,9 +190,10 @@ export default function Onboarding() {
 
       if (!hintPlayedRef.current) {
         hintPlayedRef.current = true;
-        // Nudge to a lower value (visually slides left) then snap back
-        const t1 = setTimeout(() => { setGoalWeight((val - 1).toString()); haptic(4); }, 400);
-        const t2 = setTimeout(() => { setGoalWeight(val.toString()); haptic(4); }, 800);
+        // Shift the ruler card right (simulating a leftward drag gesture) then snap back.
+        // goalWeight is never changed — only the visual position animates.
+        const t1 = setTimeout(() => { setRulerHintX(14); haptic(4); }, 400);
+        const t2 = setTimeout(() => { setRulerHintX(0);  haptic(4); }, 750);
         return () => { clearTimeout(t1); clearTimeout(t2); };
       }
     }
@@ -493,6 +496,8 @@ export default function Onboarding() {
                     background:'rgba(255,252,248,0.7)',
                     touchAction:'none',
                     cursor:'ew-resize',
+                    transform:`translateX(${rulerHintX}px)`,
+                    transition:'transform 0.28s ease-out',
                   }}
                     onPointerDown={e => {
                       dragStartXRef.current = e.clientX;
