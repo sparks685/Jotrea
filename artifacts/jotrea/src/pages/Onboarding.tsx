@@ -213,7 +213,7 @@ export default function Onboarding() {
   }, [step]);
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col overflow-hidden" style={{ paddingTop:"env(safe-area-inset-top)", paddingBottom:"env(safe-area-inset-bottom)" }}>
+    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden" style={{ paddingTop:"env(safe-area-inset-top)", paddingBottom:"env(safe-area-inset-bottom)" }}>
 
       {/* Progress bar */}
       <div className="flex-shrink-0 h-[3px] bg-muted/50">
@@ -810,8 +810,7 @@ export default function Onboarding() {
         {/* ─── Step 10: Select Medication ──────────────────────────── */}
         {step === 10 && (
           <motion.div key="s10" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col min-h-0"
-            style={{ paddingTop:"env(safe-area-inset-top)" }}>
+            className="flex-1 flex flex-col min-h-0">
 
             {/* Fixed header */}
             <div className="px-6 pt-3 pb-3 flex-shrink-0">
