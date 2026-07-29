@@ -16,24 +16,59 @@ import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
-class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null; confirmingWipe: boolean }
+> {
   constructor(props: { children: ReactNode }) {
     super(props);
-    this.state = { error: null };
+    this.state = { error: null, confirmingWipe: false };
   }
-  static getDerivedStateFromError(error: Error) { return { error }; }
+  static getDerivedStateFromError(error: Error) { return { error, confirmingWipe: false }; }
   componentDidCatch(error: Error, info: ErrorInfo) { console.error("[PageErrorBoundary]", error, info); }
   render() {
     if (this.state.error) {
+      if (this.state.confirmingWipe) {
+        return (
+          <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center gap-4">
+            <p className="text-sm font-semibold text-destructive">Wipe all data?</p>
+            <p className="text-xs text-muted-foreground">
+              This will permanently delete all your medication, dose, and weight records. This cannot be undone.
+            </p>
+            <button
+              className="text-xs font-semibold px-4 py-2 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { localStorage.clear(); location.replace("/"); }}
+            >
+              Yes, wipe everything
+            </button>
+            <button
+              className="text-xs text-muted-foreground underline"
+              onClick={() => this.setState({ confirmingWipe: false })}
+            >
+              Cancel
+            </button>
+          </div>
+        );
+      }
+
       return (
         <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center gap-4">
           <p className="text-sm font-semibold text-destructive">Something went wrong on this page.</p>
-          <p className="text-xs text-muted-foreground font-mono break-all">{this.state.error.message}</p>
+          <p className="text-xs text-muted-foreground">
+            This is likely a temporary glitch. Try reloading — your data should still be safe.
+          </p>
+          <p className="text-xs text-muted-foreground font-mono break-all opacity-60">{this.state.error.message}</p>
           <button
             className="text-xs font-semibold px-4 py-2 rounded-full border border-border hover:bg-muted/40"
-            onClick={() => { localStorage.clear(); location.replace("/"); }}
+            onClick={() => location.reload()}
           >
-            Reset &amp; Restart
+            Reload page
+          </button>
+          <button
+            className="text-xs text-muted-foreground underline"
+            onClick={() => this.setState({ confirmingWipe: true })}
+          >
+            My data may be corrupted — wipe &amp; restart
           </button>
         </div>
       );
