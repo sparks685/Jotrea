@@ -120,6 +120,16 @@ export default function Onboarding() {
   const [injectionSite, setInjectionSite] = useState(INJECTION_SITES[0]);
   const [reminderEnabled, setReminderEnabled] = useState(true);
 
+  // ── Custom ("Other") medication state ───────────────────────────────────
+  const [isCustomMed, setIsCustomMed] = useState(false);
+  const [customBrand, setCustomBrand] = useState("");
+  const [customGeneric, setCustomGeneric] = useState("");
+  const [customStrength, setCustomStrength] = useState("");
+  const [customFormulation, setCustomFormulation] = useState<"injection"|"pill"|"other">("injection");
+  const [customDoseAmt, setCustomDoseAmt] = useState("");
+  const [customFrequency, setCustomFrequency] = useState("weekly");
+  const [customFreqOther, setCustomFreqOther] = useState("");
+
   const { setMedication } = useMedication();
   const { setDoses } = useDoses();
   const { setWeights } = useWeights();
@@ -145,12 +155,21 @@ export default function Onboarding() {
   );
 
   const handleComplete = () => {
-    if (!selectedMed || !selectedDose) return;
-    setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
     const cw = parseFloat(currentWeight), sw = parseFloat(startWeight) || cw, gw = parseFloat(goalWeight);
-    setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
-    seedDemoData(selectedMed.id, selectedMed.frequency, selectedDose, setDoses, setWeights);
-    trackEvent("onboarding_complete", { medication: selectedMed.genericName });
+    if (isCustomMed) {
+      const freq = customFrequency === "other" ? (customFreqOther || "custom") : customFrequency;
+      const dose = parseFloat(customDoseAmt) || 0;
+      setMedication({ id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true });
+      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
+      seedDemoData("custom", freq, dose, setDoses, setWeights);
+      trackEvent("onboarding_complete", { medication: customBrand || "custom" });
+    } else {
+      if (!selectedMed || !selectedDose) return;
+      setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
+      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
+      seedDemoData(selectedMed.id, selectedMed.frequency, selectedDose, setDoses, setWeights);
+      trackEvent("onboarding_complete", { medication: selectedMed.genericName });
+    }
   };
 
   // ── Goal Weight Ruler — state-driven drag (no scroll position math) ────────
@@ -779,80 +798,233 @@ export default function Onboarding() {
         {/* ─── Step 10: Select Medication ──────────────────────────── */}
         {step === 10 && (
           <motion.div key="s10" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col">
-            <div className="px-6 pt-3 pb-3">
-              <div className="mb-5"><BackBtn onBack={back} /></div>
-              <StepBadge icon={<Syringe size={20}/>} />
-              <h2 className="text-[28px] font-black text-foreground leading-tight">Your medication</h2>
-              <p className="text-muted-foreground text-sm mt-1 mb-4">Select your GLP-1 medication.</p>
-              <div className="relative">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
-                <Input type="search" placeholder="Search medications..." value={search} onChange={e=>setSearch(e.target.value)}
-                  className="pl-10 rounded-xl h-12 bg-card shadow-sm border-border/60"/>
+            className="flex-1 flex flex-col min-h-0"
+            style={{ paddingTop:"env(safe-area-inset-top)" }}>
+
+            {/* Fixed header */}
+            <div className="px-6 pt-3 pb-3 flex-shrink-0">
+              <div className="mb-5">
+                <BackBtn onBack={() => { if (isCustomMed) { setIsCustomMed(false); } else { back(); } }} />
               </div>
-            </div>
-            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-5">
-              {Object.entries(filteredGrouped).map(([generic, meds]) => (
-                <div key={generic}>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">{generic}</p>
-                  <div className="space-y-2">
-                    {meds.map(med => {
-                      const sel = selectedMed?.id===med.id;
-                      return (
-                        <motion.button key={med.id} whileTap={{ scale:0.98 }}
-                          className="w-full text-left rounded-2xl p-4 border-2 transition-all"
-                          style={{ backgroundColor:sel?`${BRAND}0e`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", boxShadow:sel?`0 4px 16px ${BRAND}25`:"0 1px 4px rgba(0,0,0,0.04)" }}
-                          onClick={() => { setSelectedMed(med); haptic(); nav(11); }}>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-bold text-foreground">{med.brandNames.join(", ")}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{generic}</p>
-                            </div>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
-                              style={{ background:med.formulation==="injection"?`${BRAND}18`:"#3b82f618", color:med.formulation==="injection"?BRAND:"#3b82f6" }}>
-                              {med.formulation==="injection"?<Syringe size={10}/>:<Pill size={10}/>}{med.formulation}
-                            </span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+              <StepBadge icon={isCustomMed ? <Pill size={20}/> : <Syringe size={20}/>} />
+              <h2 className="text-[28px] font-black text-foreground leading-tight">
+                {isCustomMed ? "Enter your medication" : "Your medication"}
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1 mb-4">
+                {isCustomMed ? "Tell us what you're taking." : "Select your GLP-1 medication."}
+              </p>
+              {!isCustomMed && (
+                <div className="relative">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                  <Input type="search" placeholder="Search medications..." value={search} onChange={e=>setSearch(e.target.value)}
+                    className="pl-10 rounded-xl h-12 bg-card shadow-sm border-border/60"/>
                 </div>
-              ))}
+              )}
+            </div>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto px-6 pb-8">
+              <AnimatePresence mode="wait" initial={false}>
+                {!isCustomMed ? (
+                  <motion.div key="list" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.15 }}
+                    className="space-y-5">
+                    {Object.entries(filteredGrouped).map(([generic, meds]) => (
+                      <div key={generic}>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">{generic}</p>
+                        <div className="space-y-2">
+                          {meds.map(med => {
+                            const isPill = med.formulation === "pill";
+                            const sel = selectedMed?.id === med.id;
+                            return (
+                              <motion.button key={med.id} whileTap={{ scale:0.98 }}
+                                className="w-full text-left rounded-2xl p-4 border-2 transition-all"
+                                style={{ backgroundColor:sel?`${BRAND}0e`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", boxShadow:sel?`0 4px 16px ${BRAND}25`:"0 1px 4px rgba(0,0,0,0.04)" }}
+                                onClick={() => { setSelectedMed(med); setIsCustomMed(false); haptic(); nav(11); }}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-foreground truncate">{med.brandNames.join(", ")}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{generic}</p>
+                                  </div>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex-shrink-0"
+                                    style={{ background:isPill?"#3b82f618":`${BRAND}18`, color:isPill?"#3b82f6":BRAND }}>
+                                    {isPill ? <Pill size={10}/> : <Syringe size={10}/>}
+                                    {isPill ? "PILL" : "SHOT"}
+                                  </span>
+                                </div>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Other card */}
+                    <div>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Not listed?</p>
+                      <motion.button whileTap={{ scale:0.98 }}
+                        className="w-full text-left rounded-2xl p-4 border-2 transition-all"
+                        style={{ backgroundColor:"hsl(var(--card))", borderColor:"hsl(var(--border))", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}
+                        onClick={() => { setIsCustomMed(true); setSelectedMed(null); haptic(); }}>
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-bold text-foreground">Other medication</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Enter your own brand & dose</p>
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider flex-shrink-0"
+                            style={{ background:"hsl(var(--muted))", color:"hsl(var(--muted-foreground))" }}>
+                            CUSTOM
+                          </span>
+                        </div>
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* ── Custom medication form ── */
+                  <motion.div key="custom-form" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:12 }} transition={{ duration:0.2 }}
+                    className="space-y-5 pt-1">
+
+                    {/* Brand name */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Brand Name *</label>
+                      <Input placeholder="e.g. Ozempic, Wegovy, Mounjaro…" value={customBrand} onChange={e=>setCustomBrand(e.target.value)}
+                        className="rounded-xl h-12 bg-card shadow-sm border-border/60"/>
+                    </div>
+
+                    {/* Generic name */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Generic / Active Ingredient</label>
+                      <Input placeholder="e.g. Semaglutide, Tirzepatide…" value={customGeneric} onChange={e=>setCustomGeneric(e.target.value)}
+                        className="rounded-xl h-12 bg-card shadow-sm border-border/60"/>
+                    </div>
+
+                    {/* Strength */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Strength</label>
+                      <Input placeholder="e.g. 2.5 mg, 10 mcg…" value={customStrength} onChange={e=>setCustomStrength(e.target.value)}
+                        className="rounded-xl h-12 bg-card shadow-sm border-border/60"/>
+                    </div>
+
+                    {/* Formulation */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Formulation</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([["injection","💉","Injection"],["pill","💊","Pill"],["other","🔬","Other"]] as const).map(([val,emoji,label]) => {
+                          const sel = customFormulation === val;
+                          return (
+                            <motion.button key={val} whileTap={{ scale:0.95 }}
+                              onClick={() => { setCustomFormulation(val); haptic(); }}
+                              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all"
+                              style={{ backgroundColor:sel?`${BRAND}12`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))" }}>
+                              <span className="text-xl">{emoji}</span>
+                              <span className={`text-xs font-bold ${sel?"text-foreground":"text-muted-foreground"}`}>{label}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-2 disabled:opacity-40"
+                      style={{ backgroundColor:BRAND }}
+                      disabled={!customBrand.trim()}
+                      onClick={() => { haptic(); nav(11); }}>
+                      Continue →
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
 
-        {/* ─── Step 11: Med Info ───────────────────────────────────── */}
-        {step === 11 && selectedMed && (
+        {/* ─── Step 11: Set Dose ───────────────────────────────────── */}
+        {step === 11 && (selectedMed || isCustomMed) && (
           <motion.div key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col px-6 pt-3 pb-6 overflow-y-auto justify-center">
-            <div className="mb-6"><BackBtn onBack={back} /></div>
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 overflow-y-auto">
+            <div className="mb-6 mt-2"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Pill size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-0.5 leading-tight">Set your dose</h2>
-            <p className="text-muted-foreground text-sm mb-7">{selectedMed.brandNames[0]}</p>
+            <p className="text-muted-foreground text-sm mb-7">
+              {isCustomMed ? customBrand || "Custom medication" : selectedMed?.brandNames[0]}
+            </p>
 
             <div className="space-y-7">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {selectedMed.doses.map((d: number) => (
-                    <motion.button key={d} whileTap={{ scale:0.95 }}
-                      className="rounded-2xl py-3.5 text-sm font-bold border-2 transition-all"
-                      style={{ backgroundColor:selectedDose===d?BRAND:"hsl(var(--card))", borderColor:selectedDose===d?BRAND:"hsl(var(--border))", color:selectedDose===d?"white":"hsl(var(--foreground))", boxShadow:selectedDose===d?`0 4px 16px ${BRAND}40`:"0 1px 3px rgba(0,0,0,0.04)" }}
-                      onClick={() => { setSelectedDose(d); haptic(); }}>
-                      {d} {selectedMed.unit}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
 
+              {/* ── Standard med: pre-defined dose buttons ── */}
+              {!isCustomMed && selectedMed && (
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedMed.doses.map((d: number) => (
+                      <motion.button key={d} whileTap={{ scale:0.95 }}
+                        className="rounded-2xl py-3.5 text-sm font-bold border-2 transition-all"
+                        style={{ backgroundColor:selectedDose===d?BRAND:"hsl(var(--card))", borderColor:selectedDose===d?BRAND:"hsl(var(--border))", color:selectedDose===d?"white":"hsl(var(--foreground))", boxShadow:selectedDose===d?`0 4px 16px ${BRAND}40`:"0 1px 3px rgba(0,0,0,0.04)" }}
+                        onClick={() => { setSelectedDose(d); haptic(); }}>
+                        {d} {selectedMed.unit}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Custom med: free-entry dose + frequency ── */}
+              {isCustomMed && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dose Amount *</label>
+                    <div className="flex gap-3">
+                      <Input
+                        type="number" inputMode="decimal" placeholder="e.g. 2.5"
+                        value={customDoseAmt} onChange={e=>setCustomDoseAmt(e.target.value)}
+                        className="flex-1 rounded-xl h-12 bg-card shadow-sm border-border/60"/>
+                      <div className="flex items-center justify-center px-4 rounded-xl border border-border/60 bg-card shadow-sm text-sm font-bold text-muted-foreground">
+                        {customStrength ? customStrength.replace(/[\d.]/g,"").trim() || "mg" : "mg"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dosing Frequency</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { val:"weekly", label:"Weekly" },
+                        { val:"daily", label:"Daily" },
+                        { val:"twice-daily", label:"Twice Daily" },
+                        { val:"monthly", label:"Monthly" },
+                        { val:"other", label:"Other…" },
+                      ].map(opt => {
+                        const sel = customFrequency === opt.val;
+                        return (
+                          <motion.button key={opt.val} whileTap={{ scale:0.96 }}
+                            onClick={() => { setCustomFrequency(opt.val); haptic(); }}
+                            className="py-3 rounded-2xl text-sm font-bold border-2 transition-all"
+                            style={{ backgroundColor:sel?`${BRAND}12`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", color:sel?BRAND:"hsl(var(--muted-foreground))" }}>
+                            {opt.label}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                    <AnimatePresence>
+                      {customFrequency === "other" && (
+                        <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }} exit={{ opacity:0, height:0 }} className="overflow-hidden">
+                          <Input placeholder="e.g. Every 10 days, twice weekly…"
+                            value={customFreqOther} onChange={e=>setCustomFreqOther(e.target.value)}
+                            className="rounded-xl h-12 bg-card shadow-sm border-border/60 mt-2"/>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              )}
+
+              {/* Start date — shared */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Start Date</label>
                 <Input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} className="rounded-xl h-12 bg-card shadow-sm border-border/60"/>
               </div>
 
-              {selectedMed.formulation==="injection" && (
+              {/* Injection site — shown for injection formulations */}
+              {((!isCustomMed && selectedMed?.formulation==="injection") || (isCustomMed && customFormulation==="injection")) && (
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">First Injection Site</label>
                   <div className="flex gap-3 items-center">
@@ -877,9 +1049,10 @@ export default function Onboarding() {
                 </div>
               )}
 
+              {/* Reminder toggle — shared */}
               <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border/60 shadow-sm">
                 <div>
-                  <p className="text-sm font-bold text-foreground">Injection Reminders</p>
+                  <p className="text-sm font-bold text-foreground">Dose Reminders</p>
                   <p className="text-xs text-muted-foreground mt-0.5">Get notified on dose days</p>
                 </div>
                 <button onClick={() => { setReminderEnabled(!reminderEnabled); haptic(); }}
@@ -892,7 +1065,11 @@ export default function Onboarding() {
               </div>
             </div>
 
-            <ContinueBtn disabled={!selectedDose} onClick={() => nav(12)}>Craft My Plan →</ContinueBtn>
+            <ContinueBtn
+              disabled={isCustomMed ? (!customDoseAmt.trim() || (customFrequency==="other" && !customFreqOther.trim())) : !selectedDose}
+              onClick={() => nav(12)}>
+              Craft My Plan →
+            </ContinueBtn>
           </motion.div>
         )}
 
