@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – iPad S4 Weight Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 2064px; height: 2752px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 72px 144px 0; font-size: 60px; font-weight: 600;
+  }
+  .caption-band {
+    margin: 90px 144px 0;
+    background: linear-gradient(135deg, #86A89A 0%, #6B9486 100%);
+    border-radius: 72px; padding: 96px 144px; text-align: center;
+  }
+  .caption-band h1 { font-size: 132px; font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -4px; }
+  .caption-band p { font-size: 66px; font-weight: 500; color: rgba(255,255,255,0.88); margin-top: 30px; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin: 90px 144px 0;
+  }
+  .page-header h2 { font-size: 108px; font-weight: 900; color: #1A1D3D; letter-spacing: -3px; }
+  .page-header p { font-size: 54px; color: #6E7585; margin-top: 18px; }
+  .add-btn {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: #D4A574; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 12px 36px rgba(212,165,116,0.42);
+  }
+
+  .stats-row { display: flex; gap: 48px; margin: 72px 144px 0; }
+  .stat-card {
+    flex: 1; background: #fff; border-radius: 60px;
+    padding: 66px 48px; text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+  }
+  .stat-label { font-size: 48px; color: #6E7585; margin-bottom: 24px; }
+  .stat-value { font-size: 96px; font-weight: 900; color: #1A1D3D; letter-spacing: -2px; }
+  .stat-unit { font-size: 48px; color: #86A89A; font-weight: 600; margin-top: 8px; }
+
+  .chart-card {
+    margin: 60px 144px 0; background: #fff; border-radius: 72px; padding: 84px;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.06);
+  }
+  .chart-card h3 { font-size: 72px; font-weight: 700; color: #1A1D3D; margin-bottom: 54px; }
+
+  .goal-card {
+    margin: 60px 144px 0; background: #fff; border-radius: 72px; padding: 84px;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.06);
+  }
+  .goal-card h3 { font-size: 72px; font-weight: 700; color: #1A1D3D; margin-bottom: 18px; }
+  .goal-sub { font-size: 54px; color: #6E7585; margin-bottom: 60px; }
+  .progress-bar { height: 36px; background: #F7F2EA; border-radius: 18px; overflow: hidden; margin-bottom: 30px; }
+  .progress-fill { height: 100%; width: 17%; background: linear-gradient(90deg, #C4956A, #86A89A); border-radius: 18px; }
+  .progress-labels { display: flex; justify-content: space-between; }
+  .progress-labels span { font-size: 48px; color: #6E7585; }
+  .progress-labels strong { font-size: 48px; color: #D4A574; font-weight: 700; }
+
+  .history { margin: 60px 144px 0; }
+  .history h3 { font-size: 72px; font-weight: 700; color: #1A1D3D; margin-bottom: 42px; }
+  .history-item {
+    background: #fff; border-radius: 48px; padding: 60px 72px;
+    margin-bottom: 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+  .history-date { font-size: 60px; font-weight: 600; color: #1A1D3D; }
+  .history-weight { font-size: 84px; font-weight: 900; color: #1A1D3D; letter-spacing: -2px; }
+  .history-change { font-size: 54px; color: #86A89A; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:24px;align-items:center;">
+    <svg width="54" height="38" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="84" height="38" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<div class="caption-band">
+  <h1>Watch the Pounds Drop</h1>
+  <p>Every weigh-in tells your story.</p>
+</div>
+
+<div class="page-header">
+  <div>
+    <h2>Weight Tracker</h2>
+    <p>July 2026 · Goal: 150 lbs</p>
+  </div>
+  <div class="add-btn">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Total lost</div>
+    <div class="stat-value">−9.4</div>
+    <div class="stat-unit">lbs</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">This week</div>
+    <div class="stat-value">−2.3</div>
+    <div class="stat-unit">lbs</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">BMI</div>
+    <div class="stat-value">29.2</div>
+    <div class="stat-unit">↓ trending</div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <h3>Weight Trend (8 weeks)</h3>
+  <svg width="1680" height="400" viewBox="0 0 1680 400">
+    <defs>
+      <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#86A89A" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#86A89A" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <line x1="0" y1="50" x2="1680" y2="50" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="130" x2="1680" y2="130" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="210" x2="1680" y2="210" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="290" x2="1680" y2="290" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="355" x2="1680" y2="355" stroke="#EDE8E2" stroke-width="2"/>
+    <text x="60" y="55" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">218</text>
+    <text x="60" y="135" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">215</text>
+    <text x="60" y="215" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">212</text>
+    <text x="60" y="295" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">209</text>
+    <line x1="0" y1="310" x2="1680" y2="310" stroke="#D4A574" stroke-width="3" stroke-dasharray="16 10" opacity="0.45"/>
+    <path d="M120,305 L360,278 L600,250 L840,222 L1080,196 L1320,172 L1560,150 L1560,355 L120,355Z" fill="url(#wg)"/>
+    <polyline points="120,305 360,278 600,250 840,222 1080,196 1320,172 1560,150"
+      fill="none" stroke="#86A89A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="120" cy="305" r="12" fill="#86A89A" opacity="0.6"/>
+    <circle cx="600" cy="250" r="12" fill="#86A89A" opacity="0.75"/>
+    <circle cx="1080" cy="196" r="12" fill="#86A89A" opacity="0.88"/>
+    <circle cx="1560" cy="150" r="16" fill="#fff" stroke="#86A89A" stroke-width="6"/>
+    <rect x="1464" y="92" width="192" height="56" rx="12" fill="#1A1D3D"/>
+    <text x="1560" y="128" text-anchor="middle" font-size="30" fill="#fff" font-weight="700" font-family="Inter,sans-serif">205.6 lbs</text>
+    <text x="120" y="390" text-anchor="middle" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">Jun 3</text>
+    <text x="600" y="390" text-anchor="middle" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">Jun 24</text>
+    <text x="1080" y="390" text-anchor="middle" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">Jul 15</text>
+    <text x="1560" y="390" text-anchor="middle" font-size="30" fill="#6E7585" font-family="Inter,sans-serif">Jul 29</text>
+  </svg>
+</div>
+
+<div class="goal-card">
+  <h3>Goal Progress</h3>
+  <div class="goal-sub">205.6 lbs → 150 lbs goal · 17% there</div>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+  <div class="progress-labels">
+    <span>Start: 215 lbs</span>
+    <strong>17% reached</strong>
+    <span>Goal: 150 lbs</span>
+  </div>
+</div>
+
+<div class="history">
+  <h3>Recent Entries</h3>
+  <div class="history-item">
+    <div><div class="history-date">Today, Jul 29</div></div>
+    <div style="text-align:right;"><div class="history-weight">205.6</div><div class="history-change">−2.3 lbs this week</div></div>
+  </div>
+  <div class="history-item">
+    <div><div class="history-date">Jul 22</div></div>
+    <div style="text-align:right;"><div class="history-weight">207.9</div><div class="history-change">−2.1 lbs</div></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – iPad S3 Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 2064px; height: 2752px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 72px 144px 0; font-size: 60px; font-weight: 600;
+  }
+  .caption-band {
+    margin: 90px 144px 0;
+    background: linear-gradient(135deg, #1A1D3D 0%, #2D3163 100%);
+    border-radius: 72px; padding: 96px 144px; text-align: center;
+  }
+  .caption-band h1 { font-size: 132px; font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -4px; }
+  .caption-band p { font-size: 66px; font-weight: 500; color: rgba(255,255,255,0.78); margin-top: 30px; }
+
+  .app-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin: 90px 144px 0;
+  }
+  .app-header h2 { font-size: 108px; font-weight: 900; color: #1A1D3D; letter-spacing: -3px; }
+  .app-header p { font-size: 54px; color: #6E7585; margin-top: 18px; }
+  .weekly-pill {
+    background: rgba(212,165,116,0.12); border-radius: 36px;
+    padding: 30px 66px; font-size: 54px; font-weight: 700; color: #D4A574;
+  }
+
+  /* Two-column layout for iPad */
+  .two-col { display: flex; gap: 72px; margin: 72px 144px 0; }
+  .col-left { flex: 1.1; display: flex; flex-direction: column; gap: 60px; }
+  .col-right { flex: 1; display: flex; flex-direction: column; gap: 60px; }
+
+  .ring-card {
+    background: #fff; border-radius: 72px; padding: 84px;
+    box-shadow: 0 16px 60px rgba(212,165,116,0.14);
+    display: flex; flex-direction: column; align-items: center; gap: 42px;
+  }
+  .ring-label { font-size: 54px; font-weight: 500; color: #6E7585; }
+  .ring-sub { font-size: 60px; font-weight: 700; color: #D4A574; text-align: center; }
+
+  .log-btn {
+    background: linear-gradient(135deg, #C4956A, #D4A574); border-radius: 60px;
+    padding: 84px; display: flex; align-items: center; justify-content: center; gap: 48px;
+    box-shadow: 0 16px 48px rgba(212,165,116,0.38);
+  }
+  .log-btn span { font-size: 78px; font-weight: 800; color: #fff; }
+
+  .stats-row { display: flex; gap: 42px; }
+  .stat-card {
+    flex: 1; background: #fff; border-radius: 60px;
+    padding: 60px 42px; text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+  }
+  .stat-label { font-size: 48px; color: #6E7585; margin-bottom: 24px; }
+  .stat-value { font-size: 96px; font-weight: 900; color: #1A1D3D; letter-spacing: -2px; }
+  .stat-unit { font-size: 48px; color: #D4A574; font-weight: 600; margin-top: 8px; }
+
+  .chart-card {
+    background: #fff; border-radius: 72px; padding: 84px;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.05);
+  }
+  .chart-card h3 { font-size: 66px; font-weight: 700; color: #1A1D3D; margin-bottom: 48px; }
+
+  .nav-hint {
+    margin: 72px 144px 0; background: #F7F2EA; border-radius: 60px;
+    padding: 66px 144px;
+    display: flex; justify-content: space-around; align-items: center;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .nav-label { font-size: 46px; font-weight: 600; }
+  .nav-label-active { font-size: 46px; font-weight: 700; color: #D4A574; }
+</style>
+</head>
+<body>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:24px;align-items:center;">
+    <svg width="54" height="38" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="84" height="38" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<div class="caption-band">
+  <h1>Never Miss a Dose</h1>
+  <p>Your countdown. Your schedule. Your control.</p>
+</div>
+
+<div class="app-header">
+  <div>
+    <h2>Good Morning</h2>
+    <p>Ozempic · 0.5 mg · Weekly</p>
+  </div>
+  <div class="weekly-pill">Weekly</div>
+</div>
+
+<div class="two-col">
+  <div class="col-left">
+    <div class="ring-card">
+      <div class="ring-label">Next dose in</div>
+      <svg width="540" height="540" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#F7F2EA" stroke-width="14"/>
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#D4A574" stroke-width="14"
+          stroke-dasharray="553" stroke-dashoffset="158"
+          stroke-linecap="round" transform="rotate(-90 100 100)"/>
+        <text x="100" y="88" text-anchor="middle" font-size="54" font-weight="900" fill="#1A1D3D" font-family="Inter,sans-serif">5</text>
+        <text x="100" y="130" text-anchor="middle" font-size="22" font-weight="500" fill="#6E7585" font-family="Inter,sans-serif">days left</text>
+      </svg>
+      <div class="ring-sub">Next dose: Fri, Aug 1 · Abdomen</div>
+    </div>
+
+    <div class="log-btn">
+      <svg width="84" height="84" viewBox="0 0 24 24" fill="none"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="#fff" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span>Log Today's Dose</span>
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value">4</div>
+        <div class="stat-unit">weeks 🔥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Lost</div>
+        <div class="stat-value">−9.4</div>
+        <div class="stat-unit">lbs total</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Weight Trend ↓ 9.4 lbs</h3>
+      <svg width="780" height="340" viewBox="0 0 780 340">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#D4A574" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#D4A574" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="60" x2="780" y2="60" stroke="#F7F2EA" stroke-width="2"/>
+        <line x1="0" y1="130" x2="780" y2="130" stroke="#F7F2EA" stroke-width="2"/>
+        <line x1="0" y1="200" x2="780" y2="200" stroke="#F7F2EA" stroke-width="2"/>
+        <line x1="0" y1="270" x2="780" y2="270" stroke="#EDE8E2" stroke-width="2"/>
+        <path d="M40,238 L195,212 L350,184 L510,160 L670,138 L670,270 L40,270Z" fill="url(#grad)"/>
+        <polyline points="40,238 195,212 350,184 510,160 670,138"
+          fill="none" stroke="#D4A574" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="40" cy="238" r="10" fill="#D4A574" opacity="0.6"/>
+        <circle cx="195" cy="212" r="10" fill="#D4A574" opacity="0.75"/>
+        <circle cx="350" cy="184" r="10" fill="#D4A574" opacity="0.88"/>
+        <circle cx="510" cy="160" r="10" fill="#D4A574"/>
+        <circle cx="670" cy="138" r="14" fill="#fff" stroke="#D4A574" stroke-width="5"/>
+        <rect x="594" y="78" width="162" height="52" rx="10" fill="#1A1D3D"/>
+        <text x="675" y="112" text-anchor="middle" font-size="26" fill="#fff" font-weight="700" font-family="Inter,sans-serif">205.6 lbs</text>
+        <text x="40" y="316" text-anchor="middle" font-size="26" fill="#6E7585" font-family="Inter,sans-serif">Jun 3</text>
+        <text x="350" y="316" text-anchor="middle" font-size="26" fill="#6E7585" font-family="Inter,sans-serif">Jul 1</text>
+        <text x="670" y="316" text-anchor="middle" font-size="26" fill="#6E7585" font-family="Inter,sans-serif">Jul 29</text>
+      </svg>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Dose</div>
+        <div class="stat-value">0.5</div>
+        <div class="stat-unit">mg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">BMI</div>
+        <div class="stat-value">29.2</div>
+        <div class="stat-unit">↓ trending</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-hint">
+  <div class="nav-item">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#D4A574" stroke-width="2.5" fill="rgba(212,165,116,0.15)"/></svg>
+    <span class="nav-label-active">Home</span>
+  </div>
+  <div class="nav-item">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#9CA3AF" stroke-width="2.5"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span class="nav-label" style="color:#9CA3AF">Log</span>
+  </div>
+  <div class="nav-item">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="nav-label" style="color:#9CA3AF">Weight</span>
+  </div>
+  <div class="nav-item">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#9CA3AF" stroke-width="2.5"/><path d="M12 8v4l3 3" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span class="nav-label" style="color:#9CA3AF">Meds</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – iPad S1 Welcome</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 2064px; height: 2752px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 72px 144px 0; font-size: 60px; font-weight: 600;
+  }
+  .status-icons { display: flex; gap: 24px; align-items: center; }
+  .progress-bar { height: 10px; background: #EDE8E2; margin-top: 24px; }
+
+  .caption-band {
+    margin: 90px 144px 0;
+    background: linear-gradient(135deg, #C4956A 0%, #D4A574 100%);
+    border-radius: 72px; padding: 96px 144px; text-align: center;
+  }
+  .caption-band h1 { font-size: 132px; font-weight: 900; color: #fff; line-height: 1.1; letter-spacing: -4px; }
+  .caption-band p { font-size: 66px; font-weight: 500; color: rgba(255,255,255,0.88); margin-top: 30px; line-height: 1.35; }
+
+  /* Two-column layout for iPad */
+  .two-col { display: flex; gap: 72px; margin: 90px 144px 0; align-items: flex-start; }
+  .col-left { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 72px; }
+  .col-right { flex: 1; }
+
+  .app-icon {
+    width: 288px; height: 288px;
+    background: linear-gradient(135deg, #C4956A, #D4A574);
+    border-radius: 72px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 24px 60px rgba(196,149,106,0.42);
+  }
+  .app-title { font-size: 156px; font-weight: 900; color: #1A1D3D; letter-spacing: -4px; }
+  .app-sub { font-size: 60px; font-weight: 500; color: #6E7585; margin-top: 18px; text-align: center; }
+
+  /* Feature list card */
+  .feature-card {
+    background: #fff; border-radius: 72px;
+    padding: 84px 96px; border: 2px solid #EDE8E2;
+    display: flex; flex-direction: column; gap: 54px;
+    box-shadow: 0 16px 60px rgba(196,149,106,0.12);
+  }
+  .feature-item { display: flex; align-items: center; gap: 54px; }
+  .check-dot {
+    width: 90px; height: 90px; border-radius: 50%; background: #D4A574;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .feature-text { font-size: 60px; font-weight: 600; color: #1A1D3D; }
+
+  .cta-btn {
+    width: 100%; background: #D4A574; border-radius: 60px;
+    padding: 72px 0; text-align: center;
+    box-shadow: 0 16px 48px rgba(212,165,116,0.4); margin-top: 72px;
+  }
+  .cta-btn span { font-size: 72px; font-weight: 800; color: #fff; }
+
+  .bottom-band {
+    margin: 72px 144px 0; background: #F7F2EA; border-radius: 60px;
+    padding: 72px 144px;
+    display: flex; align-items: center; justify-content: space-between; gap: 48px;
+  }
+  .bottom-band p { font-size: 54px; font-weight: 500; color: #6E7585; line-height: 1.4; }
+  .free-badge {
+    background: linear-gradient(135deg, #D4A574, #C4956A); border-radius: 36px;
+    padding: 30px 60px; flex-shrink: 0; font-size: 54px; font-weight: 800; color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="status-bar">
+  <span>9:41</span>
+  <div class="status-icons">
+    <svg width="54" height="38" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="84" height="38" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="60" y="9" width="6" height="12" rx="3" fill="#1A1D3D" opacity="0.4"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+<div class="progress-bar"></div>
+
+<div class="caption-band">
+  <h1>Your GLP-1 Journey, Simplified</h1>
+  <p>Track every dose. Reach every goal.</p>
+</div>
+
+<div class="two-col">
+  <div class="col-left">
+    <div class="app-icon">
+      <svg width="144" height="144" viewBox="0 0 24 24" fill="none">
+        <path d="M4.5 19.5l7-7m0 0l2-2m-2 2l-2-2m-5 9l2-2m7-7l3-3a2 2 0 00-3-3l-3 3m3 3l-1 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div style="text-align:center;">
+      <div class="app-title">Jotrea</div>
+      <div class="app-sub">Your GLP-1 Journey, Simplified</div>
+    </div>
+    <div class="cta-btn"><span>Start Your Journey →</span></div>
+  </div>
+
+  <div class="col-right">
+    <div class="feature-card">
+      <div class="feature-item">
+        <div class="check-dot"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 8" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="feature-text">Track doses effortlessly</span>
+      </div>
+      <div class="feature-item">
+        <div class="check-dot"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 8" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="feature-text">Monitor your weight progress</span>
+      </div>
+      <div class="feature-item">
+        <div class="check-dot"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 8" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="feature-text">Stay on schedule, every week</span>
+      </div>
+      <div class="feature-item">
+        <div class="check-dot"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 8" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="feature-text">Pharmacist-curated guidance</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-band">
+  <p>Ozempic, Mounjaro, Wegovy, Zepbound &amp; 7 more supported</p>
+  <div class="free-badge">Free</div>
+</div>
+
+</body>
+</html>
