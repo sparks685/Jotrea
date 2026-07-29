@@ -195,17 +195,23 @@ export default function Onboarding() {
   // Custom scroll sync for ruler
   const rulerRef = useRef<HTMLDivElement>(null);
   
-  // Fix initial ruler position
+  // Set initial ruler scroll position only when entering step 5 or changing units.
+  // goalWeight is intentionally NOT a dep — the onScroll handler owns goalWeight updates
+  // and re-running this effect on every goalWeight change creates a runaway feedback loop.
   useEffect(() => {
-    if (step === 5 && rulerRef.current) {
+    if (step === 5) {
       const minW = heightUnit === "imperial" ? 80 : 30;
-      const target = parseInt(goalWeight);
-      const index = target - minW;
-      const itemWidth = 40;
-      const centerOffset = rulerRef.current.clientWidth / 2;
-      rulerRef.current.scrollLeft = (index * itemWidth) - centerOffset + (itemWidth / 2);
+      const index = parseInt(goalWeight) - minW;
+      // Each tick is 40px wide; the left spacer is calc(50% - 20px) so
+      // the center of tick `index` lands at scrollLeft = index * 40.
+      requestAnimationFrame(() => {
+        if (rulerRef.current) {
+          rulerRef.current.scrollLeft = index * 40;
+        }
+      });
     }
-  }, [step, heightUnit, goalWeight]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, heightUnit]);
 
   const rulerNumbers = [];
   const rMin = heightUnit === "imperial" ? 80 : 30;
@@ -542,9 +548,8 @@ export default function Onboarding() {
                   className="w-full h-full overflow-x-auto hide-scrollbar flex items-center snap-x snap-mandatory"
                   onScroll={(e) => {
                     const el = e.currentTarget;
-                    const centerOffset = el.clientWidth / 2;
-                    const centerPos = el.scrollLeft + centerOffset;
-                    const index = Math.round(centerPos / 40);
+                    // scrollLeft = index * 40  →  index = scrollLeft / 40
+                    const index = Math.round(el.scrollLeft / 40);
                     let val = rMin + index;
                     if(val < rMin) val = rMin;
                     if(val > rMax) val = rMax;
@@ -608,9 +613,9 @@ export default function Onboarding() {
               </button>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Pace</h2>
-            <p className="text-muted-foreground mb-12">How quickly do you want to reach your goal?</p>
+            <p className="text-muted-foreground mb-6">How quickly do you want to reach your goal?</p>
             
-            <div className="my-auto space-y-12">
+            <div className="space-y-10">
               <div className="text-center">
                 <span className="text-5xl font-black">{goalPace.toFixed(1)}</span>
                 <span className="text-xl text-muted-foreground font-semibold ml-2">{heightUnit==="imperial"?"lbs":"kg"} / week</span>
