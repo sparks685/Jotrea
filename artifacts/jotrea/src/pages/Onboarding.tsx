@@ -988,14 +988,43 @@ export default function Onboarding() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedMed.doses.map((d: number) => (
-                      <motion.button key={d} whileTap={{ scale:0.95 }}
-                        className="rounded-2xl py-3.5 text-sm font-bold border-2 transition-all"
-                        style={{ backgroundColor:selectedDose===d?BRAND:"hsl(var(--card))", borderColor:selectedDose===d?BRAND:"hsl(var(--border))", color:selectedDose===d?"white":"hsl(var(--foreground))", boxShadow:selectedDose===d?`0 4px 16px ${BRAND}40`:"0 1px 3px rgba(0,0,0,0.04)" }}
-                        onClick={() => { setSelectedDose(d); haptic(); }}>
-                        {d} {selectedMed.unit}
-                      </motion.button>
-                    ))}
+                    {selectedMed.doses.map((d: number, i: number) => {
+                      const isStart = i === 0;
+                      const isSelected = selectedDose === d;
+                      return (
+                        <div key={d} className="relative">
+                          <motion.button whileTap={{ scale:0.95 }}
+                            className="w-full rounded-2xl text-sm font-bold border-2 transition-all"
+                            style={{
+                              paddingTop: isStart ? "18px" : "14px",
+                              paddingBottom: "14px",
+                              backgroundColor: isSelected ? BRAND : "hsl(var(--card))",
+                              borderColor: isSelected ? BRAND : isStart ? `${BRAND}60` : "hsl(var(--border))",
+                              color: isSelected ? "white" : "hsl(var(--foreground))",
+                              boxShadow: isSelected ? `0 4px 16px ${BRAND}40` : isStart ? `0 2px 8px ${BRAND}20` : "0 1px 3px rgba(0,0,0,0.04)",
+                            }}
+                            onClick={() => { setSelectedDose(d); haptic(); }}>
+                            {d} {selectedMed.unit}
+                          </motion.button>
+                          {isStart && (
+                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide whitespace-nowrap"
+                              style={{ backgroundColor: isSelected ? BRAND : `${BRAND}18`, color: isSelected ? "white" : BRAND, border: `1px solid ${BRAND}40` }}>
+                              <Star size={7} strokeWidth={3} fill="currentColor" />
+                              Start here
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Pharmacist escalation note */}
+                  <div className="flex items-start gap-3 px-4 py-3 rounded-2xl mt-1"
+                    style={{ background:`${BRAND}0d`, border:`1px solid ${BRAND}28` }}>
+                    <Info size={14} className="flex-shrink-0 mt-0.5" style={{ color:BRAND }}/>
+                    <p className="text-xs font-medium leading-relaxed" style={{ color:BRAND }}>
+                      Most patients start at the lowest dose and increase gradually on their prescriber's schedule. If unsure, start here.
+                    </p>
                   </div>
                 </div>
               )}
