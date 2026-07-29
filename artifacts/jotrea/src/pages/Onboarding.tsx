@@ -1189,11 +1189,11 @@ export default function Onboarding() {
 
                       {/* ── Injection site markers ─────────────────────────────── */}
                       {([
-                        { name:"Abdomen",   cx:50,   cy:108 },
-                        { name:"Upper Arm", cx:10,   cy:74  },
-                        { name:"Thigh",     cx:31.5, cy:180 },
-                        { name:"Buttocks",  cx:82,   cy:147 },
-                      ] as { name:string; cx:number; cy:number }[]).map(site => {
+                        { name:"Abdomen",   cx:50,   cy:108, lx:56,  ly:111, anchor:"start" as const },
+                        { name:"Upper Arm", cx:10,   cy:74,  lx:16,  ly:77,  anchor:"start" as const },
+                        { name:"Thigh",     cx:31.5, cy:180, lx:25,  ly:183, anchor:"end"   as const },
+                        { name:"Buttocks",  cx:82,   cy:147, lx:76,  ly:150, anchor:"end"   as const },
+                      ] as { name:string; cx:number; cy:number; lx:number; ly:number; anchor:"start"|"end" }[]).map(site => {
                         const active = injectionSite === site.name;
                         return (
                           <g key={site.name}>
@@ -1213,6 +1213,15 @@ export default function Onboarding() {
                             />
                             {/* Inner white pip */}
                             {active && <circle cx={site.cx} cy={site.cy} r="2" fill="white"/>}
+                            {/* Site label */}
+                            <text
+                              x={site.lx} y={site.ly}
+                              textAnchor={site.anchor}
+                              fontSize="5"
+                              fontWeight={active ? "700" : "500"}
+                              fill={active ? BRAND : "rgba(140,90,45,0.65)"}
+                              style={{ userSelect:"none", pointerEvents:"none" }}
+                            >{site.name}</text>
                           </g>
                         );
                       })}
