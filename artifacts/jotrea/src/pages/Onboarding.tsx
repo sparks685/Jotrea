@@ -662,9 +662,10 @@ export default function Onboarding() {
 
             {/* Motivational badge */}
             {(() => {
-              const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
+              const gw = parseFloat(goalWeight) || parseFloat(startWeight) || parseFloat(currentWeight) || 150;
+              const diff = parseFloat(currentWeight) - gw;
               let weeks = diff / goalPace;
-              if (weeks < 0) weeks = 0;
+              if (!isFinite(weeks) || weeks < 0) weeks = 0;
               const d = addWeeks(new Date(), weeks);
               return (
                 <div className="text-center mt-10 px-4">
@@ -721,9 +722,10 @@ export default function Onboarding() {
               </div>
 
               {(() => {
-                const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
+                const gw6 = parseFloat(goalWeight) || parseFloat(startWeight) || parseFloat(currentWeight) || 150;
+                const diff = parseFloat(currentWeight) - gw6;
                 let weeks = diff / goalPace;
-                if(weeks < 0) weeks = 0;
+                if (!isFinite(weeks) || weeks < 0) weeks = 0;
                 const d = addWeeks(new Date(), weeks);
                 return (
                   <div className="text-center mt-8 px-4">
