@@ -536,8 +536,8 @@ export default function Onboarding() {
             <p className="text-muted-foreground mb-8">Set your goal weight.</p>
 
             {/* Dream weight display */}
-            <div className="text-center mb-10">
-              <span className="text-xs font-medium text-[#D4A574] tracking-widest">Dream weight</span>
+            <div className="text-center mb-14">
+              <span className="text-xs font-semibold text-[#D4A574] tracking-widest">Dream weight</span>
               <div className="mt-2 flex items-baseline justify-center gap-2">
                 <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
                 <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
@@ -596,12 +596,8 @@ export default function Onboarding() {
                     else if (dist <= 8)   tickH = is5 ? 24 : 12;
                     else                  tickH = is5 ? 18 : 8;
 
-                    // Color: tan → cool gray interpolated by distance
-                    const t  = Math.min(1, dist / 8);
-                    const cr = Math.round(212 + (209 - 212) * t);
-                    const cg = Math.round(165 + (213 - 165) * t);
-                    const cb = Math.round(116 + (219 - 116) * t);
-                    const ca = dist === 0 ? 1 : Math.max(0.14, 0.88 - dist * 0.09);
+                    // Color: active tick = brand tan; all others = plain light gray
+                    const ca = dist === 0 ? 1 : Math.max(0.38, 0.85 - dist * 0.07);
 
                     return (
                       <div
@@ -620,7 +616,9 @@ export default function Onboarding() {
                         <div style={{
                           width:  dist === 0 ? '3px' : is5 ? '2.5px' : '2px',
                           height: `${tickH}px`,
-                          backgroundColor: `rgba(${cr},${cg},${cb},${ca})`,
+                          backgroundColor: dist === 0
+                            ? `rgba(212,165,116,${ca})`
+                            : `rgba(156,163,175,${ca})`,
                           borderRadius: '9999px',
                           flexShrink: 0,
                           boxShadow: dist === 0 ? '0 0 10px rgba(212,165,116,0.5)' : 'none',
@@ -634,7 +632,7 @@ export default function Onboarding() {
                               fontWeight: dist === 0 ? 700 : dist <= 2 ? 500 : 400,
                               color: dist === 0
                                 ? 'hsl(var(--foreground))'
-                                : `rgba(156,163,175,${Math.max(0.25, 0.75 - dist * 0.08)})`,
+                                : `rgba(156,163,175,${Math.max(0.45, 0.88 - dist * 0.07)})`,
                               userSelect: 'none',
                               lineHeight: 1,
                             }}>{n}</span>
