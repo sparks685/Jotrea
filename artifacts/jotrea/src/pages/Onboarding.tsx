@@ -96,7 +96,7 @@ export default function Onboarding() {
   const [startWeight, setStartWeight] = useState("");
   const [startDateGlp, setStartDateGlp] = useState(format(new Date(), "yyyy-MM-dd"));
   
-  const [goalWeight, setGoalWeight] = useState("150");
+  const [goalWeight, setGoalWeight] = useState(""); // "" = not yet set; initialized in step-5 effect
   const [goalPace, setGoalPace] = useState(1.0);
   
   const [activity, setActivity] = useState("");
@@ -200,8 +200,14 @@ export default function Onboarding() {
   // and re-running this effect on every goalWeight change creates a runaway feedback loop.
   useEffect(() => {
     if (step === 5) {
-      const minW = heightUnit === "imperial" ? 80 : 30;
-      const index = parseInt(goalWeight) - minW;
+      const rMin = heightUnit === "imperial" ? 80 : 30;
+      const rMax = heightUnit === "imperial" ? 400 : 200;
+      // Priority: already-set goalWeight → startWeight (Step 4 entry) → currentWeight → 150
+      const raw = goalWeight || startWeight || currentWeight || "150";
+      const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString();
+      // Initialize state if this is the first time on step 5
+      if (!goalWeight) setGoalWeight(clamped);
+      const index = parseInt(clamped) - rMin;
       // Spacer width = calc(50vw - 20px). The ruler clientWidth = viewport - 48px (px-6 both sides).
       // To center tick `index` under the needle: scrollLeft = spacer + index*40 + 20 - clientWidth/2
       requestAnimationFrame(() => {
@@ -470,7 +476,6 @@ export default function Onboarding() {
               style={{ backgroundColor: '#D4A574' }}
               onClick={() => {
                 if(!startWeight) setStartWeight(currentWeight);
-                if(!goalWeight) setGoalWeight((parseFloat(currentWeight) * 0.8).toFixed(0));
                 handleNext(4);
               }}
             >
@@ -539,9 +544,9 @@ export default function Onboarding() {
 
             {/* Dream weight display */}
             <div className="text-center mb-10">
-              <span style={{ fontSize: '15px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.1em' }}>Dream weight</span>
+              <span style={{ fontSize: '17px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.1em' }}>Dream weight</span>
               <div className="mt-2 flex items-baseline justify-center gap-2">
-                <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
+                <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight || startWeight || currentWeight || "150"}</span>
                 <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
               </div>
             </div>
@@ -596,7 +601,7 @@ export default function Onboarding() {
                 <div className="ruler-scroll h-full flex" style={{ width: 'max-content' }}>
                   <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
                   {rulerNumbers.map(n => {
-                    const activeLb = parseInt(goalWeight);
+                    const activeLb = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
                     const dist = Math.abs(n - activeLb);
                     const is5 = n % 5 === 0;
                     const isActive = dist === 0;
