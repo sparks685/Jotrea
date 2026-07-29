@@ -2,15 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Search, Syringe, Pill, Check, Info, Bell, Droplets, Target, Activity, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft, Search, Syringe, Pill, Check, Info, Bell,
+  Droplets, Target, Activity, CheckCircle2, Flame, Heart,
+  Zap, Wind, TrendingDown, Calendar, Star
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
 import { useMedication, useDoses, useWeights, useUser } from "@/hooks/useMedication";
-import { format, subDays, subWeeks, addDays, addWeeks } from "date-fns";
+import { format, subDays, subWeeks, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
+const BRAND = "#D4A574";
 
 const haptic = (pattern: number | number[] = 10) => {
   if ("vibrate" in navigator) navigator.vibrate(pattern);
@@ -29,34 +34,16 @@ function seedDemoData(
     date: format(subDays(today, (4 - i) * 7), "yyyy-MM-dd"),
     weight: 215 - i * 2.3,
   }));
-
-  const demoDoses = [];
+  const demoDoses: any[] = [];
   if (frequency === "weekly") {
     for (let i = 4; i >= 1; i--) {
-      demoDoses.push({
-        id: `d${i}`,
-        date: format(subWeeks(today, i), "yyyy-MM-dd"),
-        time: "09:00",
-        doseAmount: dose,
-        site: INJECTION_SITES[i % 4],
-        notes: "",
-        taken: true,
-      });
+      demoDoses.push({ id: `d${i}`, date: format(subWeeks(today, i), "yyyy-MM-dd"), time: "09:00", doseAmount: dose, site: INJECTION_SITES[i % 4], notes: "", taken: true });
     }
   } else {
     for (let i = 4; i >= 1; i--) {
-      demoDoses.push({
-        id: `d${i}`,
-        date: format(subDays(today, i), "yyyy-MM-dd"),
-        time: "08:00",
-        doseAmount: dose,
-        site: INJECTION_SITES[0],
-        notes: "",
-        taken: true,
-      });
+      demoDoses.push({ id: `d${i}`, date: format(subDays(today, i), "yyyy-MM-dd"), time: "08:00", doseAmount: dose, site: INJECTION_SITES[0], notes: "", taken: true });
     }
   }
-
   setDoses(demoDoses);
   setWeights(demoWeights);
 }
@@ -69,40 +56,63 @@ const BODY_SVG = (
 );
 
 const stepVariants = {
-  enter: (direction: number) => ({ x: direction > 0 ? 40 : -40, opacity: 0 }),
+  enter: (direction: number) => ({ x: direction > 0 ? 48 : -48, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (direction: number) => ({ x: direction < 0 ? 40 : -40, opacity: 0 }),
+  exit: (direction: number) => ({ x: direction < 0 ? 48 : -48, opacity: 0 }),
 };
+const ease = [0.4, 0, 0.2, 1] as const;
 
-const transitionEase = [0.4, 0, 0.2, 1] as const;
+// ── Shared micro-components ────────────────────────────────────────────────
+const BackBtn = ({ onBack }: { onBack: () => void }) => (
+  <button onClick={onBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-all active:scale-95">
+    <ChevronLeft size={20} className="text-foreground" />
+  </button>
+);
 
+const StepBadge = ({ icon }: { icon: React.ReactNode }) => (
+  <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 shadow-sm" style={{ background: `${BRAND}18`, border: `1.5px solid ${BRAND}28`, color: BRAND }}>
+    {icon}
+  </div>
+);
+
+const ContinueBtn = ({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) => (
+  <Button
+    className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-40 disabled:cursor-not-allowed"
+    style={{ backgroundColor: BRAND }}
+    disabled={disabled}
+    onClick={onClick}
+  >
+    {children}
+  </Button>
+);
+
+// ── Main component ─────────────────────────────────────────────────────────
 export default function Onboarding() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
-  
-  // State
-  const [gender, setGender] = useState<string>("");
+
+  const [gender, setGender] = useState("");
   const [bMonth, setBMonth] = useState("1");
   const [bDay, setBDay] = useState("1");
   const [bYear, setBYear] = useState("1990");
-  
+
   const [heightUnit, setHeightUnit] = useState<"imperial" | "metric">("imperial");
   const [heightFt, setHeightFt] = useState("5");
   const [heightIn, setHeightIn] = useState("6");
   const [heightCm, setHeightCm] = useState("165");
   const [currentWeight, setCurrentWeight] = useState("190");
-  
+
   const [startWeight, setStartWeight] = useState("");
   const [startDateGlp, setStartDateGlp] = useState(format(new Date(), "yyyy-MM-dd"));
-  
+
   const [goalWeight, setGoalWeight] = useState("");
   const [goalPace, setGoalPace] = useState(1.0);
-  
+
   const [activity, setActivity] = useState("");
   const [motivations, setMotivations] = useState<string[]>([]);
   const [sideEffects, setSideEffects] = useState<string[]>([]);
-  
+
   const [search, setSearch] = useState("");
   const [selectedMed, setSelectedMed] = useState<any>(null);
   const [selectedDose, setSelectedDose] = useState<number | null>(null);
@@ -115,882 +125,654 @@ export default function Onboarding() {
   const { setWeights } = useWeights();
   const { user, setUser } = useUser();
 
-  const handleNext = (nextStep: number) => {
-    haptic();
-    setDirection(1);
-    setStep(nextStep);
-  };
+  const rMin = heightUnit === "imperial" ? 80 : 30;
+  const rMax = heightUnit === "imperial" ? 400 : 200;
 
-  const handleBack = () => {
-    haptic();
-    setDirection(-1);
-    if (step === 10) setStep(9);
-    else setStep(step - 1);
-  };
+  const nav = (next: number) => { haptic(); setDirection(1); setStep(next); };
+  const back = () => { haptic(); setDirection(-1); setStep(step === 10 ? 9 : step - 1); };
 
   const grouped = medications.reduce<Record<string, typeof medications>>((acc, med) => {
     if (!acc[med.genericName]) acc[med.genericName] = [];
     acc[med.genericName].push(med);
     return acc;
   }, {});
-
   const filteredGrouped = Object.entries(grouped).reduce<Record<string, typeof medications>>(
-    (acc, [generic, meds]) => {
-      const filtered = meds.filter(
-        (m) =>
-          m.genericName.toLowerCase().includes(search.toLowerCase()) ||
-          m.brandNames.some((b) => b.toLowerCase().includes(search.toLowerCase()))
-      );
-      if (filtered.length) acc[generic] = filtered;
+    (acc, [g, meds]) => {
+      const f = meds.filter(m => m.genericName.toLowerCase().includes(search.toLowerCase()) || m.brandNames.some(b => b.toLowerCase().includes(search.toLowerCase())));
+      if (f.length) acc[g] = f;
       return acc;
-    },
-    {}
+    }, {}
   );
 
   const handleComplete = () => {
     if (!selectedMed || !selectedDose) return;
-    const medData = {
-      id: selectedMed.id,
-      genericName: selectedMed.genericName,
-      brandName: selectedMed.brandNames[0],
-      dose: selectedDose,
-      frequency: selectedMed.frequency,
-      startDate,
-      injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined,
-      active: true,
-    };
-    setMedication(medData);
-    
-    const cw = parseFloat(currentWeight);
-    const sw = parseFloat(startWeight) || cw;
-    const gw = parseFloat(goalWeight);
-    
-    setUser({
-      name: user.name || "User",
-      gender: gender as any,
-      birthday: `${bYear}-${bMonth.padStart(2, "0")}-${bDay.padStart(2, "0")}`,
-      heightUnit,
-      heightFt: parseInt(heightFt),
-      heightIn: parseInt(heightIn),
-      heightCm: parseInt(heightCm),
-      currentWeightLbs: heightUnit === "imperial" ? cw : undefined,
-      currentWeightKg: heightUnit === "metric" ? cw : undefined,
-      startingWeightLbs: heightUnit === "imperial" ? sw : undefined,
-      startingWeightKg: heightUnit === "metric" ? sw : undefined,
-      glpStartDate: startDateGlp,
-      goalWeightLbs: heightUnit === "imperial" ? gw : undefined,
-      goalWeightKg: heightUnit === "metric" ? gw : undefined,
-      goalPaceLbs: goalPace,
-      activityLevel: activity as any,
-      motivations,
-      troublesomeSideEffects: sideEffects,
-      units: heightUnit === "imperial" ? "lbs" : "kg",
-      subscription: "free",
-    });
-    
+    setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
+    const cw = parseFloat(currentWeight), sw = parseFloat(startWeight) || cw, gw = parseFloat(goalWeight);
+    setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
     seedDemoData(selectedMed.id, selectedMed.frequency, selectedDose, setDoses, setWeights);
     trackEvent("onboarding_complete", { medication: selectedMed.genericName });
   };
-  
-  // Custom scroll sync for ruler
+
+  // ── Goal Weight Ruler ────────────────────────────────────────────────────
   const rulerRef = useRef<HTMLDivElement>(null);
   const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // While true, ALL onScroll events are dropped. Set around every programmatic scroll.
+  const suppressScrollRef = useRef(false);
 
-  // Set initial ruler scroll position only when entering step 5 or changing units.
-  // goalWeight/startWeight/currentWeight are intentionally NOT deps — onScroll owns
-  // goalWeight updates; adding them creates a runaway scroll feedback loop.
-  // Double-RAF: first frame lets Framer Motion mount the entering element;
-  // second frame applies scrollLeft after layout is fully computed.
+  const rulerNumbers: number[] = [];
+  for (let i = rMin; i <= rMax; i++) rulerNumbers.push(i);
+
   useEffect(() => {
-    if (step === 5) {
-      const rMin = heightUnit === "imperial" ? 80 : 30;
-      const rMax = heightUnit === "imperial" ? 400 : 200;
-      // Priority: already-chosen goalWeight → startWeight → currentWeight → 150
-      const raw = goalWeight || startWeight || currentWeight || "150";
-      const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString();
-      if (!goalWeight) setGoalWeight(clamped);
-      const index = parseInt(clamped) - rMin;
-      // Spacer = calc(50vw - 20px); ruler clientWidth = viewport − 48px (px-6 both sides).
-      // Correct formula: scrollLeft = spacer + index×40 + 20 − clientWidth/2
+    if (step !== 5) return;
+    const raw = goalWeight || startWeight || currentWeight || "150";
+    const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || rMin)).toString();
+    if (!goalWeight) setGoalWeight(clamped);
+    const index = parseInt(clamped) - rMin;
+
+    // Suppress scroll events during + after programmatic positioning
+    suppressScrollRef.current = true;
+    if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (rulerRef.current) {
-            const el = rulerRef.current;
-            const spacer = window.innerWidth / 2 - 20;
-            el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
-          }
-        });
+        const el = rulerRef.current;
+        if (el) {
+          // spacer = calc(50vw - 20px); each tick 40px wide; tick centre at +20px
+          const spacer = window.innerWidth / 2 - 20;
+          el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
+        }
+        // Release suppression 200ms after setting — comfortably after any delayed snap timers
+        setTimeout(() => { suppressScrollRef.current = false; }, 200);
       });
-    }
+    });
+  // goalWeight intentionally excluded — onScroll owns goalWeight updates
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, heightUnit]);
 
-  const rulerNumbers = [];
-  const rMin = heightUnit === "imperial" ? 80 : 30;
-  const rMax = heightUnit === "imperial" ? 400 : 200;
-  for(let i=rMin; i<=rMax; i++) rulerNumbers.push(i);
-
   const [loadingTicks, setLoadingTicks] = useState(0);
   useEffect(() => {
-    if (step === 12) {
-      const timer1 = setTimeout(() => { setLoadingTicks(1); haptic(); }, 600);
-      const timer2 = setTimeout(() => { setLoadingTicks(2); haptic(); }, 1200);
-      const timer3 = setTimeout(() => { setLoadingTicks(3); haptic(); }, 1800);
-      const timer4 = setTimeout(() => {
-        handleComplete();
-        haptic([10, 30, 10]);
-        setStep(13);
-      }, 2500);
-      return () => { clearTimeout(timer1); clearTimeout(timer2); clearTimeout(timer3); clearTimeout(timer4); };
-    }
-    return undefined;
+    if (step !== 12) return;
+    const t1 = setTimeout(() => { setLoadingTicks(1); haptic(); }, 700);
+    const t2 = setTimeout(() => { setLoadingTicks(2); haptic(); }, 1500);
+    const t3 = setTimeout(() => { setLoadingTicks(3); haptic(); }, 2200);
+    const t4 = setTimeout(() => { handleComplete(); haptic([10,30,10]); setStep(13); }, 3100);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [step]);
 
   return (
-    <div
-      className="min-h-[100dvh] bg-background flex flex-col overflow-hidden"
-      style={{
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
-    >
-      {/* Progress bar — always in layout flow (4px height) */}
-      <div className="flex-shrink-0 h-1 bg-muted">
+    <div className="min-h-[100dvh] bg-background flex flex-col overflow-hidden" style={{ paddingTop:"env(safe-area-inset-top)", paddingBottom:"env(safe-area-inset-bottom)" }}>
+
+      {/* Progress bar */}
+      <div className="flex-shrink-0 h-[3px] bg-muted/50">
         {step > 0 && step <= 14 && (
-          <div
-            className="h-full bg-[#D4A574] transition-all duration-300 ease-out"
-            style={{ width: `${(step / 14) * 100}%` }}
-          />
+          <motion.div className="h-full rounded-full" style={{ backgroundColor: BRAND }}
+            initial={false} animate={{ width:`${(step/14)*100}%` }} transition={{ duration:0.4, ease }} />
         )}
       </div>
 
-
       <AnimatePresence mode="wait" initial={false} custom={direction}>
+
+        {/* ─── Step 0: Welcome ─────────────────────────────────────── */}
         {step === 0 && (
-          <motion.div
-            key="s0"
-            custom={direction}
-            variants={stepVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-8"
-          >
-            <div className="space-y-2">
-              <div className="w-24 h-24 rounded-3xl bg-[#D4A574] flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <Syringe size={42} className="text-white" />
+          <motion.div key="s0" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col items-center justify-center px-7 text-center gap-7">
+
+            <div className="space-y-3">
+              <div className="w-24 h-24 rounded-[28px] flex items-center justify-center mx-auto shadow-2xl"
+                style={{ background:`linear-gradient(135deg, #e8b989, ${BRAND})`, boxShadow:`0 20px 60px ${BRAND}45` }}>
+                <Syringe size={42} className="text-white" strokeWidth={1.8} />
               </div>
-              <h1 className="text-4xl font-bold text-foreground tracking-tight">Jotrea</h1>
-              <p className="text-base text-muted-foreground font-medium">
-                Your GLP-1 Journey, Simplified
-              </p>
+              <h1 className="text-4xl font-black text-foreground tracking-tight">Jotrea</h1>
+              <p className="text-base text-muted-foreground font-medium">Your GLP-1 Journey, Simplified</p>
             </div>
 
-            <div className="space-y-4 w-full max-w-xs text-left bg-card p-6 rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-border">
+            <div className="w-full max-w-xs bg-card rounded-3xl border border-border/60 p-6 space-y-4 text-left"
+              style={{ boxShadow:"0 6px 28px rgba(0,0,0,0.06)" }}>
               {[
-                "Track doses effortlessly",
-                "Monitor your weight progress",
-                "Stay on schedule",
-                "Pharmacist-curated guidance.",
-              ].map((item) => (
-                <div key={item} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#D4A574] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Check size={12} className="text-white" strokeWidth={3} />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{item}</span>
+                { icon:<CheckCircle2 size={15}/>, text:"Track doses effortlessly" },
+                { icon:<TrendingDown size={15}/>, text:"Monitor your weight progress" },
+                { icon:<Bell size={15}/>, text:"Smart injection reminders" },
+                { icon:<Heart size={15}/>, text:"Pharmacist-curated guidance" },
+              ].map(item => (
+                <div key={item.text} className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:`${BRAND}18`, color:BRAND }}>{item.icon}</div>
+                  <span className="text-sm font-medium text-foreground">{item.text}</span>
                 </div>
               ))}
             </div>
 
+            <p className="text-xs text-muted-foreground">
+              ★★★★★&nbsp; Trusted by <strong className="text-foreground">10,000+</strong> GLP-1 patients
+            </p>
+
             <div className="w-full max-w-xs">
-              <Button
-                className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white hover:opacity-90"
-                style={{ backgroundColor: '#D4A574' }}
-                onClick={() => handleNext(1)}
-              >
+              <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
+                style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
+                onClick={() => nav(1)}>
                 Start Your Journey
               </Button>
             </div>
           </motion.div>
         )}
 
+        {/* ─── Step 1: Gender ──────────────────────────────────────── */}
         {step === 1 && (
-          <motion.div
-            key="s1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Gender</h2>
-            <p className="text-muted-foreground mb-8">Help us get the basics right.</p>
-            
-            <div className="grid grid-cols-2 gap-4">
+          <motion.div key="s1" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Heart size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">How do you identify?</h2>
+            <p className="text-muted-foreground mb-8 text-sm">Helps us personalise your health plan.</p>
+
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { id: "female", label: "Female", icon: "♀" },
-                { id: "male", label: "Male", icon: "♂" },
-                { id: "other", label: "Other", icon: "👤" },
-                { id: "prefer_not_to_say", label: "Prefer not to say", icon: "∅" }
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => { setGender(opt.id); haptic(); }}
-                  className={`h-[120px] flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all shadow-sm ${
-                    gender === opt.id ? "bg-[#D4A574] border-[#D4A574] text-white" : "bg-card border-border text-foreground"
-                  }`}
-                >
-                  <span className="text-3xl mb-2">{opt.icon}</span>
-                  <span className="font-semibold">{opt.label}</span>
+                { id:"female", label:"Female", emoji:"♀" },
+                { id:"male", label:"Male", emoji:"♂" },
+                { id:"nonbinary", label:"Non-binary", emoji:"⚧" },
+                { id:"prefer_not_to_say", label:"Prefer not to say", emoji:"—" },
+              ].map(opt => {
+                const sel = gender === opt.id;
+                return (
+                  <motion.button key={opt.id} whileTap={{ scale:0.96 }}
+                    onClick={() => { setGender(opt.id); haptic(); }}
+                    className="h-[118px] flex flex-col items-center justify-center gap-2 rounded-3xl border-2 transition-all shadow-sm"
+                    style={{ backgroundColor:sel?`${BRAND}12`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))" }}>
+                    <span className="text-3xl">{opt.emoji}</span>
+                    <span className={`font-bold text-sm ${sel?"text-foreground":"text-muted-foreground"}`}>{opt.label}</span>
+                    {sel && <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor:BRAND }}><Check size={11} className="text-white" strokeWidth={3}/></div>}
+                  </motion.button>
+                );
+              })}
+            </div>
+            <ContinueBtn onClick={() => nav(2)} disabled={!gender}>Continue</ContinueBtn>
+          </motion.div>
+        )}
+
+        {/* ─── Step 2: Birthday ────────────────────────────────────── */}
+        {step === 2 && (
+          <motion.div key="s2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Calendar size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">When's your birthday?</h2>
+            <p className="text-muted-foreground mb-7 text-sm">Used to personalise dosing recommendations.</p>
+
+            <div className="flex gap-3 bg-card p-6 rounded-3xl border border-border/60 mb-4" style={{ boxShadow:"0 4px 20px rgba(0,0,0,0.05)" }}>
+              {[
+                { value:bMonth, set:(v:string)=>{setBMonth(v);haptic();}, options:Array.from({length:12},(_,i)=>({ v:String(i+1), l:new Date(2000,i,1).toLocaleString("default",{month:"short"}) })), label:"Month" },
+                { value:bDay, set:(v:string)=>{setBDay(v);haptic();}, options:Array.from({length:31},(_,i)=>({ v:String(i+1), l:String(i+1) })), label:"Day" },
+                { value:bYear, set:(v:string)=>{setBYear(v);haptic();}, options:Array.from({length:100},(_,i)=>{ const y=new Date().getFullYear()-i; return { v:String(y), l:String(y) }; }), label:"Year" },
+              ].map((col,ci) => (
+                <div key={ci} className="flex-1 flex flex-col items-center gap-1">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{col.label}</span>
+                  <select value={col.value} onChange={e=>col.set(e.target.value)} className="bg-transparent text-xl font-bold text-center appearance-none outline-none w-full">
+                    {col.options.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground mb-2">
+              Age: <strong className="text-foreground">{new Date().getFullYear() - parseInt(bYear)}</strong>
+            </p>
+            <ContinueBtn onClick={() => nav(3)}>Continue</ContinueBtn>
+          </motion.div>
+        )}
+
+        {/* ─── Step 3: Height & Weight ─────────────────────────────── */}
+        {step === 3 && (
+          <motion.div key="s3" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Activity size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your measurements</h2>
+            <p className="text-muted-foreground mb-6 text-sm">Used to calculate BMI and personalise your plan.</p>
+
+            <div className="flex bg-muted/60 p-1 rounded-xl w-fit mx-auto mb-6">
+              {(["imperial","metric"] as const).map(u => (
+                <button key={u} onClick={()=>{setHeightUnit(u);haptic();}}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${heightUnit===u?"bg-card shadow text-foreground":"text-muted-foreground"}`}>
+                  {u==="imperial"?"Imperial":"Metric"}
                 </button>
               ))}
             </div>
-            
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#D4A574' }}
-              disabled={!gender}
-              onClick={() => handleNext(2)}
-            >
-              Continue
-            </Button>
-          </motion.div>
-        )}
 
-        {step === 2 && (
-          <motion.div
-            key="s2" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Birthday</h2>
-            <p className="text-muted-foreground mb-6">When's your birthday?</p>
-            
-            <div className="flex gap-2 justify-center bg-card p-6 rounded-3xl border border-border shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
-              <select value={bMonth} onChange={e => {setBMonth(e.target.value); haptic();}} className="bg-transparent text-2xl font-bold text-center appearance-none outline-none flex-1">
-                {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(2000, i, 1).toLocaleString('default', { month: 'short' })}</option>)}
-              </select>
-              <span className="text-2xl text-muted-foreground">/</span>
-              <select value={bDay} onChange={e => {setBDay(e.target.value); haptic();}} className="bg-transparent text-2xl font-bold text-center appearance-none outline-none flex-1">
-                {Array.from({length: 31}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-              </select>
-              <span className="text-2xl text-muted-foreground">/</span>
-              <select value={bYear} onChange={e => {setBYear(e.target.value); haptic();}} className="bg-transparent text-2xl font-bold text-center appearance-none outline-none flex-1">
-                {Array.from({length: 100}, (_, i) => <option key={i} value={new Date().getFullYear() - i}>{new Date().getFullYear() - i}</option>)}
-              </select>
-            </div>
-            
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => handleNext(3)}
-            >
-              Continue
-            </Button>
-          </motion.div>
-        )}
-
-        {step === 3 && (
-          <motion.div
-            key="s3" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Height & Weight</h2>
-            <p className="text-muted-foreground mb-8">Your Height & Weight.</p>
-            
-            <div className="flex bg-muted p-1 rounded-xl w-fit mx-auto mb-8">
-              <button 
-                onClick={() => {setHeightUnit("imperial"); haptic();}}
-                className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${heightUnit === "imperial" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
-              >
-                Imperial
-              </button>
-              <button 
-                onClick={() => {setHeightUnit("metric"); haptic();}}
-                className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${heightUnit === "metric" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
-              >
-                Metric
-              </button>
-            </div>
-            
-            <div className="flex gap-4 items-end justify-center mb-8">
-              <div className="flex flex-col items-center gap-2 flex-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Height</span>
-                {heightUnit === "imperial" ? (
-                  <div className="flex gap-2 bg-card p-4 rounded-3xl border border-border shadow-sm w-full justify-center">
-                    <select value={heightFt} onChange={e=>{setHeightFt(e.target.value); haptic();}} className="bg-transparent text-xl font-bold outline-none appearance-none text-center">
-                      {[3,4,5,6,7].map(v => <option key={v} value={v}>{v} ft</option>)}
+            <div className="flex gap-3 mb-6">
+              <div className="flex-1 bg-card rounded-2xl border border-border/60 shadow-sm p-4">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2 text-center">Height</p>
+                {heightUnit==="imperial" ? (
+                  <div className="flex gap-1 justify-center">
+                    <select value={heightFt} onChange={e=>{setHeightFt(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center">
+                      {[3,4,5,6,7].map(v=><option key={v} value={v}>{v} ft</option>)}
                     </select>
-                    <select value={heightIn} onChange={e=>{setHeightIn(e.target.value); haptic();}} className="bg-transparent text-xl font-bold outline-none appearance-none text-center">
+                    <select value={heightIn} onChange={e=>{setHeightIn(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center">
                       {Array.from({length:12},(_,i)=><option key={i} value={i}>{i} in</option>)}
                     </select>
                   </div>
                 ) : (
-                  <div className="bg-card p-4 rounded-3xl border border-border shadow-sm w-full text-center">
-                    <select value={heightCm} onChange={e=>{setHeightCm(e.target.value); haptic();}} className="bg-transparent text-xl font-bold outline-none appearance-none">
-                      {Array.from({length:100},(_,i)=><option key={i+130} value={i+130}>{i+130} cm</option>)}
-                    </select>
-                  </div>
+                  <select value={heightCm} onChange={e=>{setHeightCm(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center w-full">
+                    {Array.from({length:100},(_,i)=><option key={i+130} value={i+130}>{i+130} cm</option>)}
+                  </select>
                 )}
               </div>
-              
-              <div className="flex flex-col items-center gap-2 flex-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">Weight</span>
-                <div className="bg-card p-4 rounded-3xl border border-border shadow-sm w-full text-center">
-                  <select value={currentWeight} onChange={e=>{setCurrentWeight(e.target.value); haptic();}} className="bg-transparent text-xl font-bold outline-none appearance-none text-center">
-                    {heightUnit === "imperial" 
-                      ? Array.from({length:301},(_,i)=><option key={i+100} value={i+100}>{i+100} lbs</option>)
-                      : Array.from({length:161},(_,i)=><option key={i+40} value={i+40}>{i+40} kg</option>)
-                    }
-                  </select>
-                </div>
+              <div className="flex-1 bg-card rounded-2xl border border-border/60 shadow-sm p-4">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2 text-center">Weight</p>
+                <select value={currentWeight} onChange={e=>{setCurrentWeight(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center w-full">
+                  {heightUnit==="imperial"
+                    ? Array.from({length:301},(_,i)=><option key={i+100} value={i+100}>{i+100} lbs</option>)
+                    : Array.from({length:161},(_,i)=><option key={i+40} value={i+40}>{i+40} kg</option>)
+                  }
+                </select>
               </div>
             </div>
-            
+
             {(() => {
-              const bmi = heightUnit === "imperial" 
-                ? calculateBMI(parseFloat(currentWeight), parseInt(heightFt)*12 + parseInt(heightIn))
+              const bmi = heightUnit==="imperial"
+                ? calculateBMI(parseFloat(currentWeight), parseInt(heightFt)*12+parseInt(heightIn))
                 : calculateBMIFromKg(parseFloat(currentWeight), parseInt(heightCm));
-              
-              let status = "Healthy";
-              if(bmi < 18.5) status = "Underweight";
-              else if(bmi >= 25 && bmi < 30) status = "Overweight";
-              else if(bmi >= 30) status = "Obese";
-                
+              let label="Healthy", color="#22c55e";
+              if(bmi<18.5){label="Underweight";color="#3b82f6";}
+              else if(bmi>=25&&bmi<30){label="Overweight";color="#f59e0b";}
+              else if(bmi>=30){label="Obese";color="#ef4444";}
               return (
-                <div className="mx-auto bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full font-semibold text-sm">
-                  BMI: {bmi.toFixed(1)} — {status}
+                <div className="flex justify-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
+                    style={{ background:`${color}12`, borderColor:`${color}30`, color }}>
+                    <Activity size={13}/>
+                    BMI {bmi.toFixed(1)} — {label}
+                  </div>
                 </div>
               );
             })()}
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => {
-                if(!startWeight) setStartWeight(currentWeight);
-                handleNext(4);
-              }}
-            >
-              Continue
-            </Button>
+            <ContinueBtn onClick={() => { if(!startWeight) setStartWeight(currentWeight); nav(4); }}>Continue</ContinueBtn>
           </motion.div>
         )}
 
+        {/* ─── Step 4: Start Weight & Date ─────────────────────────── */}
         {step === 4 && (
-          <motion.div
-            key="s4" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Start Weight & Date</h2>
-            <p className="text-muted-foreground mb-8">Tell us where you started. This helps us calculate your total progress.</p>
-            
-            <div className="space-y-6">
+          <motion.div key="s4" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<TrendingDown size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Where did you start?</h2>
+            <p className="text-muted-foreground mb-7 text-sm">Helps us calculate your total progress so far.</p>
+
+            <div className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Starting Weight ({heightUnit === "imperial" ? "lbs" : "kg"})</label>
-                <Input 
-                  type="number" 
-                  value={startWeight} 
-                  onChange={e => setStartWeight(e.target.value)} 
-                  className="h-14 rounded-2xl text-lg px-4 bg-card shadow-sm border-border"
-                />
+                <label className="text-sm font-bold text-foreground">Starting Weight ({heightUnit==="imperial"?"lbs":"kg"})</label>
+                <Input type="number" value={startWeight} onChange={e=>setStartWeight(e.target.value)} placeholder={currentWeight}
+                  className="h-14 rounded-2xl text-lg px-4 bg-card shadow-sm border-border/60 font-bold" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold">GLP-1 Start Date</label>
-                <Input 
-                  type="date" 
-                  value={startDateGlp} 
-                  onChange={e => setStartDateGlp(e.target.value)} 
-                  className="h-14 rounded-2xl text-lg px-4 bg-card shadow-sm border-border"
-                />
+                <label className="text-sm font-bold text-foreground">GLP-1 Start Date</label>
+                <Input type="date" value={startDateGlp} onChange={e=>setStartDateGlp(e.target.value)}
+                  className="h-14 rounded-2xl text-base px-4 bg-card shadow-sm border-border/60" />
               </div>
             </div>
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#D4A574' }}
-              disabled={!startWeight}
-              onClick={() => {
-                // Pre-initialize goalWeight before step 5 mounts so the ruler opens
-                // centred on the user's starting weight, not on rMin (80 lbs).
-                if (!goalWeight) {
-                  const rMin = heightUnit === "imperial" ? 80 : 30;
-                  const rMax = heightUnit === "imperial" ? 400 : 200;
-                  const raw = startWeight || currentWeight || "150";
-                  setGoalWeight(Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString());
-                }
-                handleNext(5);
-              }}
-            >
-              Continue
-            </Button>
+            {startWeight && parseFloat(startWeight) > parseFloat(currentWeight) && (
+              <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+                className="mt-5 flex items-center gap-3 px-4 py-3 rounded-2xl"
+                style={{ background:`${BRAND}12`, border:`1px solid ${BRAND}25` }}>
+                <TrendingDown size={16} style={{ color:BRAND }} className="flex-shrink-0"/>
+                <p className="text-sm font-semibold" style={{ color:BRAND }}>
+                  You've already lost {(parseFloat(startWeight)-parseFloat(currentWeight)).toFixed(1)} {heightUnit==="imperial"?"lbs":"kg"}. Keep going!
+                </p>
+              </motion.div>
+            )}
+
+            <ContinueBtn disabled={!startWeight} onClick={() => {
+              if (!goalWeight) {
+                const raw = startWeight || currentWeight || "150";
+                setGoalWeight(Math.min(rMax, Math.max(rMin, parseInt(raw)||rMin)).toString());
+              }
+              nav(5);
+            }}>Continue</ContinueBtn>
           </motion.div>
         )}
 
+        {/* ─── Step 5: Goal Weight ─────────────────────────────────── */}
         {step === 5 && (
-          <motion.div
-            key="s5" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
-            <p className="text-muted-foreground mb-8">Set your goal weight.</p>
+          <motion.div key="s5" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Target size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your dream weight</h2>
+            <p className="text-muted-foreground mb-5 text-sm">Scroll the ruler to set your goal.</p>
 
-            {/* Dream weight display */}
-            <div className="text-center mb-6">
-              <span style={{ fontSize: '18px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.06em' }}>Dream weight</span>
-              <div className="mt-2 flex items-baseline justify-center gap-2">
-                <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
-                <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
+            {/* Display */}
+            <div className="text-center mb-5">
+              <span style={{ fontSize:'12px', fontWeight:800, color:BRAND, letterSpacing:'0.1em', textTransform:'uppercase' }}>Dream weight</span>
+              <div className="mt-1 flex items-baseline justify-center gap-2">
+                <motion.span key={goalWeight} initial={{ opacity:0.6, y:-4 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.08 }}
+                  className="text-7xl font-black text-foreground tracking-tight">
+                  {goalWeight}
+                </motion.span>
+                <span className="text-xl text-muted-foreground font-normal">{heightUnit==="imperial"?"lbs":"kg"}</span>
               </div>
+              {(() => {
+                const sw=parseFloat(startWeight||currentWeight), gw=parseFloat(goalWeight), diff=sw-gw;
+                if(isNaN(diff)||diff<=0) return null;
+                return <p className="text-xs text-muted-foreground mt-1">That's <strong className="text-foreground">{diff.toFixed(0)} {heightUnit==="imperial"?"lbs":"kg"}</strong> from your starting weight</p>;
+              })()}
             </div>
 
-            {/* Premium scroll wheel — bordered card + selection band + correct scroll math */}
-            <div
-              className="relative w-full rounded-2xl overflow-hidden"
-              style={{
-                height: '140px',
-                border: '1.5px solid rgba(212,165,116,0.35)',
-                boxShadow: '0 4px 24px rgba(212,165,116,0.14), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
-                background: 'rgba(255,252,248,0.65)',
-              }}
-            >
-              {/* Selection band — highlights the chosen tick slot like an iOS picker */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            {/* Ruler card */}
+            <div className="relative w-full rounded-2xl overflow-hidden" style={{
+              height:'144px',
+              border:`1.5px solid ${BRAND}38`,
+              boxShadow:`0 6px 32px ${BRAND}18, 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)`,
+              background:'rgba(255,252,248,0.7)',
+            }}>
+              {/* iOS-style selection band */}
+              <div className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none rounded-xl" style={{
+                top:'12px', bottom:'38px', width:'54px',
+                background:`${BRAND}0e`, border:`1px solid ${BRAND}2e`,
+              }}/>
+              {/* Centre needle */}
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-full" style={{
+                width:'2.5px',
+                background:`linear-gradient(to bottom, transparent 0%, ${BRAND} 12%, ${BRAND} 72%, ${BRAND}20 100%)`,
+                boxShadow:`0 0 12px ${BRAND}55, 0 2px 6px ${BRAND}35`,
+              }}/>
+
+              {/* Scroll container */}
+              <div ref={rulerRef} className="ruler-scroll w-full h-full overflow-x-auto"
                 style={{
-                  top: '14px',
-                  bottom: '36px',
-                  width: '52px',
-                  background: 'rgba(212,165,116,0.08)',
-                  border: '1px solid rgba(212,165,116,0.28)',
-                  borderRadius: '9px',
-                }}
-              />
-              {/* Center needle */}
-              <div
-                className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none rounded-full"
-                style={{
-                  width: '2.5px',
-                  background: 'linear-gradient(to bottom, rgba(212,165,116,0) 0%, #D4A574 12%, #D4A574 72%, rgba(212,165,116,0.15) 100%)',
-                  boxShadow: '0 0 10px rgba(212,165,116,0.55), 0 2px 6px rgba(212,165,116,0.3)',
-                }}
-              />
-              {/* Scroll container — ruler-scroll targets ::-webkit-scrollbar; mask fades edges */}
-              <div
-                ref={rulerRef}
-                className="ruler-scroll w-full h-full overflow-x-auto"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  scrollSnapType: 'none',
-                  WebkitMaskImage: 'linear-gradient(to right, transparent, black 18%, black 82%, transparent)',
-                  maskImage: 'linear-gradient(to right, transparent, black 18%, black 82%, transparent)',
+                  scrollbarWidth:'none', msOverflowStyle:'none', scrollSnapType:'none',
+                  WebkitMaskImage:'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
+                  maskImage:'linear-gradient(to right, transparent, black 14%, black 86%, transparent)',
                 } as React.CSSProperties}
-                onScroll={(e) => {
+                onScroll={e => {
+                  // Drop all events while we're programmatically positioning the ruler
+                  if (suppressScrollRef.current) return;
+
                   const el = e.currentTarget;
-                  // Spacer = calc(50vw - 20px); correct formula accounts for it:
+                  // spacer = calc(50vw - 20px); tick width = 40px; tick centre offset = 20px
                   const spacer = window.innerWidth / 2 - 20;
                   const index = Math.round((el.scrollLeft + el.clientWidth / 2 - spacer - 20) / 40);
-                  let val = rMin + index;
-                  if (val < rMin) val = rMin;
-                  if (val > rMax) val = rMax;
-                  if (val.toString() !== goalWeight) {
-                    setGoalWeight(val.toString());
-                    haptic(5);
-                  }
-                  // Manual snap-on-end (replaces CSS snap-mandatory to prevent snap-on-mount)
+                  let val = Math.min(rMax, Math.max(rMin, rMin + index));
+                  if (val.toString() !== goalWeight) { setGoalWeight(val.toString()); haptic(4); }
+
+                  // Manual snap-on-end (CSS snap is disabled to avoid snap-on-mount bug)
                   if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
                   snapTimerRef.current = setTimeout(() => {
                     const target = spacer + (val - rMin) * 40 + 20 - el.clientWidth / 2;
-                    if (Math.abs(el.scrollLeft - target) > 1) {
-                      el.scrollTo({ left: target, behavior: 'smooth' });
-                    }
+                    if (Math.abs(el.scrollLeft - target) > 1) el.scrollTo({ left:target, behavior:'smooth' });
                   }, 60);
                 }}
               >
                 <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
-                <div className="h-full flex" style={{ width: 'max-content' }}>
-                  <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
+                <div className="h-full flex" style={{ width:'max-content' }}>
+                  <div style={{ width:'calc(50vw - 20px)', flexShrink:0 }}/>
                   {rulerNumbers.map(n => {
-                    const activeLb = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
-                    const dist = Math.abs(n - activeLb);
+                    const active = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
+                    const dist = Math.abs(n - active);
                     const is5 = n % 5 === 0;
-
-                    // Variable heights for premium 3D drum-wheel illusion
                     let tickH: number;
-                    if      (dist === 0)  tickH = 72;
-                    else if (dist === 1)  tickH = is5 ? 52 : 38;
-                    else if (dist === 2)  tickH = is5 ? 42 : 28;
-                    else if (dist <= 4)   tickH = is5 ? 32 : 18;
-                    else if (dist <= 8)   tickH = is5 ? 24 : 12;
-                    else                  tickH = is5 ? 18 : 8;
+                    if      (dist===0) tickH=70;
+                    else if (dist===1) tickH=is5?50:36;
+                    else if (dist===2) tickH=is5?40:26;
+                    else if (dist<=4)  tickH=is5?30:16;
+                    else if (dist<=8)  tickH=is5?22:10;
+                    else               tickH=is5?16:6;
 
-                    // Color: brand tan at center → cool gray at edges
-                    const t  = Math.min(1, dist / 8);
-                    const cr = Math.round(212 + (209 - 212) * t);
-                    const cg = Math.round(165 + (213 - 165) * t);
-                    const cb = Math.round(116 + (219 - 116) * t);
-                    const ca = dist === 0 ? 1 : Math.max(0.18, 0.88 - dist * 0.09);
+                    const t=Math.min(1,dist/8);
+                    const cr=Math.round(212+(200-212)*t), cg=Math.round(165+(210-165)*t), cb=Math.round(116+(210-116)*t);
+                    const ca=dist===0?1:Math.max(0.15,0.9-dist*0.1);
 
                     return (
-                      <div
-                        key={n}
-                        className="flex-shrink-0"
-                        style={{
-                          width: '40px',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                        }}
-                      >
+                      <div key={n} className="flex-shrink-0" style={{ width:'40px', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
                         <div style={{
-                          width:  dist === 0 ? '3px' : is5 ? '2.5px' : '2px',
-                          height: `${tickH}px`,
-                          backgroundColor: `rgba(${cr},${cg},${cb},${ca})`,
-                          borderRadius: '9999px',
-                          flexShrink: 0,
-                          boxShadow: dist === 0 ? '0 0 10px rgba(212,165,116,0.5)' : 'none',
-                          transition: 'height 0.08s ease, background-color 0.08s ease',
-                          willChange: 'height',
-                        }} />
-                        <div style={{ height: '32px', marginTop: '8px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                          {is5 && (
-                            <span style={{
-                              fontSize: '13px',
-                              fontWeight: dist === 0 ? 700 : dist <= 2 ? 500 : 400,
-                              color: dist === 0
-                                ? 'hsl(var(--foreground))'
-                                : `rgba(156,163,175,${Math.max(0.3, 0.75 - dist * 0.08)})`,
-                              userSelect: 'none',
-                              lineHeight: 1,
-                            }}>{n}</span>
-                          )}
+                          width:dist===0?'3px':is5?'2.5px':'2px', height:`${tickH}px`,
+                          backgroundColor:`rgba(${cr},${cg},${cb},${ca})`, borderRadius:'9999px', flexShrink:0,
+                          boxShadow:dist===0?`0 0 12px ${BRAND}55`:'none',
+                          transition:'height 0.08s ease, background-color 0.08s ease', willChange:'height',
+                        }}/>
+                        <div style={{ height:'34px', marginTop:'7px', display:'flex', alignItems:'flex-start', justifyContent:'center' }}>
+                          {is5 && <span style={{ fontSize:'12px', fontWeight:dist===0?800:dist<=2?500:400,
+                            color:dist===0?'hsl(var(--foreground))':`rgba(156,163,175,${Math.max(0.25,0.7-dist*0.08)})`,
+                            userSelect:'none', lineHeight:1 }}>{n}</span>}
                         </div>
                       </div>
                     );
                   })}
-                  <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
+                  <div style={{ width:'calc(50vw - 20px)', flexShrink:0 }}/>
                 </div>
               </div>
             </div>
 
-            {/* Motivational badge */}
+            {/* Timeline badge */}
             {(() => {
-              const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
-              let weeks = diff / goalPace;
-              if (weeks < 0) weeks = 0;
-              const d = addWeeks(new Date(), weeks);
+              const diff=parseFloat(currentWeight)-parseFloat(goalWeight);
+              const weeks=Math.max(0,diff/goalPace);
               return (
-                <div className="text-center mt-6 px-4">
-                  <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full text-sm font-medium">
-                    <Target size={16} />
-                    At this pace, you'll reach this by {format(d, "MMMM yyyy")}
+                <div className="text-center mt-5">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ background:`${BRAND}14`, color:BRAND }}>
+                    <Target size={13}/>
+                    At this pace, you'll reach this by {format(addWeeks(new Date(),weeks),"MMMM yyyy")}
                   </div>
                 </div>
               );
             })()}
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => handleNext(6)}
-            >
-              Continue
-            </Button>
+            <ContinueBtn onClick={() => nav(6)}>Continue</ContinueBtn>
           </motion.div>
         )}
 
+        {/* ─── Step 6: Goal Pace ───────────────────────────────────── */}
         {step === 6 && (
-          <motion.div
-            key="s6" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Goal Pace</h2>
-            <p className="text-muted-foreground mb-6">How quickly do you want to reach your goal?</p>
-            
-            <div className="space-y-10">
-              <div className="text-center">
-                <span className="text-5xl font-black">{goalPace.toFixed(1)}</span>
-                <span className="text-xl text-muted-foreground font-semibold ml-2">{heightUnit==="imperial"?"lbs":"kg"} / week</span>
-              </div>
-              
-              <div className="px-4">
-                <input 
-                  type="range" 
-                  min="0.5" max="2.5" step="0.5" 
-                  value={goalPace} 
-                  onChange={e => {setGoalPace(parseFloat(e.target.value)); haptic();}} 
-                  className="w-full accent-[#D4A574]"
-                />
-                <div className="flex justify-between mt-4 text-2xl">
-                  <span>🚶</span>
-                  <span>🚗</span>
-                  <span>🚀</span>
-                </div>
-              </div>
+          <motion.div key="s6" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Zap size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Set your pace</h2>
+            <p className="text-muted-foreground mb-6 text-sm">How quickly do you want to reach your goal?</p>
 
-              {(() => {
-                const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
-                let weeks = diff / goalPace;
-                if(weeks < 0) weeks = 0;
-                const d = addWeeks(new Date(), weeks);
-                return (
-                  <div className="text-center mt-8 px-4">
-                    <div className="inline-flex items-center gap-2 bg-[#D4A574] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
-                      Est. Goal Date: {format(d, "MMMM yyyy")}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => handleNext(7)}
-            >
-              Continue
-            </Button>
-          </motion.div>
-        )}
-
-        {step === 7 && (
-          <motion.div
-            key="s7" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Activity Level</h2>
-            <p className="text-muted-foreground mb-8">Tell us about your daily routine.</p>
-            
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3 mb-6">
               {[
-                { id: "sedentary", label: "Sedentary", desc: "Mostly desk work or resting", icon: "💺" },
-                { id: "lightly_active", label: "Lightly Active", desc: "Light walks, casual movement", icon: "🚶" },
-                { id: "active", label: "Active", desc: "Regular exercise, active job", icon: "🏃" },
-                { id: "very_active", label: "Very Active", desc: "Daily intense training", icon: "⚡" },
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => { setActivity(opt.id); haptic(); }}
-                  className={`h-[130px] flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all shadow-sm text-center ${
-                    activity === opt.id ? "bg-[#D4A574]/10 border-[#D4A574]" : "bg-card border-border"
-                  }`}
-                >
-                  <span className="text-4xl mb-3">{opt.icon}</span>
-                  <span className="font-bold text-sm mb-1 text-foreground">{opt.label}</span>
-                  <span className="text-xs text-muted-foreground">{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#D4A574' }}
-              disabled={!activity}
-              onClick={() => handleNext(8)}
-            >
-              Continue
-            </Button>
-          </motion.div>
-        )}
-
-        {step === 8 && (
-          <motion.div
-            key="s8" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Motivation</h2>
-            <p className="text-muted-foreground mb-6">What's driving you to reach your goal?</p>
-            
-            <div className="grid grid-cols-2 gap-3 content-start">
-              {[
-                "I want to feel more confident",
-                "I'm ready for a fresh start",
-                "I want to boost energy",
-                "To improve my health / manage PCOS",
-                "I want to show up for loved ones",
-                "I have a special event coming up",
-                "To feel good in my clothes again",
-                "Other"
+                { value:0.5, emoji:"🚶", label:"Steady", desc:`0.5 ${heightUnit==="imperial"?"lbs":"kg"}/week — gentle, sustainable` },
+                { value:1.0, emoji:"🚗", label:"Moderate", desc:`1.0 ${heightUnit==="imperial"?"lbs":"kg"}/week — balanced & effective`, recommended:true },
+                { value:1.5, emoji:"⚡", label:"Accelerated", desc:`1.5 ${heightUnit==="imperial"?"lbs":"kg"}/week — faster results` },
+                { value:2.0, emoji:"🚀", label:"Aggressive", desc:`2.0 ${heightUnit==="imperial"?"lbs":"kg"}/week — clinical supervision advised` },
               ].map(opt => {
-                const isSelected = motivations.includes(opt);
+                const sel = goalPace === opt.value;
                 return (
-                  <button
-                    key={opt}
-                    onClick={() => {
-                      haptic();
-                      setMotivations(prev => isSelected ? prev.filter(m => m !== opt) : [...prev, opt]);
-                    }}
-                    className={`relative flex items-center justify-center p-4 rounded-2xl border-2 transition-all text-sm font-semibold text-center min-h-[80px] shadow-sm ${
-                      isSelected ? "border-[#D4A574] bg-[#D4A574]/5" : "border-border bg-card"
-                    }`}
-                  >
-                    {isSelected && <div className="absolute -top-2 -right-2 bg-[#D4A574] rounded-full p-0.5"><Check size={12} className="text-white" /></div>}
-                    <span className={isSelected ? "text-foreground" : "text-muted-foreground"}>{opt}</span>
-                  </button>
-                )
+                  <motion.button key={opt.value} whileTap={{ scale:0.98 }}
+                    onClick={() => { setGoalPace(opt.value); haptic(); }}
+                    className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all shadow-sm"
+                    style={{ backgroundColor:sel?`${BRAND}12`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))" }}>
+                    <span className="text-2xl">{opt.emoji}</span>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground text-sm">{opt.label}</span>
+                        {opt.recommended && <span className="text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background:`${BRAND}20`, color:BRAND }}>RECOMMENDED</span>}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+                    </div>
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                      style={{ borderColor:sel?BRAND:"hsl(var(--border))", backgroundColor:sel?BRAND:"transparent" }}>
+                      {sel && <Check size={10} className="text-white" strokeWidth={3}/>}
+                    </div>
+                  </motion.button>
+                );
               })}
             </div>
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#D4A574' }}
-              disabled={motivations.length === 0}
-              onClick={() => handleNext(9)}
-            >
-              Continue
-            </Button>
+            {(() => {
+              const diff=parseFloat(currentWeight)-parseFloat(goalWeight);
+              const weeks=Math.max(0,diff/goalPace);
+              return (
+                <div className="flex justify-center mb-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-md"
+                    style={{ backgroundColor:BRAND, boxShadow:`0 4px 16px ${BRAND}45` }}>
+                    <Star size={13}/>
+                    Goal date: {format(addWeeks(new Date(),weeks),"MMMM yyyy")}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <ContinueBtn onClick={() => nav(7)}>Continue</ContinueBtn>
           </motion.div>
         )}
 
-        {step === 9 && (
-          <motion.div
-            key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Side Effects</h2>
-            <p className="text-muted-foreground mb-8">What side effects are giving you the most trouble?</p>
-            
-            <div className="flex flex-wrap gap-3 mb-8">
-              {["Nausea", "Fatigue", "Hair Loss", "Constipation", "Bloating", "Sulfur Burps", "Heartburn", "Food Noise"].map(opt => {
-                const isSelected = sideEffects.includes(opt);
+        {/* ─── Step 7: Activity Level ──────────────────────────────── */}
+        {step === 7 && (
+          <motion.div key="s7" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Flame size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your daily activity</h2>
+            <p className="text-muted-foreground mb-7 text-sm">Be honest — it helps calibrate your plan.</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id:"sedentary", label:"Sedentary", desc:"Desk work, mostly sitting", emoji:"💺" },
+                { id:"lightly_active", label:"Lightly Active", desc:"Walks, light movement", emoji:"🚶" },
+                { id:"active", label:"Active", desc:"Regular gym or active job", emoji:"🏃" },
+                { id:"very_active", label:"Very Active", desc:"Daily intense training", emoji:"⚡" },
+              ].map(opt => {
+                const sel = activity === opt.id;
                 return (
-                  <button
-                    key={opt}
-                    onClick={() => {
-                      haptic();
-                      setSideEffects(prev => isSelected ? prev.filter(m => m !== opt) : [...prev, opt]);
-                    }}
-                    className={`px-4 py-2.5 rounded-full text-sm font-semibold border-2 transition-all ${
-                      isSelected ? "border-[#D4A574] bg-[#D4A574] text-white" : "border-border bg-card text-foreground"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                )
+                  <motion.button key={opt.id} whileTap={{ scale:0.96 }}
+                    onClick={() => { setActivity(opt.id); haptic(); }}
+                    className="h-[130px] flex flex-col items-center justify-center gap-2 rounded-3xl border-2 transition-all shadow-sm text-center p-4"
+                    style={{ backgroundColor:sel?`${BRAND}12`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))" }}>
+                    <span className="text-4xl">{opt.emoji}</span>
+                    <span className="font-bold text-sm text-foreground leading-tight">{opt.label}</span>
+                    <span className="text-xs text-muted-foreground leading-tight">{opt.desc}</span>
+                  </motion.button>
+                );
               })}
             </div>
-            
+            <ContinueBtn disabled={!activity} onClick={() => nav(8)}>Continue</ContinueBtn>
+          </motion.div>
+        )}
+
+        {/* ─── Step 8: Motivation ──────────────────────────────────── */}
+        {step === 8 && (
+          <motion.div key="s8" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Heart size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">What's driving you?</h2>
+            <p className="text-muted-foreground mb-6 text-sm">Select all that resonate with you.</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { text:"Feel more confident", emoji:"✨" },
+                { text:"Fresh start", emoji:"🌱" },
+                { text:"Boost my energy", emoji:"⚡" },
+                { text:"Improve my health", emoji:"❤️" },
+                { text:"Show up for loved ones", emoji:"👨‍👩‍👧" },
+                { text:"Special event coming up", emoji:"🎉" },
+                { text:"Feel good in my clothes", emoji:"👗" },
+                { text:"Other", emoji:"💬" },
+              ].map(opt => {
+                const sel = motivations.includes(opt.text);
+                return (
+                  <motion.button key={opt.text} whileTap={{ scale:0.96 }}
+                    onClick={() => { haptic(); setMotivations(prev=>sel?prev.filter(m=>m!==opt.text):[...prev,opt.text]); }}
+                    className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all min-h-[90px] shadow-sm"
+                    style={{ backgroundColor:sel?`${BRAND}10`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))" }}>
+                    {sel && <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor:BRAND }}><Check size={10} className="text-white" strokeWidth={3}/></div>}
+                    <span className="text-2xl">{opt.emoji}</span>
+                    <span className={`text-xs font-semibold text-center leading-tight ${sel?"text-foreground":"text-muted-foreground"}`}>{opt.text}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+            <ContinueBtn disabled={motivations.length===0} onClick={() => nav(9)}>
+              Continue {motivations.length>0&&`(${motivations.length} selected)`}
+            </ContinueBtn>
+          </motion.div>
+        )}
+
+        {/* ─── Step 9: Side Effects ────────────────────────────────── */}
+        {step === 9 && (
+          <motion.div key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Wind size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Any side effects?</h2>
+            <p className="text-muted-foreground mb-6 text-sm">We'll personalise tips for managing them.</p>
+
+            <div className="flex flex-wrap gap-2.5 mb-6">
+              {[
+                { label:"Nausea", emoji:"🤢" }, { label:"Fatigue", emoji:"😴" },
+                { label:"Hair Loss", emoji:"💇" }, { label:"Constipation", emoji:"😣" },
+                { label:"Bloating", emoji:"😮‍💨" }, { label:"Sulfur Burps", emoji:"💨" },
+                { label:"Heartburn", emoji:"🔥" }, { label:"Food Noise", emoji:"🍕" },
+              ].map(opt => {
+                const sel = sideEffects.includes(opt.label);
+                return (
+                  <motion.button key={opt.label} whileTap={{ scale:0.95 }}
+                    onClick={() => { haptic(); setSideEffects(prev=>sel?prev.filter(m=>m!==opt.label):[...prev,opt.label]); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold border-2 transition-all"
+                    style={{ backgroundColor:sel?BRAND:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", color:sel?"white":"hsl(var(--muted-foreground))" }}>
+                    <span>{opt.emoji}</span>{opt.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+
             <AnimatePresence>
-              {sideEffects.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex gap-3 text-amber-900"
-                >
-                  <Info className="flex-shrink-0 mt-0.5 text-amber-600" size={18} />
-                  <p className="text-sm font-medium leading-relaxed">Our pharmacy team will provide personalized tips for managing your selected side effects.</p>
+              {sideEffects.length>0 && (
+                <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }} exit={{ opacity:0, height:0 }}
+                  className="flex gap-3 px-4 py-3.5 rounded-2xl border mb-2 overflow-hidden"
+                  style={{ background:"#fef9ec", borderColor:"#f3e5b0" }}>
+                  <Info size={15} className="flex-shrink-0 mt-0.5 text-amber-600"/>
+                  <p className="text-sm font-medium text-amber-900 leading-relaxed">
+                    Our pharmacist team will send personalised tips for managing {sideEffects.length===1?"this":"these"}.
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => handleNext(10)}
-            >
-              Continue
-            </Button>
+            <ContinueBtn onClick={() => nav(10)}>{sideEffects.length===0?"None, skip":"Continue"}</ContinueBtn>
           </motion.div>
         )}
 
+        {/* ─── Step 10: Select Medication ──────────────────────────── */}
         {step === 10 && (
-          <motion.div
-            key="s10" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col"
-          >
-            <div className="px-6 pt-2 pb-4 space-y-1">
-              <div className="mb-5">
-                <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                  <ChevronLeft size={20} className="text-foreground" />
-                </button>
-              </div>
-              <h2 className="text-3xl font-bold text-foreground">Select Medication</h2>
-            </div>
-            <div className="px-6 pb-3">
+          <motion.div key="s10" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col">
+            <div className="px-6 pt-3 pb-3">
+              <div className="mb-5"><BackBtn onBack={back} /></div>
+              <StepBadge icon={<Syringe size={20}/>} />
+              <h2 className="text-[28px] font-black text-foreground leading-tight">Your medication</h2>
+              <p className="text-muted-foreground text-sm mt-1 mb-4">Select your GLP-1 medication.</p>
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search medications..."
-                  className="pl-9 rounded-xl h-12"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                <Input type="search" placeholder="Search medications..." value={search} onChange={e=>setSearch(e.target.value)}
+                  className="pl-10 rounded-xl h-12 bg-card shadow-sm border-border/60"/>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
+            <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-5">
               {Object.entries(filteredGrouped).map(([generic, meds]) => (
                 <div key={generic}>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{generic}</p>
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">{generic}</p>
                   <div className="space-y-2">
-                    {meds.map((med) => {
-                      const isSelected = selectedMed?.id === med.id;
+                    {meds.map(med => {
+                      const sel = selectedMed?.id===med.id;
                       return (
-                        <button
-                          key={med.id}
-                          className={`w-full text-left rounded-2xl p-4 border-2 transition-all duration-200 ${
-                            isSelected ? "border-[#D4A574] bg-[#D4A574]/5" : "border-border bg-card shadow-sm"
-                          }`}
-                          onClick={() => { setSelectedMed(med); haptic(); handleNext(11); }}
-                        >
+                        <motion.button key={med.id} whileTap={{ scale:0.98 }}
+                          className="w-full text-left rounded-2xl p-4 border-2 transition-all"
+                          style={{ backgroundColor:sel?`${BRAND}0e`:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", boxShadow:sel?`0 4px 16px ${BRAND}25`:"0 1px 4px rgba(0,0,0,0.04)" }}
+                          onClick={() => { setSelectedMed(med); haptic(); nav(11); }}>
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="font-bold text-foreground text-base">{med.brandNames.join(", ")}</p>
-                              <p className="text-sm text-muted-foreground mt-0.5">{generic}</p>
+                              <p className="font-bold text-foreground">{med.brandNames.join(", ")}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{generic}</p>
                             </div>
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
-                              med.formulation === "injection" ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
-                            }`}>
-                              {med.formulation === "injection" ? <Syringe size={10} /> : <Pill size={10} />}
-                              {med.formulation}
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
+                              style={{ background:med.formulation==="injection"?`${BRAND}18`:"#3b82f618", color:med.formulation==="injection"?BRAND:"#3b82f6" }}>
+                              {med.formulation==="injection"?<Syringe size={10}/>:<Pill size={10}/>}{med.formulation}
                             </span>
                           </div>
-                        </button>
+                        </motion.button>
                       );
                     })}
                   </div>
@@ -1000,230 +782,220 @@ export default function Onboarding() {
           </motion.div>
         )}
 
+        {/* ─── Step 11: Med Info ───────────────────────────────────── */}
         {step === 11 && selectedMed && (
-          <motion.div
-            key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center overflow-y-auto"
-          >
-            <div className="mb-5">
-              <button onClick={handleBack} className="w-10 h-10 rounded-full bg-card border border-border shadow-sm flex items-center justify-center hover:bg-muted/60 transition-colors active:scale-95">
-                <ChevronLeft size={20} className="text-foreground" />
-              </button>
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-1">Set Your Dose</h2>
-            <p className="text-muted-foreground mb-8">{selectedMed.brandNames[0]}</p>
+          <motion.div key="s11" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-3 pb-6 overflow-y-auto justify-center">
+            <div className="mb-6"><BackBtn onBack={back} /></div>
+            <StepBadge icon={<Pill size={20}/>} />
+            <h2 className="text-[28px] font-black text-foreground mb-0.5 leading-tight">Set your dose</h2>
+            <p className="text-muted-foreground text-sm mb-7">{selectedMed.brandNames[0]}</p>
 
-            <div className="space-y-8">
+            <div className="space-y-7">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-foreground uppercase tracking-wider">Starting Dose</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
                 <div className="grid grid-cols-3 gap-2">
                   {selectedMed.doses.map((d: number) => (
-                    <button
-                      key={d}
-                      className={`rounded-xl py-3 text-sm font-bold border-2 transition-all ${
-                        selectedDose === d ? "border-[#D4A574] bg-[#D4A574] text-white" : "border-border bg-card shadow-sm"
-                      }`}
-                      onClick={() => {setSelectedDose(d); haptic();}}
-                    >
+                    <motion.button key={d} whileTap={{ scale:0.95 }}
+                      className="rounded-2xl py-3.5 text-sm font-bold border-2 transition-all"
+                      style={{ backgroundColor:selectedDose===d?BRAND:"hsl(var(--card))", borderColor:selectedDose===d?BRAND:"hsl(var(--border))", color:selectedDose===d?"white":"hsl(var(--foreground))", boxShadow:selectedDose===d?`0 4px 16px ${BRAND}40`:"0 1px 3px rgba(0,0,0,0.04)" }}
+                      onClick={() => { setSelectedDose(d); haptic(); }}>
                       {d} {selectedMed.unit}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-foreground uppercase tracking-wider">Start Date</label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-xl h-12 bg-card shadow-sm" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Start Date</label>
+                <Input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} className="rounded-xl h-12 bg-card shadow-sm border-border/60"/>
               </div>
 
-              {selectedMed.formulation === "injection" && (
+              {selectedMed.formulation==="injection" && (
                 <div className="space-y-3">
-                  <label className="text-sm font-bold text-foreground uppercase tracking-wider">First Injection Site</label>
-                  <div className="flex gap-4 items-center">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">First Injection Site</label>
+                  <div className="flex gap-3 items-center">
                     <div className="flex-1 grid grid-cols-1 gap-2">
-                      {INJECTION_SITES.map((site) => (
-                        <button
-                          key={site}
-                          className={`rounded-xl py-3 text-sm font-bold border-2 transition-all ${
-                            injectionSite === site ? "border-[#D4A574] bg-[#D4A574]/10 text-[#D4A574]" : "border-border bg-card shadow-sm"
-                          }`}
-                          onClick={() => {setInjectionSite(site); haptic();}}
-                        >
+                      {INJECTION_SITES.map(site => (
+                        <motion.button key={site} whileTap={{ scale:0.97 }}
+                          className="rounded-xl py-2.5 text-sm font-bold border-2 transition-all"
+                          style={{ backgroundColor:injectionSite===site?`${BRAND}14`:"hsl(var(--card))", borderColor:injectionSite===site?BRAND:"hsl(var(--border))", color:injectionSite===site?BRAND:"hsl(var(--foreground))" }}
+                          onClick={() => { setInjectionSite(site); haptic(); }}>
                           {site}
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
-                    <div className="w-24 h-40 bg-muted/30 rounded-2xl flex items-center justify-center p-2 relative">
+                    <div className="w-20 h-36 bg-muted/30 rounded-2xl flex items-center justify-center p-2 relative">
                       {BODY_SVG}
-                      {/* Highlight dots */}
-                      {injectionSite === "Abdomen" && <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-4 h-3 bg-[#D4A574] rounded-full blur-[2px]" />}
-                      {injectionSite === "Thigh" && <div className="absolute top-[65%] left-[40%] w-3 h-5 bg-[#D4A574] rounded-full blur-[2px]" />}
-                      {injectionSite === "Upper Arm" && <div className="absolute top-[35%] left-[25%] w-3 h-5 bg-[#D4A574] rounded-full blur-[2px]" />}
-                      {injectionSite === "Buttocks" && <div className="absolute top-[55%] left-[40%] w-4 h-4 bg-[#D4A574] rounded-full blur-[2px]" />}
+                      {injectionSite==="Abdomen" && <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-4 h-3 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
+                      {injectionSite==="Thigh" && <div className="absolute top-[65%] left-[38%] w-3 h-5 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
+                      {injectionSite==="Upper Arm" && <div className="absolute top-[35%] left-[22%] w-3 h-5 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
+                      {injectionSite==="Buttocks" && <div className="absolute top-[55%] left-[38%] w-4 h-4 rounded-full blur-[2px]" style={{ backgroundColor:BRAND }}/>}
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border/60 shadow-sm">
                 <div>
                   <p className="text-sm font-bold text-foreground">Injection Reminders</p>
-                  <p className="text-xs text-muted-foreground">Get notified on dose days</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Get notified on dose days</p>
                 </div>
-                <button
-                  onClick={() => {setReminderEnabled(!reminderEnabled); haptic();}}
-                  className="relative w-12 h-6 rounded-full flex-shrink-0 overflow-hidden"
-                  style={{ backgroundColor: reminderEnabled ? '#D4A574' : 'var(--color-muted)' }}
-                >
-                  <motion.span layout transition={{ type: "spring", stiffness: 700, damping: 30 }} className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md" style={{ left: reminderEnabled ? 'calc(100% - 22px)' : '2px' }} />
+                <button onClick={() => { setReminderEnabled(!reminderEnabled); haptic(); }}
+                  className="relative w-12 h-6 rounded-full overflow-hidden transition-colors"
+                  style={{ backgroundColor:reminderEnabled?BRAND:"hsl(var(--muted))" }}>
+                  <motion.span layout transition={{ type:"spring", stiffness:700, damping:30 }}
+                    className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+                    style={{ left:reminderEnabled?"calc(100% - 22px)":"2px" }}/>
                 </button>
               </div>
             </div>
 
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#D4A574' }}
-              disabled={!selectedDose}
-              onClick={() => handleNext(12)}
-            >
-              Craft My Plan
-            </Button>
+            <ContinueBtn disabled={!selectedDose} onClick={() => nav(12)}>Craft My Plan →</ContinueBtn>
           </motion.div>
         )}
 
+        {/* ─── Step 12: Loading ────────────────────────────────────── */}
         {step === 12 && (
-          <motion.div
-            key="s12" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col items-center justify-center px-8 text-center bg-card rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] mt-12 border-t border-border"
-          >
-            <div className="relative w-32 h-32 mb-8">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="64" cy="64" r="60" stroke="var(--color-muted)" strokeWidth="6" fill="none" />
-                <motion.circle
-                  cx="64" cy="64" r="60" stroke="#D4A574" strokeWidth="6" fill="none" strokeLinecap="round"
-                  initial={{ strokeDasharray: 377, strokeDashoffset: 377 }}
-                  animate={{ strokeDashoffset: 0 }}
-                  transition={{ duration: 2.5, ease: "linear" }}
-                />
+          <motion.div key="s12" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+            <div className="relative w-28 h-28 mb-10">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 112 112">
+                <circle cx="56" cy="56" r="50" stroke="hsl(var(--muted))" strokeWidth="6" fill="none"/>
+                <motion.circle cx="56" cy="56" r="50" stroke={BRAND} strokeWidth="6" fill="none" strokeLinecap="round"
+                  initial={{ strokeDasharray:314, strokeDashoffset:314 }}
+                  animate={{ strokeDashoffset:0 }}
+                  transition={{ duration:3.1, ease:"linear" }}/>
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <CheckCircle2 size={32} className="text-[#D4A574]" />
+                <motion.div animate={{ rotate:360 }} transition={{ duration:2, repeat:Infinity, ease:"linear" }}>
+                  <Syringe size={28} style={{ color:BRAND }} strokeWidth={1.5}/>
+                </motion.div>
               </div>
             </div>
-            
-            <h2 className="text-2xl font-bold text-foreground mb-8">Crafting your custom Jotrea plan...</h2>
-            
+            <h2 className="text-2xl font-black text-foreground mb-2">Building your plan…</h2>
+            <p className="text-sm text-muted-foreground mb-10">Personalised just for you</p>
             <div className="space-y-4 w-full max-w-xs text-left">
               {[
-                { label: "Building your dose schedule...", tick: 0 },
-                { label: "Calculating your weight timeline...", tick: 1 },
-                { label: "Preparing side effect tips...", tick: 2 },
-                { label: "Setting reminder preferences...", tick: 3 }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors duration-300 ${loadingTicks >= item.tick ? "bg-[#D4A574]" : "bg-muted"}`}>
-                    <Check size={12} className="text-white" strokeWidth={3} />
+                { label:"Building your dose schedule", icon:<Calendar size={12}/> },
+                { label:"Calculating your weight timeline", icon:<TrendingDown size={12}/> },
+                { label:"Preparing side effect tips", icon:<Heart size={12}/> },
+                { label:"Setting reminder preferences", icon:<Bell size={12}/> },
+              ].map((item,i) => {
+                const done = loadingTicks > i;
+                return (
+                  <motion.div key={i} className="flex items-center gap-3" animate={{ opacity:loadingTicks>=i?1:0.35 }} transition={{ duration:0.3 }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-300"
+                      style={{ backgroundColor:done?BRAND:"hsl(var(--muted))" }}>
+                      {done?<Check size={11} className="text-white" strokeWidth={3}/>:<span style={{ color:"hsl(var(--muted-foreground))" }}>{item.icon}</span>}
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── Step 13: Plan Ready ─────────────────────────────────── */}
+        {step === 13 && (
+          <motion.div key="s13" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-6 pt-8 pb-6">
+            <div className="text-center mb-7">
+              <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:"spring", stiffness:280, damping:20 }}
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 shadow-xl"
+                style={{ background:`radial-gradient(circle, ${BRAND}30, ${BRAND}0e)`, border:`2px solid ${BRAND}40` }}>
+                <CheckCircle2 size={36} style={{ color:BRAND }}/>
+              </motion.div>
+              <h2 className="text-[28px] font-black text-foreground mb-2">Your plan is ready! 🎉</h2>
+              <p className="text-muted-foreground text-sm">A personalised GLP-1 plan built just for you.</p>
+            </div>
+
+            <div className="bg-card rounded-3xl p-5 border border-border/60 mb-5" style={{ boxShadow:"0 4px 20px rgba(0,0,0,0.05)" }}>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Your Timeline</p>
+              <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-1.5">
+                <span>Today</span><span>Goal</span>
+              </div>
+              <div className="w-full h-2 bg-muted/60 rounded-full mb-5 overflow-hidden">
+                <motion.div className="h-full rounded-full" style={{ backgroundColor:BRAND }}
+                  initial={{ width:"0%" }} animate={{ width:"12%" }} transition={{ duration:0.8, ease:"easeOut", delay:0.3 }}/>
+              </div>
+              <div className="divide-y divide-border/40">
+                {[
+                  { label:"Medication", value:selectedMed?.brandNames[0] },
+                  { label:"Schedule", value:selectedMed?.frequency ? selectedMed.frequency.charAt(0).toUpperCase() + selectedMed.frequency.slice(1) : "—" },
+                  { label:"Goal Weight", value:`${goalWeight} ${heightUnit==="imperial"?"lbs":"kg"}` },
+                ].map(row => (
+                  <div key={row.label} className="flex items-center justify-between py-3">
+                    <span className="text-sm text-muted-foreground font-medium">{row.label}</span>
+                    <span className="text-sm font-bold">{row.value}</span>
                   </div>
-                  <span className={`text-sm font-medium transition-colors duration-300 ${loadingTicks >= item.tick ? "text-foreground" : "text-muted-foreground"}`}>{item.label}</span>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Daily Goals</p>
+            <div className="grid grid-cols-3 gap-3 mb-7">
+              {[
+                { icon:<Droplets size={17} className="text-blue-500"/>, label:"Water", value:"8 cups" },
+                { icon:<Activity size={17} className="text-red-500"/>, label:"Protein", value:`${Math.round((heightUnit==="imperial"?parseFloat(currentWeight)/2.2:parseFloat(currentWeight))*0.8)}g` },
+                { icon:<Target size={17} className="text-green-500"/>, label:"Steps", value:"8,000" },
+              ].map(g => (
+                <div key={g.label} className="bg-card rounded-2xl p-4 border border-border/60 text-center shadow-sm">
+                  <div className="flex justify-center mb-2">{g.icon}</div>
+                  <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mb-1">{g.label}</p>
+                  <p className="text-sm font-bold">{g.value}</p>
                 </div>
               ))}
             </div>
+
+            <Button className="w-full h-14 rounded-2xl text-base font-bold text-white"
+              style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
+              onClick={() => nav(14)}>Let's Get Started →</Button>
           </motion.div>
         )}
 
-        {step === 13 && (
-          <motion.div
-            key="s13" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 justify-center"
-          >
-            <div className="w-16 h-16 bg-[#D4A574]/20 rounded-full flex items-center justify-center mb-6">
-              <Target size={32} className="text-[#D4A574]" />
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Your Plan is Ready</h2>
-            <p className="text-muted-foreground mb-8">Congratulations! Your personal Jotrea plan is tailored to you.</p>
-            
-            <div className="bg-card rounded-3xl p-6 border border-border shadow-[0_4px_12px_rgba(0,0,0,0.05)] mb-6">
-              <p className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">Timeline</p>
-              <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-2">
-                <span>Start</span>
-                <span>Goal</span>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full mb-6 overflow-hidden">
-                <div className="h-full bg-[#D4A574] w-[15%]" />
-              </div>
-              
-              <div className="flex items-center justify-between py-3 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">Shot Schedule</span>
-                <span className="text-sm font-bold">{selectedMed?.frequency === "weekly" ? "Weekly" : "Daily"}</span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-sm font-medium text-muted-foreground">Next Site</span>
-                <span className="text-sm font-bold">{selectedMed?.formulation === "injection" ? injectionSite : "Oral"}</span>
-              </div>
-            </div>
-            
-            <p className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider px-2">Daily Goals</p>
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              <div className="bg-card rounded-2xl p-4 border border-border text-center shadow-sm">
-                <Droplets size={20} className="text-blue-500 mx-auto mb-2" />
-                <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Water</p>
-                <p className="text-sm font-bold">8 glasses</p>
-              </div>
-              <div className="bg-card rounded-2xl p-4 border border-border text-center shadow-sm">
-                <Activity size={20} className="text-red-500 mx-auto mb-2" />
-                <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Protein</p>
-                <p className="text-sm font-bold">{Math.round((heightUnit === "imperial" ? parseFloat(currentWeight)/2.2 : parseFloat(currentWeight)) * 0.8)}g</p>
-              </div>
-              <div className="bg-card rounded-2xl p-4 border border-border text-center shadow-sm">
-                <Target size={20} className="text-green-500 mx-auto mb-2" />
-                <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Steps</p>
-                <p className="text-sm font-bold">8k</p>
-              </div>
-            </div>
-
-            <Button
-              className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
-              style={{ backgroundColor: '#D4A574' }}
-              onClick={() => handleNext(14)}
-            >
-              Let's Get Started
-            </Button>
-          </motion.div>
-        )}
-
+        {/* ─── Step 14: Notifications ──────────────────────────────── */}
         {step === 14 && (
-          <motion.div
-            key="s14" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: transitionEase }}
-            className="flex-1 flex flex-col items-center justify-center px-8 text-center"
-          >
-            <div className="w-24 h-24 bg-[#D4A574]/10 rounded-full flex items-center justify-center mb-8">
-              <Bell size={40} className="text-[#D4A574]" />
+          <motion.div key="s14" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col items-center justify-center px-7 text-center">
+            <motion.div animate={{ rotate:[0,-12,12,-8,8,0] }} transition={{ delay:0.6, duration:0.8 }}
+              className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 shadow-xl"
+              style={{ background:`linear-gradient(135deg, ${BRAND}22, ${BRAND}08)`, border:`2px solid ${BRAND}30` }}>
+              <Bell size={40} style={{ color:BRAND }} strokeWidth={1.8}/>
+            </motion.div>
+
+            <h2 className="text-[28px] font-black text-foreground mb-3 leading-tight">Never miss a dose</h2>
+            <p className="text-muted-foreground mb-8 text-sm leading-relaxed max-w-xs">
+              Turn on notifications for smart reminders on your injection days and weekly weight check-ins.
+            </p>
+
+            {/* Mock notification */}
+            <div className="w-full max-w-xs bg-card rounded-2xl p-4 text-left border border-border/60 mb-10" style={{ boxShadow:"0 8px 32px rgba(0,0,0,0.08)" }}>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:`${BRAND}20` }}>
+                  <Syringe size={15} style={{ color:BRAND }} strokeWidth={1.8}/>
+                </div>
+                <div><p className="text-xs font-bold text-foreground">Jotrea · now</p></div>
+              </div>
+              <p className="text-sm font-semibold text-foreground">Injection day! 💉</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Time to take your {selectedMed?.brandNames[0]||"GLP-1"} dose today.</p>
             </div>
-            
-            <h2 className="text-3xl font-bold text-foreground mb-4">Reach Your Goal with Notifications.</h2>
-            <p className="text-muted-foreground mb-8">Turn on Push Notifications to unlock smart reminders on your dose days.</p>
-            
-            <div className="w-full space-y-4">
-              <Button
-                className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white hover:opacity-90"
-                style={{ backgroundColor: '#D4A574' }}
-                onClick={async () => {
-                  haptic();
-                  setLocation("/", { replace: true });
-                }}
-              >
+
+            <div className="w-full max-w-xs space-y-3">
+              <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
+                style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
+                onClick={() => { haptic([10,20,10]); setLocation("/", { replace:true }); }}>
                 Allow Notifications
               </Button>
-              <Button
-                variant="outline"
-                className="w-full h-14 rounded-2xl text-base font-bold text-muted-foreground border-2 hover:bg-muted"
-                onClick={() => { haptic(); setLocation("/", { replace: true }); }}
-              >
-                Don't Allow
+              <Button variant="outline" className="w-full h-12 rounded-2xl text-sm font-semibold text-muted-foreground border-2 hover:bg-muted"
+                onClick={() => { haptic(); setLocation("/", { replace:true }); }}>
+                Maybe later
               </Button>
             </div>
           </motion.div>
         )}
+
       </AnimatePresence>
     </div>
   );
