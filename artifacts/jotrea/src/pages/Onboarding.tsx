@@ -196,26 +196,30 @@ export default function Onboarding() {
   const rulerRef = useRef<HTMLDivElement>(null);
   
   // Set initial ruler scroll position only when entering step 5 or changing units.
-  // useLayoutEffect fires before browser paint → no visible flash at rMin position.
-  // goalWeight, startWeight, currentWeight are intentionally NOT deps — onScroll owns
-  // goalWeight updates and adding it would create a runaway scroll feedback loop.
-  useLayoutEffect(() => {
+  // goalWeight is pre-initialized by step 4's Continue button so it is never "" here.
+  // goalWeight/startWeight/currentWeight are intentionally NOT deps — onScroll owns
+  // goalWeight updates; adding it would create a runaway scroll feedback loop.
+  // Double-RAF: first RAF lets Framer Motion start mounting the entering element;
+  // second RAF guarantees layout is complete and scrollLeft can be applied reliably.
+  useEffect(() => {
     if (step === 5) {
       const rMin = heightUnit === "imperial" ? 80 : 30;
       const rMax = heightUnit === "imperial" ? 400 : 200;
-      // Priority: already-set goalWeight → startWeight (Step 4 entry) → currentWeight → 150
       const raw = goalWeight || startWeight || currentWeight || "150";
       const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString();
-      // Initialize goalWeight state on first visit to step 5
       if (!goalWeight) setGoalWeight(clamped);
       const index = parseInt(clamped) - rMin;
-      // Spacer = calc(50vw - 20px); ruler clientWidth = viewport − 48px (px-6 both sides).
+      // Spacer = calc(50vw − 20px); ruler clientWidth = viewport − 48px (px-6 both sides).
       // Correct formula: scrollLeft = spacer + index×40 + 20 − clientWidth/2
-      if (rulerRef.current) {
-        const el = rulerRef.current;
-        const spacer = window.innerWidth / 2 - 20;
-        el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
-      }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (rulerRef.current) {
+            const el = rulerRef.current;
+            const spacer = window.innerWidth / 2 - 20;
+            el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
+          }
+        });
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, heightUnit]);
@@ -521,7 +525,17 @@ export default function Onboarding() {
               className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#D4A574' }}
               disabled={!startWeight}
-              onClick={() => handleNext(5)}
+              onClick={() => {
+                // Pre-initialize goalWeight before step 5 mounts so the ruler never
+                // snaps to rMin (80 lbs) while goalWeight is still empty.
+                if (!goalWeight) {
+                  const rMin = heightUnit === "imperial" ? 80 : 30;
+                  const rMax = heightUnit === "imperial" ? 400 : 200;
+                  const raw = startWeight || currentWeight || "150";
+                  setGoalWeight(Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString());
+                }
+                handleNext(5);
+              }}
             >
               Continue
             </Button>
