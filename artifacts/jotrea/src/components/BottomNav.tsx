@@ -18,7 +18,7 @@ export function BottomNav() {
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card/95 backdrop-blur-lg border-t border-border z-50"
       data-testid="bottom-nav"
     >
-      <div className="flex items-center justify-around px-2 py-2 pb-safe">
+      <div className="flex items-center justify-around px-2 py-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}>
         {tabs.map(({ href, icon: Icon, label }) => {
           const isActive =
             href === "/"

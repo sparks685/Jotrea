@@ -1058,18 +1058,30 @@ export default function Onboarding() {
                         <path d="M 44 33 L 56 33 L 57.5 46 L 42.5 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
                         {/* Torso */}
                         <path d="M 28 46 C 18 50 15 62 15 74 L 15 144 C 15 154 21 158 31 158 L 69 158 C 79 158 85 154 85 144 L 85 74 C 85 62 82 50 72 46 Q 62 43 50 43 Q 38 43 28 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.8"/>
-                        {/* Left arm */}
-                        <rect x="4" y="54" width="12" height="82" rx="6" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Right arm */}
-                        <rect x="84" y="54" width="12" height="82" rx="6" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Left leg */}
-                        <rect x="26" y="155" width="17" height="82" rx="8.5" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Right leg */}
-                        <rect x="57" y="155" width="17" height="82" rx="8.5" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Subtle waist line */}
-                        <path d="M 20 105 Q 50 112 80 105" stroke="#D2C5B8" strokeWidth="0.5" fill="none" opacity="0.5"/>
-                        {/* Collar line */}
-                        <path d="M 43 50 Q 50 52 57 50" stroke="#D2C5B8" strokeWidth="0.6" fill="none" opacity="0.45"/>
+                        {/* Left arm — tapered, shoulder wider, wrist narrower */}
+                        <path d="M 15 52 C 8 52 4 57 4 64 L 5 126 C 5 132 7 137 11 137 C 15 137 17 132 17 126 L 17 64 C 17 57 20 52 15 52 Z"
+                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Right arm — tapered mirror */}
+                        <path d="M 85 52 C 92 52 96 57 96 64 L 95 126 C 95 132 93 137 89 137 C 85 137 83 132 83 126 L 83 64 C 83 57 80 52 85 52 Z"
+                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Left leg — thigh wider, tapers to ankle */}
+                        <path d="M 27 157 C 22 158 20 164 20 172 L 21 225 C 21 233 25 238 31 238 C 37 238 41 233 41 225 L 42 172 C 42 164 44 158 43 157 Z"
+                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Right leg — thigh wider, tapers to ankle */}
+                        <path d="M 73 157 C 78 158 80 164 80 172 L 79 225 C 79 233 75 238 69 238 C 63 238 59 233 59 225 L 58 172 C 58 164 56 158 57 157 Z"
+                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
+                        {/* Elbow crease — left */}
+                        <path d="M 5 95 Q 10 97 17 95" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
+                        {/* Elbow crease — right */}
+                        <path d="M 83 95 Q 90 97 95 95" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
+                        {/* Knee crease — left */}
+                        <path d="M 20 190 Q 31 193 42 190" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
+                        {/* Knee crease — right */}
+                        <path d="M 58 190 Q 69 193 80 190" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
+                        {/* Clavicle / neckline detail */}
+                        <path d="M 42 50 Q 50 53 58 50" stroke="#D2C5B8" strokeWidth="0.6" fill="none" opacity="0.5"/>
+                        {/* Navel */}
+                        <circle cx="50" cy="122" r="1.2" fill="none" stroke="#D2C5B8" strokeWidth="0.6" opacity="0.4"/>
                       </g>
 
                       {/* Injection site markers */}
@@ -1190,7 +1202,7 @@ export default function Onboarding() {
         {/* ─── Step 13: Plan Ready ─────────────────────────────────── */}
         {step === 13 && (
           <motion.div key="s13" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col px-6 pt-8 pb-6">
+            className="flex-1 flex flex-col px-6 pt-16 pb-6 overflow-y-auto">
             <div className="text-center mb-7">
               <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:"spring", stiffness:280, damping:20 }}
                 className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 shadow-xl"

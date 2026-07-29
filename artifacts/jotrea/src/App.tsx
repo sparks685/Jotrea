@@ -57,7 +57,10 @@ function AppRoutes() {
   return (
     <>
       <RouteTracker />
-      <div className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}>
+      <div
+        className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}
+        style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
+      >
         <AnimatePresence mode="wait">
           <Switch key={location}>
             <Route path="/onboarding">

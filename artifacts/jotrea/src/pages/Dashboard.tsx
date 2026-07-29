@@ -240,12 +240,14 @@ export default function Dashboard() {
       </div>
 
       {/* Mini weight chart */}
-      {chartData.length > 0 && (
-        <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">Weight Trend</p>
+      <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-foreground">Weight Trend</p>
+          {chartData.length > 0 && (
             <p className="text-xs text-muted-foreground">Last 7 entries</p>
-          </div>
+          )}
+        </div>
+        {chartData.length >= 2 ? (
           <ResponsiveContainer width="100%" height={80}>
             <LineChart data={chartData}>
               <XAxis dataKey="date" hide />
@@ -263,13 +265,26 @@ export default function Dashboard() {
                 dataKey="weight"
                 stroke="hsl(var(--secondary))"
                 strokeWidth={2.5}
-                dot={false}
-                activeDot={{ r: 4, fill: "hsl(var(--secondary))" }}
+                dot={{ r: 3, fill: "hsl(var(--secondary))", strokeWidth: 0 }}
+                activeDot={{ r: 5, fill: "hsl(var(--secondary))" }}
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col items-center justify-center py-5 gap-2">
+            <Scale size={28} className="text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground text-center">
+              Start logging weight to see your trend
+            </p>
+            <button
+              onClick={() => setShowWeightForm(true)}
+              className="mt-1 text-xs font-semibold px-4 py-1.5 rounded-full border border-border hover:bg-muted/40 transition-colors"
+            >
+              Add first entry
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Upcoming doses */}
       {nextThree.length > 0 && (
