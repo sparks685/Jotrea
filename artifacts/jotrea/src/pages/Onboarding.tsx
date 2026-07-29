@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -196,27 +196,26 @@ export default function Onboarding() {
   const rulerRef = useRef<HTMLDivElement>(null);
   
   // Set initial ruler scroll position only when entering step 5 or changing units.
-  // goalWeight is intentionally NOT a dep — the onScroll handler owns goalWeight updates
-  // and re-running this effect on every goalWeight change creates a runaway feedback loop.
-  useEffect(() => {
+  // useLayoutEffect fires before browser paint → no visible flash at rMin position.
+  // goalWeight, startWeight, currentWeight are intentionally NOT deps — onScroll owns
+  // goalWeight updates and adding it would create a runaway scroll feedback loop.
+  useLayoutEffect(() => {
     if (step === 5) {
       const rMin = heightUnit === "imperial" ? 80 : 30;
       const rMax = heightUnit === "imperial" ? 400 : 200;
       // Priority: already-set goalWeight → startWeight (Step 4 entry) → currentWeight → 150
       const raw = goalWeight || startWeight || currentWeight || "150";
       const clamped = Math.min(rMax, Math.max(rMin, parseInt(raw) || 150)).toString();
-      // Initialize state if this is the first time on step 5
+      // Initialize goalWeight state on first visit to step 5
       if (!goalWeight) setGoalWeight(clamped);
       const index = parseInt(clamped) - rMin;
-      // Spacer width = calc(50vw - 20px). The ruler clientWidth = viewport - 48px (px-6 both sides).
-      // To center tick `index` under the needle: scrollLeft = spacer + index*40 + 20 - clientWidth/2
-      requestAnimationFrame(() => {
-        if (rulerRef.current) {
-          const el = rulerRef.current;
-          const spacer = window.innerWidth / 2 - 20;
-          el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
-        }
-      });
+      // Spacer = calc(50vw - 20px); ruler clientWidth = viewport − 48px (px-6 both sides).
+      // Correct formula: scrollLeft = spacer + index×40 + 20 − clientWidth/2
+      if (rulerRef.current) {
+        const el = rulerRef.current;
+        const spacer = window.innerWidth / 2 - 20;
+        el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, heightUnit]);
@@ -544,7 +543,7 @@ export default function Onboarding() {
 
             {/* Dream weight display */}
             <div className="text-center mb-10">
-              <span style={{ fontSize: '17px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.1em' }}>Dream weight</span>
+              <span style={{ fontSize: '18px', fontWeight: 600, color: '#D4A574', letterSpacing: '0.08em' }}>Dream weight</span>
               <div className="mt-2 flex items-baseline justify-center gap-2">
                 <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight || startWeight || currentWeight || "150"}</span>
                 <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
