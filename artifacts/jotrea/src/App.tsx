@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, Component } from "react";
+import type { ReactNode, ErrorInfo } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,6 +15,32 @@ import WeightTracker from "@/pages/WeightTracker";
 import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
+
+class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error("[PageErrorBoundary]", error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center gap-4">
+          <p className="text-sm font-semibold text-destructive">Something went wrong on this page.</p>
+          <p className="text-xs text-muted-foreground font-mono break-all">{this.state.error.message}</p>
+          <button
+            className="text-xs font-semibold px-4 py-2 rounded-full border border-border hover:bg-muted/40"
+            onClick={() => { localStorage.clear(); location.replace("/"); }}
+          >
+            Reset &amp; Restart
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 
 
@@ -61,7 +88,7 @@ function AppRoutes() {
         className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}
         style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <Switch key={location}>
             <Route path="/onboarding">
               <AnimatedPage>
@@ -109,9 +136,17 @@ function AppRoutes() {
                 <Redirect to="/onboarding" />
               ) : (
                 <AnimatedPage>
-                  <Settings />
+                  <PageErrorBoundary>
+                    <Settings />
+                  </PageErrorBoundary>
                 </AnimatedPage>
               )}
+            </Route>
+            <Route path="/reset">
+              {(() => {
+                localStorage.clear();
+                return <Redirect to="/onboarding" />;
+              })()}
             </Route>
             <Route component={NotFound} />
           </Switch>
