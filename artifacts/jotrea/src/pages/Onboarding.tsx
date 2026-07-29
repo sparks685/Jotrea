@@ -1048,59 +1048,154 @@ export default function Onboarding() {
                   }}>
                     <svg viewBox="0 0 100 240" style={{ height:'212px', width:'auto' }} fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>
-                        <filter id="bodyShadow" x="-20%" y="-8%" width="140%" height="120%">
-                          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor={BRAND} floodOpacity="0.12"/>
+                        {/* Warm skin-tone gradient — lighter top-center, richer at base */}
+                        <linearGradient id="skinG" x1="30%" y1="0%" x2="70%" y2="100%">
+                          <stop offset="0%"   stopColor="#F5CFA0"/>
+                          <stop offset="40%"  stopColor="#EABB88"/>
+                          <stop offset="100%" stopColor="#CD9460"/>
+                        </linearGradient>
+                        {/* Soft frontal highlight — white radial from upper-center */}
+                        <radialGradient id="hlG" cx="48%" cy="30%" r="55%">
+                          <stop offset="0%"   stopColor="#FFFFFF" stopOpacity="0.22"/>
+                          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0"/>
+                        </radialGradient>
+                        {/* Figure drop shadow */}
+                        <filter id="figShadow" x="-22%" y="-5%" width="144%" height="118%">
+                          <feDropShadow dx="0" dy="5" stdDeviation="5"
+                            floodColor="#7A4A22" floodOpacity="0.22"/>
                         </filter>
                       </defs>
 
-                      {/* Silhouette */}
-                      <g filter="url(#bodyShadow)">
+                      {/* ── Full figure with drop shadow ───────────────────────── */}
+                      <g filter="url(#figShadow)">
+
+                        {/* Hair */}
+                        <ellipse cx="50" cy="10.5" rx="13" ry="10.5" fill="#5C3A1E"/>
+                        {/* Hair fade into forehead */}
+                        <ellipse cx="50" cy="16" rx="12.5" ry="7" fill="#7A5030" fillOpacity="0.35"/>
+
                         {/* Head */}
-                        <ellipse cx="50" cy="19" rx="13" ry="16" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.8"/>
-                        {/* Hair cap */}
-                        <ellipse cx="50" cy="10" rx="13" ry="9" fill="#E0D5CA"/>
+                        <ellipse cx="50" cy="20" rx="12" ry="14.5" fill="url(#skinG)" stroke="#B87840" strokeWidth="0.45"/>
+                        {/* Head highlight */}
+                        <ellipse cx="47" cy="16" rx="7" ry="8" fill="url(#hlG)"/>
+
                         {/* Neck */}
-                        <path d="M 44 33 L 56 33 L 57.5 46 L 42.5 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Torso */}
-                        <path d="M 28 46 C 18 50 15 62 15 74 L 15 144 C 15 154 21 158 31 158 L 69 158 C 79 158 85 154 85 144 L 85 74 C 85 62 82 50 72 46 Q 62 43 50 43 Q 38 43 28 46 Z" fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.8"/>
-                        {/* Left arm — tapered, shoulder wider, wrist narrower */}
-                        <path d="M 15 52 C 8 52 4 57 4 64 L 5 126 C 5 132 7 137 11 137 C 15 137 17 132 17 126 L 17 64 C 17 57 20 52 15 52 Z"
-                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Right arm — tapered mirror */}
-                        <path d="M 85 52 C 92 52 96 57 96 64 L 95 126 C 95 132 93 137 89 137 C 85 137 83 132 83 126 L 83 64 C 83 57 80 52 85 52 Z"
-                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Left leg — thigh wider, tapers to ankle */}
-                        <path d="M 27 157 C 22 158 20 164 20 172 L 21 225 C 21 233 25 238 31 238 C 37 238 41 233 41 225 L 42 172 C 42 164 44 158 43 157 Z"
-                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Right leg — thigh wider, tapers to ankle */}
-                        <path d="M 73 157 C 78 158 80 164 80 172 L 79 225 C 79 233 75 238 69 238 C 63 238 59 233 59 225 L 58 172 C 58 164 56 158 57 157 Z"
-                          fill="#EDE7DF" stroke="#D2C5B8" strokeWidth="0.7"/>
-                        {/* Elbow crease — left */}
-                        <path d="M 5 95 Q 10 97 17 95" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
-                        {/* Elbow crease — right */}
-                        <path d="M 83 95 Q 90 97 95 95" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
-                        {/* Knee crease — left */}
-                        <path d="M 20 190 Q 31 193 42 190" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
-                        {/* Knee crease — right */}
-                        <path d="M 58 190 Q 69 193 80 190" stroke="#D2C5B8" strokeWidth="0.45" fill="none" opacity="0.55"/>
-                        {/* Clavicle / neckline detail */}
-                        <path d="M 42 50 Q 50 53 58 50" stroke="#D2C5B8" strokeWidth="0.6" fill="none" opacity="0.5"/>
-                        {/* Navel */}
-                        <circle cx="50" cy="122" r="1.2" fill="none" stroke="#D2C5B8" strokeWidth="0.6" opacity="0.4"/>
+                        <path d="M 46.5 33 C 46 37 45.5 41 45.5 44 L 54.5 44 C 54.5 41 54 37 53.5 33 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.4"/>
+
+                        {/* Torso — shoulders → hips, organic S-curve sides */}
+                        <path d="
+                          M 30 45
+                          C 20 48 15 58 14 69
+                          C 12 83 16 100 18 111
+                          C 16 123 15 137 17 150
+                          C 18 157 23 161 30 161
+                          L 70 161
+                          C 77 161 82 157 83 150
+                          C 85 137 84 123 82 111
+                          C 84 100 88 83 86 69
+                          C 85 58 80 48 70 45
+                          Q 62 41 50 41
+                          Q 38 41 30 45 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.45"/>
+                        {/* Torso frontal highlight */}
+                        <path d="
+                          M 30 45 C 20 48 15 58 14 69
+                          C 12 83 16 100 18 111
+                          C 16 123 15 137 17 150
+                          C 18 157 23 161 30 161
+                          L 70 161 C 77 161 82 157 83 150
+                          C 85 137 84 123 82 111
+                          C 84 100 88 83 86 69
+                          C 85 58 80 48 70 45
+                          Q 62 41 50 41 Q 38 41 30 45 Z"
+                          fill="url(#hlG)"/>
+
+                        {/* Left arm — wider at shoulder, tapers to wrist */}
+                        <path d="
+                          M 15.5 53
+                          C 9 53 5 58 5 66
+                          L 5.5 127
+                          C 5.5 133 8 138 12 138
+                          C 16 138 18.5 133 18.5 127
+                          L 19 66
+                          C 19 58 20.5 53 15.5 53 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.4"/>
+
+                        {/* Right arm — mirror */}
+                        <path d="
+                          M 84.5 53
+                          C 91 53 95 58 95 66
+                          L 94.5 127
+                          C 94.5 133 92 138 88 138
+                          C 84 138 81.5 133 81.5 127
+                          L 81 66
+                          C 81 58 79.5 53 84.5 53 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.4"/>
+
+                        {/* Left leg — wider thigh, tapers through calf to ankle */}
+                        <path d="
+                          M 27.5 160
+                          C 22 161 19.5 167 19.5 174
+                          C 19 185 19.5 196 20 208
+                          C 20 219 21.5 230 23 235
+                          C 24.5 238.5 27.5 239 31.5 239
+                          C 35.5 239 38.5 238.5 40 235
+                          C 41.5 230 43 219 43 208
+                          C 43.5 196 44 185 43.5 174
+                          C 43.5 167 43 161 42.5 160 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.4"/>
+
+                        {/* Right leg — mirror */}
+                        <path d="
+                          M 72.5 160
+                          C 78 161 80.5 167 80.5 174
+                          C 81 185 80.5 196 80 208
+                          C 80 219 78.5 230 77 235
+                          C 75.5 238.5 72.5 239 68.5 239
+                          C 64.5 239 61.5 238.5 60 235
+                          C 58.5 230 57 219 57 208
+                          C 56.5 196 56 185 56.5 174
+                          C 56.5 167 57 161 57.5 160 Z"
+                          fill="url(#skinG)" stroke="#B87840" strokeWidth="0.4"/>
                       </g>
 
-                      {/* Injection site markers */}
+                      {/* ── Anatomical detail lines ─────────────────────────────── */}
+                      {/* Left clavicle */}
+                      <path d="M 31 49 Q 40 52 50 51" stroke="#A06030" strokeWidth="0.55" fill="none" opacity="0.4"/>
+                      {/* Right clavicle */}
+                      <path d="M 69 49 Q 60 52 50 51" stroke="#A06030" strokeWidth="0.55" fill="none" opacity="0.4"/>
+                      {/* Sternum — dashed centre line */}
+                      <path d="M 50 54 L 50 90" stroke="#A06030" strokeWidth="0.35" fill="none" opacity="0.2" strokeDasharray="1.8 2.5"/>
+                      {/* Waist curve */}
+                      <path d="M 20 112 Q 50 118 80 112" stroke="#A06030" strokeWidth="0.5" fill="none" opacity="0.28"/>
+                      {/* Hip curve */}
+                      <path d="M 22 150 Q 50 156 78 150" stroke="#A06030" strokeWidth="0.45" fill="none" opacity="0.22"/>
+                      {/* Navel */}
+                      <circle cx="50" cy="126" r="1.4" fill="#C88848" fillOpacity="0.3" stroke="#A06030" strokeWidth="0.5" opacity="0.45"/>
+                      {/* Inner thigh gap */}
+                      <path d="M 50 160 L 50 172" stroke="#A06030" strokeWidth="0.5" fill="none" opacity="0.2"/>
+                      {/* Left elbow crease */}
+                      <path d="M 5.5 99 Q 12 101 18.5 99" stroke="#A06030" strokeWidth="0.4" fill="none" opacity="0.38"/>
+                      {/* Right elbow crease */}
+                      <path d="M 81.5 99 Q 88 101 94.5 99" stroke="#A06030" strokeWidth="0.4" fill="none" opacity="0.38"/>
+                      {/* Left knee */}
+                      <path d="M 19.5 194 Q 31.5 198 43.5 194" stroke="#A06030" strokeWidth="0.4" fill="none" opacity="0.35"/>
+                      {/* Right knee */}
+                      <path d="M 56.5 194 Q 68.5 198 80.5 194" stroke="#A06030" strokeWidth="0.4" fill="none" opacity="0.35"/>
+
+                      {/* ── Injection site markers ─────────────────────────────── */}
                       {([
-                        { name:"Abdomen",   cx:50,   cy:107 },
-                        { name:"Upper Arm", cx:10,   cy:72  },
-                        { name:"Thigh",     cx:34.5, cy:178 },
-                        { name:"Buttocks",  cx:84,   cy:145 },
+                        { name:"Abdomen",   cx:50,   cy:108 },
+                        { name:"Upper Arm", cx:10,   cy:74  },
+                        { name:"Thigh",     cx:31.5, cy:180 },
+                        { name:"Buttocks",  cx:82,   cy:147 },
                       ] as { name:string; cx:number; cy:number }[]).map(site => {
                         const active = injectionSite === site.name;
                         return (
                           <g key={site.name}>
                             {/* Glow halo */}
-                            {active && <circle cx={site.cx} cy={site.cy} r="9" fill={BRAND} fillOpacity="0.18"/>}
+                            {active && <circle cx={site.cx} cy={site.cy} r="9" fill={BRAND} fillOpacity="0.2"/>}
                             {/* Animated pulse ring */}
                             <motion.circle cx={site.cx} cy={site.cy}
                               fill="none" stroke={BRAND} strokeWidth="1.5"
@@ -1110,11 +1205,11 @@ export default function Onboarding() {
                             />
                             {/* Site dot */}
                             <circle cx={site.cx} cy={site.cy}
-                              r={active ? 5 : 3.5}
-                              fill={active ? BRAND : "rgba(176,158,140,0.5)"}
+                              r={active ? 5.5 : 3.5}
+                              fill={active ? BRAND : "rgba(160,100,60,0.42)"}
                             />
                             {/* Inner white pip */}
-                            {active && <circle cx={site.cx} cy={site.cy} r="1.8" fill="white"/>}
+                            {active && <circle cx={site.cx} cy={site.cy} r="2" fill="white"/>}
                           </g>
                         );
                       })}
