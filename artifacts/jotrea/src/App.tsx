@@ -30,7 +30,7 @@ class PageErrorBoundary extends Component<
     if (this.state.error) {
       if (this.state.confirmingWipe) {
         return (
-          <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center gap-4">
+          <div className="flex flex-col items-center justify-center min-h-[300px] px-6 py-16 text-center gap-4">
             <p className="text-sm font-semibold text-destructive">Wipe all data?</p>
             <p className="text-xs text-muted-foreground">
               This will permanently delete all your medication, dose, and weight records. This cannot be undone.
@@ -52,7 +52,7 @@ class PageErrorBoundary extends Component<
       }
 
       return (
-        <div className="flex flex-col items-center justify-center h-full px-6 py-16 text-center gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[300px] px-6 py-16 text-center gap-4">
           <p className="text-sm font-semibold text-destructive">Something went wrong on this page.</p>
           <p className="text-xs text-muted-foreground">
             This is likely a temporary glitch. Try reloading — your data should still be safe.
