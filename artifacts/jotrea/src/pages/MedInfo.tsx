@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Syringe, Pill, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
 import { useMedication } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
+import { PageContainer } from "@/components/PageContainer";
 
 const SIDE_EFFECTS: Record<string, string[]> = {
   default: [
@@ -203,7 +204,7 @@ export default function MedInfo() {
   ];
 
   return (
-    <div className="px-5 pt-14 pb-4 space-y-5">
+    <PageContainer className="space-y-5">
       <h1 className="text-2xl font-bold text-foreground">Med Info</h1>
 
       <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">
@@ -288,6 +289,6 @@ export default function MedInfo() {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

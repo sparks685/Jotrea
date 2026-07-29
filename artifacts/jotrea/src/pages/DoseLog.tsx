@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
 import { medications } from "@/data/medications";
+import { PageContainer } from "@/components/PageContainer";
 import type { DoseEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -100,8 +101,8 @@ export default function DoseLog() {
   const sortedDoses = [...doses].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="pb-4">
-      <div className="px-5 pt-14 pb-4 flex items-center justify-between">
+    <PageContainer className="pb-4">
+      <div className="pb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Dose Log</h1>
         <div className="flex gap-2 items-center">
           <div className="bg-muted rounded-xl flex p-0.5">
@@ -133,7 +134,7 @@ export default function DoseLog() {
       </div>
 
       {view === "calendar" ? (
-        <div className="px-5 space-y-4">
+        <div className="space-y-4">
           <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
             <div className="flex items-center justify-between mb-4">
               <button
@@ -251,7 +252,7 @@ export default function DoseLog() {
           )}
         </div>
       ) : (
-        <div className="px-5 space-y-3">
+        <div className="space-y-3">
           {sortedDoses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center mb-4">
@@ -396,7 +397,7 @@ export default function DoseLog() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageContainer>
   );
 }
 

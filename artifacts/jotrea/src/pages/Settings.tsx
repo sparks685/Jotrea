@@ -11,6 +11,7 @@ import {
   AlertCircle,
   User,
 } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -131,7 +132,7 @@ export default function Settings() {
         currentMedication={medication}
       />
     )}
-    <div className="px-5 pt-14 pb-4 space-y-5">
+    <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <button
@@ -377,7 +378,7 @@ export default function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </div>
+    </PageContainer>
     </>
   );
 }

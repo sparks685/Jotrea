@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2 } from "lucide-react";
+import { PageContainer } from "@/components/PageContainer";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,7 +139,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="px-5 pt-14 pb-4 space-y-5">
+    <PageContainer className="space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -545,7 +546,7 @@ export default function Dashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageContainer>
   );
 }
 

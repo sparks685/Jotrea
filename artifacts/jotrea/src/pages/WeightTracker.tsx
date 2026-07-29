@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWeights, useUser } from "@/hooks/useMedication";
 import { calculateWeightLost, calculateAvgWeeklyLoss, calculateBMI } from "@/utils/calculations";
+import { PageContainer } from "@/components/PageContainer";
 import type { WeightEntry } from "@/types";
 
 export default function WeightTracker() {
@@ -95,7 +96,7 @@ export default function WeightTracker() {
   const displayWeights = [...sortedWeights].reverse();
 
   return (
-    <div className="px-5 pt-14 pb-4 space-y-5">
+    <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Weight</h1>
         <div className="flex items-center gap-2">
@@ -346,7 +347,7 @@ export default function WeightTracker() {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
