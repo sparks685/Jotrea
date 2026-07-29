@@ -15,7 +15,12 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      const serialized = JSON.stringify(valueToStore);
+      window.localStorage.setItem(key, serialized);
+      // Notify every other useLocalStorage instance on the same page.
+      // The native `storage` event only fires cross-tab, so we dispatch a
+      // synthetic one here so sibling components (e.g. App.tsx) stay in sync.
+      window.dispatchEvent(new StorageEvent("storage", { key, newValue: serialized }));
     } catch (error) {
       console.error(error);
     }
