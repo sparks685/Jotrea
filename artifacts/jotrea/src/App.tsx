@@ -53,19 +53,6 @@ const pageVariants = {
 
 const pageTransition = { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const };
 
-function AnimatedPage({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={pageTransition}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 function ResetAndRedirect() {
   const [, setLoc] = useLocation();
@@ -97,65 +84,39 @@ function AppRoutes() {
         className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}
         style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
       >
-        <AnimatePresence>
-          <Switch key={location}>
-            <Route path="/onboarding">
-              <AnimatedPage>
-                <Onboarding />
-              </AnimatedPage>
-            </Route>
-            <Route path="/">
-              {!medication ? (
-                <Redirect to="/onboarding" />
-              ) : (
-                <AnimatedPage>
-                  <Dashboard />
-                </AnimatedPage>
-              )}
-            </Route>
-            <Route path="/calendar">
-              {!medication ? (
-                <Redirect to="/onboarding" />
-              ) : (
-                <AnimatedPage>
-                  <DoseLog />
-                </AnimatedPage>
-              )}
-            </Route>
-            <Route path="/weight">
-              {!medication ? (
-                <Redirect to="/onboarding" />
-              ) : (
-                <AnimatedPage>
-                  <WeightTracker />
-                </AnimatedPage>
-              )}
-            </Route>
-            <Route path="/med-info">
-              {!medication ? (
-                <Redirect to="/onboarding" />
-              ) : (
-                <AnimatedPage>
-                  <MedInfo />
-                </AnimatedPage>
-              )}
-            </Route>
-            <Route path="/settings">
-              {!medication ? (
-                <Redirect to="/onboarding" />
-              ) : (
-                <AnimatedPage>
-                  <PageErrorBoundary>
-                    <Settings />
-                  </PageErrorBoundary>
-                </AnimatedPage>
-              )}
-            </Route>
-            <Route path="/reset">
-              <ResetAndRedirect />
-            </Route>
-            <Route component={NotFound} />
-          </Switch>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={pageTransition}
+            className="min-h-full"
+          >
+            <PageErrorBoundary>
+              <Switch>
+                <Route path="/onboarding"><Onboarding /></Route>
+                <Route path="/">
+                  {!medication ? <Redirect to="/onboarding" /> : <Dashboard />}
+                </Route>
+                <Route path="/calendar">
+                  {!medication ? <Redirect to="/onboarding" /> : <DoseLog />}
+                </Route>
+                <Route path="/weight">
+                  {!medication ? <Redirect to="/onboarding" /> : <WeightTracker />}
+                </Route>
+                <Route path="/med-info">
+                  {!medication ? <Redirect to="/onboarding" /> : <MedInfo />}
+                </Route>
+                <Route path="/settings">
+                  {!medication ? <Redirect to="/onboarding" /> : <Settings />}
+                </Route>
+                <Route path="/reset"><ResetAndRedirect /></Route>
+                <Route component={NotFound} />
+              </Switch>
+            </PageErrorBoundary>
+          </motion.div>
         </AnimatePresence>
       </div>
       {!isOnboarding && medication && <BottomNav />}
