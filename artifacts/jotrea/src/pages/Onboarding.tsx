@@ -275,7 +275,7 @@ export default function Onboarding() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              ★★★★★&nbsp; Trusted by <strong className="text-foreground">10,000+</strong> GLP-1 patients
+              ★★★★★&nbsp; Designed alongside pharmacists
             </p>
 
             <div className="w-full max-w-xs">
@@ -819,7 +819,7 @@ export default function Onboarding() {
                   style={{ background:"#fef9ec", borderColor:"#f3e5b0" }}>
                   <Info size={15} className="flex-shrink-0 mt-0.5 text-amber-600"/>
                   <p className="text-sm font-medium text-amber-900 leading-relaxed">
-                    Our pharmacist team will send personalised tips for managing {sideEffects.length===1?"this":"these"}.
+                    We'll share tips for managing {sideEffects.length===1?"this":"these"}.
                   </p>
                 </motion.div>
               )}

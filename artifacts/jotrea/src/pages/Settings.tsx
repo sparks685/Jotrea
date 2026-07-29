@@ -322,7 +322,7 @@ export default function Settings() {
       <SettingsSection title="About" icon={<Info size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Built by a team of pharmacists and developers dedicated to your GLP-1 journey.
+            Backed by pharmacy expertise for your GLP-1 journey.
           </p>
           <div className="space-y-1">
             <div className="flex items-center justify-between py-1">
