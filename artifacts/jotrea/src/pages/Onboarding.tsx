@@ -202,11 +202,13 @@ export default function Onboarding() {
     if (step === 5) {
       const minW = heightUnit === "imperial" ? 80 : 30;
       const index = parseInt(goalWeight) - minW;
-      // Each tick is 40px wide; the left spacer is calc(50% - 20px) so
-      // the center of tick `index` lands at scrollLeft = index * 40.
+      // Spacer width = calc(50vw - 20px). The ruler clientWidth = viewport - 48px (px-6 both sides).
+      // To center tick `index` under the needle: scrollLeft = spacer + index*40 + 20 - clientWidth/2
       requestAnimationFrame(() => {
         if (rulerRef.current) {
-          rulerRef.current.scrollLeft = index * 40;
+          const el = rulerRef.current;
+          const spacer = window.innerWidth / 2 - 20;
+          el.scrollLeft = spacer + index * 40 + 20 - el.clientWidth / 2;
         }
       });
     }
@@ -579,7 +581,8 @@ export default function Onboarding() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
                 onScroll={(e) => {
                   const el = e.currentTarget;
-                  const index = Math.round(el.scrollLeft / 40);
+                  const spacer = window.innerWidth / 2 - 20;
+                  const index = Math.round((el.scrollLeft + el.clientWidth / 2 - spacer - 20) / 40);
                   let val = rMin + index;
                   if (val < rMin) val = rMin;
                   if (val > rMax) val = rMax;
