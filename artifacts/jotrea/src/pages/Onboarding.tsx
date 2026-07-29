@@ -596,7 +596,7 @@ export default function Onboarding() {
 
               <div
                 ref={rulerRef}
-                className="w-full h-full overflow-x-auto"
+                className="ruler-scroll w-full h-full overflow-x-auto"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'none' } as React.CSSProperties}
                 onScroll={(e) => {
                   const el = e.currentTarget;
@@ -622,7 +622,7 @@ export default function Onboarding() {
                 }}
               >
                 <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
-                <div className="ruler-scroll h-full flex" style={{ width: 'max-content' }}>
+                <div className="h-full flex" style={{ width: 'max-content' }}>
                   <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
                   {rulerNumbers.map(n => {
                     const activeLb = parseInt(goalWeight) || parseInt(startWeight) || parseInt(currentWeight) || 150;
@@ -630,12 +630,14 @@ export default function Onboarding() {
                     const is5 = n % 5 === 0;
                     const isActive = dist === 0;
 
-                    // Fixed tick heights — never change on scroll
-                    const tickH = isActive ? 52 : is5 ? 20 : 10;
-                    const tickW = isActive ? '3px' : is5 ? '2px' : '1.5px';
+                    // Fixed tick heights — never change on scroll (no layout shift)
+                    const tickH = isActive ? 52 : is5 ? 28 : 14;
+                    const tickW = isActive ? '3px' : is5 ? '2.5px' : '1.5px';
 
-                    // Only color/opacity changes on scroll (no layout impact)
-                    const alpha = isActive ? 1 : Math.max(0.32, 0.78 - dist * 0.06);
+                    // Higher floor opacity so ticks are clearly visible on cream background
+                    const alpha = isActive ? 1
+                      : is5 ? Math.max(0.6, 0.92 - dist * 0.045)
+                      : Math.max(0.5, 0.78 - dist * 0.045);
                     const bgColor = isActive
                       ? 'rgba(212,165,116,1)'
                       : `rgba(156,163,175,${alpha})`;
