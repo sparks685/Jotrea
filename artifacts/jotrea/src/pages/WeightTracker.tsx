@@ -95,7 +95,7 @@ export default function WeightTracker() {
   const displayWeights = [...sortedWeights].reverse();
 
   return (
-    <div className="px-5 pt-8 pb-4 space-y-5">
+    <div className="px-5 pt-14 pb-4 space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Weight</h1>
         <div className="flex items-center gap-2">

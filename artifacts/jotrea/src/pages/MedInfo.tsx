@@ -203,7 +203,7 @@ export default function MedInfo() {
   ];
 
   return (
-    <div className="px-5 pt-8 pb-4 space-y-5">
+    <div className="px-5 pt-14 pb-4 space-y-5">
       <h1 className="text-2xl font-bold text-foreground">Med Info</h1>
 
       <div className="bg-card rounded-3xl p-5 shadow-sm border border-border space-y-3">

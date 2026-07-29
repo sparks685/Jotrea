@@ -91,7 +91,7 @@ export default function DoseLog() {
 
   return (
     <div className="pb-4">
-      <div className="px-5 pt-8 pb-4 flex items-center justify-between">
+      <div className="px-5 pt-14 pb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Dose Log</h1>
         <div className="flex gap-2 items-center">
           <div className="bg-muted rounded-xl flex p-0.5">

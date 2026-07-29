@@ -125,7 +125,7 @@ export default function Settings() {
       onOpenChange={setChangeMedOpen}
       onConfirm={handleMedConfirmed}
     />
-    <div className="px-5 pt-8 pb-4 space-y-5">
+    <div className="px-5 pt-14 pb-4 space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <button
@@ -338,7 +338,7 @@ export default function Settings() {
       </SettingsSection>
 
       {/* Account Deletion */}
-      <div className="pt-8 pb-4">
+      <div className="pt-14 pb-4">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full rounded-2xl h-14 font-semibold shadow-lg">
