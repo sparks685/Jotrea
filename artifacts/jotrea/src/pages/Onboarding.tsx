@@ -533,64 +533,136 @@ export default function Onboarding() {
               </button>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
-            <p className="text-muted-foreground mb-6">Set your goal weight.</p>
-            
-            <div className="relative mb-6 py-10">
-              <div className="text-center mb-6">
-                <span className="text-sm font-semibold text-[#D4A574] uppercase tracking-widest">Dream Weight</span>
-                <div className="text-5xl font-black mt-2">{goalWeight} <span className="text-xl text-muted-foreground font-semibold">{heightUnit==="imperial"?"lbs":"kg"}</span></div>
+            <p className="text-muted-foreground mb-8">Set your goal weight.</p>
+
+            {/* Dream weight display */}
+            <div className="text-center mb-10">
+              <span className="text-xs font-medium text-[#D4A574] tracking-widest">Dream weight</span>
+              <div className="mt-2 flex items-baseline justify-center gap-2">
+                <span className="text-6xl font-black text-foreground tracking-tight">{goalWeight}</span>
+                <span className="text-xl text-muted-foreground font-normal">{heightUnit === "imperial" ? "lbs" : "kg"}</span>
               </div>
-              
-              <div className="relative w-full h-24 overflow-hidden mask-edges">
-                <div className="absolute top-0 left-1/2 w-1 h-full bg-[#D4A574] -translate-x-1/2 z-10 rounded-full" />
-                <div 
-                  ref={rulerRef}
-                  className="w-full h-full overflow-x-auto hide-scrollbar flex items-center snap-x snap-mandatory"
-                  onScroll={(e) => {
-                    const el = e.currentTarget;
-                    // scrollLeft = index * 40  →  index = scrollLeft / 40
-                    const index = Math.round(el.scrollLeft / 40);
-                    let val = rMin + index;
-                    if(val < rMin) val = rMin;
-                    if(val > rMax) val = rMax;
-                    if (val.toString() !== goalWeight) {
-                      setGoalWeight(val.toString());
-                      haptic(5);
-                    }
-                  }}
-                >
-                  <div style={{ minWidth: `calc(50% - 20px)` }} className="flex-shrink-0" />
-                  {rulerNumbers.map(n => (
-                    <div key={n} className="w-[40px] flex-shrink-0 flex flex-col items-center justify-center snap-center">
-                      <div className={`w-0.5 h-6 mb-2 ${n % 10 === 0 ? "bg-foreground h-8" : n % 5 === 0 ? "bg-muted-foreground h-6" : "bg-muted h-4"}`} />
-                      <span className={`text-xs font-semibold ${n % 10 === 0 ? "text-foreground" : "text-transparent"}`}>{n}</span>
-                    </div>
-                  ))}
-                  <div style={{ minWidth: `calc(50% - 20px)` }} className="flex-shrink-0" />
+            </div>
+
+            {/* Premium ruler — 140px tall: ~100px tick zone + 8px gap + ~32px label zone */}
+            <div
+              className="relative w-full"
+              style={{
+                height: '140px',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
+                maskImage: 'linear-gradient(to right, transparent, black 16%, black 84%, transparent)',
+              }}
+            >
+              {/* Center needle — glows in brand tan */}
+              <div
+                className="absolute inset-y-0 left-1/2 -translate-x-1/2 z-10 pointer-events-none rounded-full"
+                style={{
+                  width: '2.5px',
+                  background: 'linear-gradient(to bottom, rgba(212,165,116,0) 0%, #D4A574 12%, #D4A574 72%, rgba(212,165,116,0.15) 100%)',
+                  boxShadow: '0 0 10px rgba(212,165,116,0.55), 0 2px 6px rgba(212,165,116,0.3)',
+                }}
+              />
+
+              <div
+                ref={rulerRef}
+                className="w-full h-full overflow-x-auto snap-x snap-mandatory"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const index = Math.round(el.scrollLeft / 40);
+                  let val = rMin + index;
+                  if (val < rMin) val = rMin;
+                  if (val > rMax) val = rMax;
+                  if (val.toString() !== goalWeight) {
+                    setGoalWeight(val.toString());
+                    haptic(5);
+                  }
+                }}
+              >
+                <style>{`.ruler-scroll::-webkit-scrollbar{display:none}`}</style>
+                <div className="ruler-scroll h-full flex" style={{ width: 'max-content' }}>
+                  <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
+                  {rulerNumbers.map(n => {
+                    const activeLb = parseInt(goalWeight);
+                    const dist = Math.abs(n - activeLb);
+                    const is5 = n % 5 === 0;
+
+                    // Height — tall needle at center, tapering outward
+                    let tickH: number;
+                    if      (dist === 0)  tickH = 72;
+                    else if (dist === 1)  tickH = is5 ? 52 : 38;
+                    else if (dist === 2)  tickH = is5 ? 42 : 28;
+                    else if (dist <= 4)   tickH = is5 ? 32 : 18;
+                    else if (dist <= 8)   tickH = is5 ? 24 : 12;
+                    else                  tickH = is5 ? 18 : 8;
+
+                    // Color: tan → cool gray interpolated by distance
+                    const t  = Math.min(1, dist / 8);
+                    const cr = Math.round(212 + (209 - 212) * t);
+                    const cg = Math.round(165 + (213 - 165) * t);
+                    const cb = Math.round(116 + (219 - 116) * t);
+                    const ca = dist === 0 ? 1 : Math.max(0.14, 0.88 - dist * 0.09);
+
+                    return (
+                      <div
+                        key={n}
+                        className="snap-center flex-shrink-0"
+                        style={{
+                          width: '40px',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        {/* Tick bar */}
+                        <div style={{
+                          width:  dist === 0 ? '3px' : is5 ? '2.5px' : '2px',
+                          height: `${tickH}px`,
+                          backgroundColor: `rgba(${cr},${cg},${cb},${ca})`,
+                          borderRadius: '9999px',
+                          flexShrink: 0,
+                          boxShadow: dist === 0 ? '0 0 10px rgba(212,165,116,0.5)' : 'none',
+                          transition: 'height 0.12s ease, background-color 0.12s ease',
+                        }} />
+                        {/* Label zone — fixed 32px so all bar-bottoms align on the same baseline */}
+                        <div style={{ height: '32px', marginTop: '8px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                          {is5 && (
+                            <span style={{
+                              fontSize: '13px',
+                              fontWeight: dist === 0 ? 700 : dist <= 2 ? 500 : 400,
+                              color: dist === 0
+                                ? 'hsl(var(--foreground))'
+                                : `rgba(156,163,175,${Math.max(0.25, 0.75 - dist * 0.08)})`,
+                              userSelect: 'none',
+                              lineHeight: 1,
+                            }}>{n}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div style={{ width: 'calc(50vw - 20px)', flexShrink: 0 }} />
                 </div>
               </div>
-              
-              <style>{`
-                .hide-scrollbar::-webkit-scrollbar { display: none; }
-                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                .mask-edges { -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent); mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent); }
-              `}</style>
-              
-              {(() => {
-                const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
-                let weeks = diff / goalPace;
-                if(weeks < 0) weeks = 0;
-                const d = addWeeks(new Date(), weeks);
-                return (
-                  <div className="text-center mt-8 px-4">
-                    <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full text-sm font-medium">
-                      <Target size={16} />
-                      At this pace, you'll reach this by {format(d, "MMMM yyyy")}
-                    </div>
-                  </div>
-                );
-              })()}
             </div>
+
+            {/* Motivational badge */}
+            {(() => {
+              const diff = parseFloat(currentWeight) - parseFloat(goalWeight);
+              let weeks = diff / goalPace;
+              if (weeks < 0) weeks = 0;
+              const d = addWeeks(new Date(), weeks);
+              return (
+                <div className="text-center mt-10 px-4">
+                  <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full text-sm font-medium">
+                    <Target size={16} />
+                    At this pace, you'll reach this by {format(d, "MMMM yyyy")}
+                  </div>
+                </div>
+              );
+            })()}
 
             <Button
               className="w-full h-14 rounded-2xl text-base font-bold shadow-lg text-white mt-8 hover:opacity-90"
