@@ -222,7 +222,26 @@ export default function Onboarding() {
       </div>
 
       {/* On iPad/desktop, center the step content in a narrow column */}
-      <div className="flex-1 flex flex-col items-center min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center min-h-0 overflow-hidden relative">
+
+        {/* ── iPad side-margin decoration (≥768 px only) ──────────────────── */}
+        <div className="hidden md:block absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+          {/* warm ambient blob — left */}
+          <div className="absolute top-0 bottom-0 left-0 right-1/2"
+            style={{ background:`radial-gradient(ellipse 55% 60% at 20% 45%, ${BRAND}14 0%, transparent 70%)` }} />
+          {/* warm ambient blob — right */}
+          <div className="absolute top-0 bottom-0 right-0 left-1/2"
+            style={{ background:`radial-gradient(ellipse 55% 60% at 80% 45%, ${BRAND}14 0%, transparent 70%)` }} />
+          {/* faint syringe watermark — lower-left corner */}
+          <div className="absolute bottom-16 left-8 opacity-[0.04]">
+            <Syringe size={140} strokeWidth={1} style={{ color: BRAND, transform: "rotate(-30deg)" }} />
+          </div>
+          {/* faint syringe watermark — upper-right corner */}
+          <div className="absolute top-12 right-8 opacity-[0.04]">
+            <Syringe size={100} strokeWidth={1} style={{ color: BRAND, transform: "rotate(150deg)" }} />
+          </div>
+        </div>
+
       <div className="w-full max-w-[480px] flex-1 flex flex-col min-h-0 relative">
       <AnimatePresence mode="wait" initial={false} custom={direction}>
 
