@@ -1267,8 +1267,7 @@ export default function Onboarding() {
                               textAnchor={site.anchor}
                               fontSize="5"
                               fontWeight={active ? "700" : "500"}
-                              fill={active ? BRAND : "rgba(140,90,45,0.65)"}
-                              style={{ userSelect:"none", pointerEvents:"none" }}
+                              style={{ userSelect:"none", pointerEvents:"none", fill: active ? BRAND : "hsl(var(--muted-foreground))" }}
                             >{site.name}</text>
                           </g>
                         );
