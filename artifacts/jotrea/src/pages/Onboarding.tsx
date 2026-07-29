@@ -663,7 +663,7 @@ export default function Onboarding() {
               const d = addWeeks(new Date(), weeks);
               return (
                 <div className="text-center mt-10 px-4">
-                  <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full text-sm font-medium">
+                  <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 text-[#D4A574] px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap">
                     <Target size={16} />
                     At this pace, you'll reach this by {format(d, "MMMM yyyy")}
                   </div>
