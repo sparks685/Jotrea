@@ -221,6 +221,9 @@ export default function Onboarding() {
         )}
       </div>
 
+      {/* On iPad/desktop, center the step content in a narrow column */}
+      <div className="flex-1 flex flex-col items-center min-h-0 overflow-hidden">
+      <div className="w-full max-w-[480px] flex-1 flex flex-col min-h-0 relative">
       <AnimatePresence mode="wait" initial={false} custom={direction}>
 
         {/* ─── Step 0: Welcome ─────────────────────────────────────── */}
@@ -1399,6 +1402,8 @@ export default function Onboarding() {
         )}
 
       </AnimatePresence>
+      </div>
+      </div>
     </div>
   );
 }
