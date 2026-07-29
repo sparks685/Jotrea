@@ -53,9 +53,17 @@ export default function Settings() {
 
   const medInfo = medications.find((m) => m.id === medication?.id);
 
-  const nextDoseDateObj =
-    medication ? getNextDoseDate(medication.startDate, medication.frequency, doses) : null;
-  const nextDoseDate = nextDoseDateObj ? format(nextDoseDateObj, "yyyy-MM-dd") : null;
+  const nextDoseDateObj = (() => {
+    try {
+      return medication ? getNextDoseDate(medication.startDate, medication.frequency, doses) : null;
+    } catch { return null; }
+  })();
+  const nextDoseDate = (() => {
+    try {
+      return nextDoseDateObj && !isNaN(nextDoseDateObj.getTime())
+        ? format(nextDoseDateObj, "yyyy-MM-dd") : null;
+    } catch { return null; }
+  })();
 
   useEffect(() => {
     if (!pushEnabled || !medication || !nextDoseDate) return;
@@ -107,7 +115,16 @@ export default function Settings() {
 
   return (
     <div className="px-5 pt-8 pb-4 space-y-5">
-      <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <button
+          onClick={handleChangeMed}
+          className="text-xs font-semibold px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted/40 transition-colors"
+          data-testid="restart-onboarding-btn"
+        >
+          Restart Setup
+        </button>
+      </div>
 
       {/* Profile */}
       <SettingsSection title="Profile" icon={<User size={14} className="text-muted-foreground" />}>
