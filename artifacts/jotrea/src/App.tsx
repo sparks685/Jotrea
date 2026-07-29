@@ -81,8 +81,8 @@ function AppRoutes() {
     <>
       <RouteTracker />
       <div
-        className={`flex-1 overflow-y-auto ${isOnboarding ? "" : "pb-20"}`}
-        style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
+        className={`flex-1 overflow-y-auto`}
+        style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)", paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
         <AnimatePresence mode="wait">
           <motion.div
