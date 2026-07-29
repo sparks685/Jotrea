@@ -20,6 +20,10 @@ author = "agent"
 task = "workflow.run"
 args = "Generate App Store Screenshots"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "jotrea-safe-area-tests"
+
 [[workflows.workflow]]
 name = "Generate App Store Screenshots"
 author = "agent"
@@ -30,6 +34,17 @@ args = "node marketing/screenshots/generate-screenshots.js"
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "jotrea-safe-area-tests"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/jotrea test"
+
+[workflows.workflow.metadata]
+isValidation = true
 
 [agent]
 stack = "PNPM_WORKSPACE"
