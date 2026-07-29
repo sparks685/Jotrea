@@ -527,9 +527,9 @@ export default function Onboarding() {
               </button>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Goal Weight</h2>
-            <p className="text-muted-foreground mb-12">Set your goal weight.</p>
+            <p className="text-muted-foreground mb-6">Set your goal weight.</p>
             
-            <div className="relative mb-12 py-10 my-auto">
+            <div className="relative mb-6 py-10">
               <div className="text-center mb-6">
                 <span className="text-sm font-semibold text-[#D4A574] uppercase tracking-widest">Dream Weight</span>
                 <div className="text-5xl font-black mt-2">{goalWeight} <span className="text-xl text-muted-foreground font-semibold">{heightUnit==="imperial"?"lbs":"kg"}</span></div>
