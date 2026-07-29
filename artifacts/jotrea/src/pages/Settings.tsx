@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   Bell,
-  Ruler,
   Syringe,
   Info,
   RefreshCw,
@@ -32,6 +31,8 @@ import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
 import { buildDoseCSV, buildWeightCSV, downloadCSV, scheduleNextDoseNotification } from "@/utils/featureGates";
 import { useNotifications } from "@/hooks/useNotifications";
 import { trackEvent } from "@/lib/analytics";
+import { ChangeMedicationSheet } from "@/components/ChangeMedicationSheet";
+import type { MedicationData } from "@/types";
 
 const ADVANCE_OPTIONS = [
   { value: "1", label: "1 hour before" },
@@ -46,6 +47,7 @@ export default function Settings() {
   const { weights } = useWeights();
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
+  const [changeMedOpen, setChangeMedOpen] = useState(false);
 
   const notifTime = user.notificationTime ?? "09:00";
   const notifAdvance = user.notificationAdvance ?? "1";
@@ -97,8 +99,11 @@ export default function Settings() {
   };
 
   const handleChangeMed = () => {
-    setMedication(null);
-    setLocation("/onboarding");
+    setChangeMedOpen(true);
+  };
+
+  const handleMedConfirmed = (newMed: MedicationData) => {
+    setMedication(newMed);
   };
 
   const permissionIcon =
@@ -114,6 +119,12 @@ export default function Settings() {
     permission === "granted" ? "Allowed" : permission === "denied" ? "Blocked in browser" : "Not set";
 
   return (
+    <>
+    <ChangeMedicationSheet
+      open={changeMedOpen}
+      onOpenChange={setChangeMedOpen}
+      onConfirm={handleMedConfirmed}
+    />
     <div className="px-5 pt-8 pb-4 space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
@@ -209,10 +220,11 @@ export default function Settings() {
         ) : (
           <Button
             size="sm"
-            className="rounded-xl"
-            onClick={() => setLocation("/onboarding")}
+            className="rounded-xl gap-2"
+            onClick={() => setChangeMedOpen(true)}
             data-testid="setup-med-btn"
           >
+            <Syringe size={14} />
             Set up Medication
           </Button>
         )}
@@ -360,6 +372,7 @@ export default function Settings() {
         </AlertDialog>
       </div>
     </div>
+    </>
   );
 }
 
