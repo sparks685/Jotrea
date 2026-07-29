@@ -1,3 +1,5 @@
+- [IIFE-in-JSX anti-pattern](iife-render-antipattern.md) — side-effectful IIFEs inside Switch JSX run on every render; use a component + useEffect instead.
+- [useLocalStorage cross-component sync](localstorage-cross-component-sync.md) — dispatch a synthetic StorageEvent after every write so same-page consumers stay in sync.
 - [Feature gates pattern](feature-gates.md) — all free-tier enforcement lives in `src/utils/featureGates.ts`; import from there, never inline.
 - [getNextDoseDate returns Date](dose-date-type.md) — `getNextDoseDate()` returns a `Date` object; format to string before passing to gate functions or JSX.
 - [Framer Motion ease typing](framer-ease.md) — `ease` in framer-motion must be typed as `Easing[]` or `[number,number,number,number] as const`, not a plain string.

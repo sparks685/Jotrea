@@ -67,6 +67,15 @@ function AnimatedPage({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ResetAndRedirect() {
+  const [, setLoc] = useLocation();
+  useEffect(() => {
+    localStorage.clear();
+    setLoc("/onboarding", { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 function RouteTracker() {
   const [location] = useLocation();
   useEffect(() => {
@@ -143,10 +152,7 @@ function AppRoutes() {
               )}
             </Route>
             <Route path="/reset">
-              {(() => {
-                localStorage.clear();
-                return <Redirect to="/onboarding" />;
-              })()}
+              <ResetAndRedirect />
             </Route>
             <Route component={NotFound} />
           </Switch>
