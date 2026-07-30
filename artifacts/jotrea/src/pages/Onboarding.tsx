@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft, Search, Syringe, Pill, Check, Info, Bell,
   Droplets, Target, Activity, CheckCircle2, Flame, Heart,
-  Zap, Wind, TrendingDown, Calendar, Star
+  Zap, TrendingDown, Calendar, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,7 +132,7 @@ export default function Onboarding() {
   const rMax = heightUnit === "imperial" ? 400 : 200;
 
   const nav = (next: number) => { haptic(); setDirection(1); setStep(next); };
-  const back = () => { haptic(); setDirection(-1); setStep(step === 10 ? 9 : step - 1); };
+  const back = () => { haptic(); setDirection(-1); setStep(step === 10 ? 8 : step - 1); };
 
   const grouped = medications.reduce<Record<string, typeof medications>>((acc, med) => {
     if (!acc[med.genericName]) acc[med.genericName] = [];
@@ -218,7 +218,7 @@ export default function Onboarding() {
       <div className="flex-shrink-0 h-[3px] bg-muted/50">
         {step > 0 && step <= 14 && (
           <motion.div className="h-full rounded-full" style={{ backgroundColor: BRAND }}
-            initial={false} animate={{ width:`${(step/14)*100}%` }} transition={{ duration:0.4, ease }} />
+            initial={false} animate={{ width:`${(step/13)*100}%` }} transition={{ duration:0.4, ease }} />
         )}
       </div>
 
@@ -786,54 +786,9 @@ export default function Onboarding() {
                 );
               })}
             </div>
-            <ContinueBtn disabled={motivations.length===0} onClick={() => nav(9)}>
+            <ContinueBtn disabled={motivations.length===0} onClick={() => nav(10)}>
               Continue {motivations.length>0&&`(${motivations.length} selected)`}
             </ContinueBtn>
-          </motion.div>
-        )}
-
-        {/* ─── Step 9: Side Effects ────────────────────────────────── */}
-        {step === 9 && (
-          <motion.div key="s9" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
-            className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
-            <div className="mb-6"><BackBtn onBack={back} /></div>
-            <StepBadge icon={<Wind size={20}/>} />
-            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Any side effects?</h2>
-            <p className="text-muted-foreground mb-6 text-sm">We'll personalise tips for managing them.</p>
-
-            <div className="flex flex-wrap gap-2.5 mb-6">
-              {[
-                { label:"Nausea", emoji:"🤢" }, { label:"Fatigue", emoji:"😴" },
-                { label:"Hair Loss", emoji:"💇" }, { label:"Constipation", emoji:"😣" },
-                { label:"Bloating", emoji:"😮‍💨" }, { label:"Sulfur Burps", emoji:"💨" },
-                { label:"Heartburn", emoji:"🔥" }, { label:"Food Noise", emoji:"🍕" },
-              ].map(opt => {
-                const sel = sideEffects.includes(opt.label);
-                return (
-                  <motion.button key={opt.label} whileTap={{ scale:0.95 }}
-                    onClick={() => { haptic(); setSideEffects(prev=>sel?prev.filter(m=>m!==opt.label):[...prev,opt.label]); }}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold border-2 transition-all"
-                    style={{ backgroundColor:sel?BRAND:"hsl(var(--card))", borderColor:sel?BRAND:"hsl(var(--border))", color:sel?"white":"hsl(var(--muted-foreground))" }}>
-                    <span>{opt.emoji}</span>{opt.label}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            <AnimatePresence>
-              {sideEffects.length>0 && (
-                <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }} exit={{ opacity:0, height:0 }}
-                  className="flex gap-3 px-4 py-3.5 rounded-2xl border mb-2 overflow-hidden"
-                  style={{ background:"var(--tip-info-bg)", borderColor:"var(--tip-info-border)" }}>
-                  <Info size={15} className="flex-shrink-0 mt-0.5 text-amber-500"/>
-                  <p className="text-sm font-medium leading-relaxed" style={{ color:"var(--tip-info-text)" }}>
-                    We'll share tips for managing {sideEffects.length===1?"this":"these"}.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <ContinueBtn onClick={() => nav(10)}>{sideEffects.length===0?"None, skip":"Continue"}</ContinueBtn>
           </motion.div>
         )}
 
