@@ -641,7 +641,7 @@ export default function Dashboard() {
 
                     {/* Side effect picker */}
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How are you feeling?</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Side Effects (optional)</p>
                       <div className="flex flex-wrap gap-2">
                         {SIDE_EFFECTS_LIST.map((effect) => {
                           const active = selectedSideEffects.includes(effect.id);
@@ -726,7 +726,7 @@ export default function Dashboard() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
                       <Input
-                        placeholder="How are you feeling?"
+                        placeholder="Side effects, feelings..."
                         value={logNotes}
                         onChange={(e) => setLogNotes(e.target.value)}
                         className="rounded-xl"
