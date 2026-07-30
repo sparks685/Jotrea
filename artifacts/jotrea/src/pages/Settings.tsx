@@ -49,7 +49,6 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
-  const [changeMedMounted, setChangeMedMounted] = useState(false);
 
   const notifTime = user.notificationTime ?? "09:00";
   const notifAdvance = user.notificationAdvance ?? "1";
@@ -101,7 +100,6 @@ export default function Settings() {
   };
 
   const handleChangeMed = () => {
-    setChangeMedMounted(true);
     setChangeMedOpen(true);
   };
 
@@ -123,15 +121,13 @@ export default function Settings() {
 
   return (
     <>
-    {changeMedMounted && (
-      <ChangeMedicationSheet
-        open={changeMedOpen}
-        onOpenChange={setChangeMedOpen}
-        onConfirm={handleMedConfirmed}
-        injectionSiteHistory={user.injectionSiteHistory}
-        currentMedication={medication}
-      />
-    )}
+    <ChangeMedicationSheet
+      open={changeMedOpen}
+      onOpenChange={setChangeMedOpen}
+      onConfirm={handleMedConfirmed}
+      injectionSiteHistory={user.injectionSiteHistory}
+      currentMedication={medication}
+    />
     <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>

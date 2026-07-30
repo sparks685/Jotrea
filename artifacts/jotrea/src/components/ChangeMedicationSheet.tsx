@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Syringe, Pill, Check, ChevronLeft } from "lucide-react";
+import { Search, Syringe, Pill, Check, ChevronLeft, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { medications } from "@/data/medications";
 import { format } from "date-fns";
 import { trackEvent } from "@/lib/analytics";
@@ -57,9 +57,7 @@ export function ChangeMedicationSheet({
 
   const lastUsedSite = (() => {
     if (!injectionSiteHistory || injectionSiteHistory.length === 0) return INJECTION_SITES[0];
-    // History is append-ordered; the last entry is the most recently used site.
     const lastSite = injectionSiteHistory[injectionSiteHistory.length - 1].site;
-    // Validate against known sites to guard against stale/unknown legacy values.
     return INJECTION_SITES.includes(lastSite) ? lastSite : INJECTION_SITES[0];
   })();
 
@@ -149,12 +147,9 @@ export function ChangeMedicationSheet({
     (!isCustomMed && selectedMed?.formulation === "injection") ||
     (isCustomMed && customFormulation === "injection");
 
-  // Detect whether the newly-selected medication differs from the current one,
-  // so we can warn the user that their dose history will be preserved as-is.
   const historyWillLookInconsistent = (() => {
     if (!currentMedication) return false;
     if (isCustomMed) {
-      // Any custom med is by definition different from whatever is stored
       return customBrand.trim() !== "" && (
         customBrand.trim().toLowerCase() !== currentMedication.brandName.toLowerCase() ||
         parseFloat(customDoseAmt) !== currentMedication.dose
@@ -174,9 +169,17 @@ export function ChangeMedicationSheet({
   })();
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="max-h-[90dvh] flex flex-col">
-        <DrawerHeader className="flex-shrink-0 pb-2">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent
+        side="bottom"
+        className="max-h-[90dvh] flex flex-col rounded-t-[20px] p-0 border-t border-border focus:outline-none [&>button]:hidden"
+      >
+        {/* Drag handle */}
+        <div className="flex-shrink-0 flex justify-center pt-3 pb-1">
+          <div className="w-[100px] h-2 rounded-full bg-muted" />
+        </div>
+
+        <SheetHeader className="flex-shrink-0 pb-2 px-4">
           <div className="flex items-center gap-3">
             {view === "dose" && (
               <button
@@ -186,20 +189,27 @@ export function ChangeMedicationSheet({
                 <ChevronLeft size={16} className="text-foreground" />
               </button>
             )}
-            <div>
-              <DrawerTitle className="text-left text-lg font-bold">
+            <div className="flex-1">
+              <SheetTitle className="text-left text-lg font-bold">
                 {view === "select" ? "Change Medication" : "Set Dose & Details"}
-              </DrawerTitle>
-              <DrawerDescription className="text-left text-xs mt-0.5">
+              </SheetTitle>
+              <SheetDescription className="text-left text-xs mt-0.5">
                 {view === "select"
                   ? "Your dose history will be kept."
                   : isCustomMed
                   ? customBrand || "Custom medication"
                   : selectedMed?.brandNames[0]}
-              </DrawerDescription>
+              </SheetDescription>
             </div>
+            <button
+              onClick={() => handleOpenChange(false)}
+              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-all flex-shrink-0"
+              aria-label="Close"
+            >
+              <X size={14} className="text-foreground" />
+            </button>
           </div>
-        </DrawerHeader>
+        </SheetHeader>
 
         <AnimatePresence mode="wait" initial={false}>
           {/* ── View 1: Medication selection ── */}
@@ -670,7 +680,7 @@ export function ChangeMedicationSheet({
             </motion.div>
           )}
         </AnimatePresence>
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 }
