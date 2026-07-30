@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ruler Dark Mode – Contrast Check</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 900px;
+    background: hsl(240 39% 10%); /* --background dark */
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: hsl(40 100% 98%);
+    padding: 40px;
+  }
+
+  /* ── CSS variables matching index.css dark ── */
+  :root {
+    --ruler-card-bg-old: rgba(30,32,55,0.70);  /* before fix */
+    --ruler-card-bg-new: rgba(30,32,55,0.85);  /* after fix  */
+    --ruler-card-shine:  rgba(255,255,255,0.08);
+    --ruler-edge-fade:   rgba(30,32,55,0.85);
+    --brand: #D4A574;
+    --brand-05: rgba(212,165,116,0.05);
+    --brand-14: rgba(212,165,116,0.14);
+    --brand-18: rgba(212,165,116,0.18);
+    --brand-28: rgba(212,165,116,0.28);
+    --brand-38: rgba(212,165,116,0.38);
+    --brand-55: rgba(212,165,116,0.55);
+  }
+
+  h2 {
+    font-size: 18px; font-weight: 700; color: hsl(40 100% 85%);
+    margin-bottom: 8px;
+  }
+  .label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: hsl(220 9% 60%);
+    margin-bottom: 6px;
+  }
+  .section { margin-bottom: 48px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .chip {
+    display: inline-block;
+    background: rgba(212,165,116,0.12);
+    color: #D4A574;
+    border-radius: 99px;
+    padding: 2px 10px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Ruler card ── */
+  .ruler-card {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid rgba(212,165,116,0.38);
+    box-shadow: 0 6px 32px rgba(212,165,116,0.18), 0 1px 4px rgba(0,0,0,0.04),
+                inset 0 1px 0 rgba(255,255,255,0.08);
+    touch-action: none;
+  }
+  .ruler-card.old-opacity { background: var(--ruler-card-bg-old); }
+  .ruler-card.new-opacity { background: var(--ruler-card-bg-new); }
+
+  /* Selection band */
+  .selection-band {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: 10px; bottom: 36px; width: 52px;
+    background: rgba(212,165,116,0.055);
+    border: 1px solid rgba(212,165,116,0.18);
+    border-radius: 10px; z-index: 2;
+  }
+  /* Centre needle */
+  .centre-needle {
+    position: absolute; inset: 0; left: 50%; transform: translateX(-50%);
+    width: 2.5px;
+    background: linear-gradient(to bottom, transparent 0%, #D4A574 10%, #D4A574 74%, rgba(212,165,116,0.12) 100%);
+    box-shadow: 0 0 12px rgba(212,165,116,0.55), 0 2px 6px rgba(212,165,116,0.35);
+    border-radius: 9999px; z-index: 3;
+  }
+  /* Edge fade */
+  .edge-fade {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: linear-gradient(to right,
+      var(--ruler-edge-fade) 0%, transparent 18%,
+      transparent 82%, var(--ruler-edge-fade) 100%);
+  }
+  /* Ticks row */
+  .ticks-row {
+    position: absolute; inset: 0;
+    display: flex; align-items: flex-end;
+    padding-bottom: 34px;
+  }
+  .tick-cell {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+  }
+  .tick-bar { border-radius: 9999px; }
+  /* Labels row */
+  .labels-row {
+    position: absolute; bottom: 6px; left: 0; right: 0;
+    display: flex; pointer-events: none;
+  }
+  .label-cell { flex: 1; display: flex; justify-content: center; }
+</style>
+</head>
+<body>
+
+<h1 style="font-size:22px;font-weight:900;margin-bottom:4px;color:hsl(40 100% 95%);">Ruler Card – Dark Mode Contrast Verification</h1>
+<p style="font-size:13px;color:hsl(220 9% 60%);margin-bottom:36px;">
+  Background: <code style="font-family:monospace;color:#D4A574;">hsl(240 39% 10%)</code> &nbsp;·&nbsp;
+  Card opacity: <strong style="color:#D4A574;">0.70 → 0.85</strong>
+</p>
+
+<!-- ── Before / After side-by-side at mid-range weight ── -->
+<div class="section">
+  <h2>Mid-range goal (150 lbs) — Before vs After</h2>
+  <div class="grid" style="margin-top:12px;">
+
+    <!-- BEFORE: opacity 0.70 -->
+    <div>
+      <div class="label">Before — opacity 0.70</div>
+      <div class="ruler-card old-opacity" id="ruler-before-150"></div>
+    </div>
+
+    <!-- AFTER: opacity 0.85 -->
+    <div>
+      <div class="label">After — opacity 0.85</div>
+      <div class="ruler-card new-opacity" id="ruler-after-150"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Low goal weight ── -->
+<div class="section">
+  <h2>Low goal weight (85 lbs)</h2>
+  <div class="ruler-card new-opacity" id="ruler-low" style="max-width:420px;"></div>
+</div>
+
+<!-- ── High goal weight ── -->
+<div class="section">
+  <h2>High goal weight (350 lbs)</h2>
+  <div class="ruler-card new-opacity" id="ruler-high" style="max-width:420px;"></div>
+</div>
+
+<script>
+const BRAND = '#D4A574';
+
+// Dark-mode tick colour interpolation matching Onboarding.tsx
+function tickColor(dist, isDark) {
+  const nearR=212, nearG=165, nearB=116;
+  const [farR, farG, farB] = isDark ? [100,110,145] : [200,210,210];
+  const t = Math.min(1, dist / 8);
+  const cr = Math.round(nearR + (farR - nearR) * t);
+  const cg = Math.round(nearG + (farG - nearG) * t);
+  const cb = Math.round(nearB + (farB - nearB) * t);
+  const ca = dist === 0 ? 1 : Math.max(0.15, 0.88 - dist * 0.1);
+  return `rgba(${cr},${cg},${cb},${ca})`;
+}
+
+function labelColor(dist, isDark) {
+  const base = isDark ? '160,170,200' : '156,163,175';
+  const alpha = Math.max(0.2, 0.65 - dist * 0.05);
+  return `rgba(${base},${alpha})`;
+}
+
+function buildRuler(containerId, centerVal, rMin=30, rMax=400, isDark=true) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const HALF = 20;
+  const TOTAL = HALF * 2 + 1;
+
+  // Selection band
+  const band = document.createElement('div');
+  band.className = 'selection-band';
+  container.appendChild(band);
+
+  // Centre needle
+  const needle = document.createElement('div');
+  needle.className = 'centre-needle';
+  container.appendChild(needle);
+
+  // Edge fade
+  const fade = document.createElement('div');
+  fade.className = 'edge-fade';
+  container.appendChild(fade);
+
+  // Ticks row
+  const ticksRow = document.createElement('div');
+  ticksRow.className = 'ticks-row';
+
+  // Labels row
+  const labelsRow = document.createElement('div');
+  labelsRow.className = 'labels-row';
+
+  for (let i = 0; i < TOTAL; i++) {
+    const offset = i - HALF;
+    const val = centerVal + offset;
+    const is5 = val % 5 === 0;
+    const dist = Math.abs(offset);
+    const inRange = val >= rMin && val <= rMax;
+
+    // Tick cell
+    const tCell = document.createElement('div');
+    tCell.className = 'tick-cell';
+    if (inRange) {
+      let tickH;
+      if      (dist===0) tickH=68;
+      else if (dist===1) tickH=is5?48:34;
+      else if (dist===2) tickH=is5?38:24;
+      else if (dist<=4)  tickH=is5?28:14;
+      else if (dist<=8)  tickH=is5?20:8;
+      else               tickH=is5?14:5;
+
+      const bar = document.createElement('div');
+      bar.className = 'tick-bar';
+      bar.style.width  = dist===0 ? '3px' : is5 ? '2.5px' : '2px';
+      bar.style.height = tickH + 'px';
+      bar.style.backgroundColor = tickColor(dist, isDark);
+      if (dist === 0) bar.style.boxShadow = `0 0 10px rgba(212,165,116,0.55)`;
+      bar.style.transition = 'height 0.09s ease';
+      tCell.appendChild(bar);
+    }
+    ticksRow.appendChild(tCell);
+
+    // Label cell
+    const lCell = document.createElement('div');
+    lCell.className = 'label-cell';
+    if (inRange && val % 5 === 0) {
+      const span = document.createElement('span');
+      span.style.fontSize = '11px';
+      span.style.fontWeight = dist===0 ? '800' : '500';
+      span.style.color = dist===0 ? 'hsl(40 100% 98%)' : labelColor(dist, isDark);
+      span.style.userSelect = 'none';
+      span.textContent = val;
+      lCell.appendChild(span);
+    }
+    labelsRow.appendChild(lCell);
+  }
+
+  container.appendChild(ticksRow);
+  container.appendChild(labelsRow);
+}
+
+// Build all rulers
+buildRuler('ruler-before-150', 150);
+buildRuler('ruler-after-150',  150);
+buildRuler('ruler-low',   85);
+buildRuler('ruler-high', 350);
+</script>
+</body>
+</html>
