@@ -146,9 +146,25 @@ export default function Dashboard() {
   const medTipPool = buildMedTipPool();
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const firstSideEffect = user.troublesomeSideEffects?.[0]?.toLowerCase();
-  const tip =
+  const primaryTip =
     (firstSideEffect && SIDE_EFFECT_TIPS[firstSideEffect]) ??
     medTipPool[dayOfYear % medTipPool.length];
+
+  // When the primary tip is short (< 60 chars), append a second complementary sentence
+  // from the medication-specific pool so the card never feels sparse.
+  let tip = primaryTip;
+  if (primaryTip.length < 60 && medTipPool.length > 1) {
+    const primaryIndex = medTipPool.indexOf(primaryTip);
+    // Pick the next pool entry by day offset; skip if it lands on the same sentence
+    let secondIndex = (dayOfYear + 1) % medTipPool.length;
+    if (secondIndex === primaryIndex) {
+      secondIndex = (secondIndex + 1) % medTipPool.length;
+    }
+    // Only append if we found a genuinely different sentence
+    if (secondIndex !== primaryIndex) {
+      tip = `${primaryTip} ${medTipPool[secondIndex]}`;
+    }
+  }
 
   const handleLogDose = () => {
     const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
