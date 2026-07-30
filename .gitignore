@@ -47,3 +47,9 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Screenshots / uploaded assets
+attached_assets/
+marketing/screenshots/*.png
+marketing/screenshots/*.jpg
+marketing/screenshots/live/
