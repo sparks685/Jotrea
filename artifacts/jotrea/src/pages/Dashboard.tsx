@@ -377,9 +377,11 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-md mx-auto bg-card rounded-t-3xl p-6 space-y-4"
+              className="w-full max-w-md mx-auto bg-card rounded-t-3xl flex flex-col"
+              style={{ maxHeight: "88dvh" }}
             >
-              <div className="flex items-center justify-between">
+              {/* Fixed header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
                 <h3 className="text-lg font-bold text-foreground">
                   {showDoseConfirm ? "Dose Logged" : "Log Dose"}
                 </h3>
@@ -393,110 +395,123 @@ export default function Dashboard() {
               </div>
 
               {showDoseConfirm ? (
-                <div className="space-y-4" data-testid="dose-confirm-screen">
-                  <div className="flex flex-col items-center gap-3 py-2">
-                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
-                      <CheckCircle2 size={28} className="text-secondary" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-semibold text-foreground">
-                        {medication.dose} {medInfo?.unit ?? "mg"} logged
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
-                    </div>
-                    <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
-                      {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
-                    </p>
-                    <button
-                      data-testid="view-med-guide-link"
-                      className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
-                      onClick={() => { handleCloseLogForm(); navigate("/med-info"); }}
-                    >
-                      View medication guide →
-                    </button>
-                  </div>
-
-                  <Button
-                    className="w-full h-12 rounded-2xl font-semibold"
-                    onClick={handleCloseLogForm}
-                    data-testid="done-dose-confirm"
-                  >
-                    Done
-                  </Button>
-                </div>
-              ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                      <Input
-                        type="date"
-                        value={logDate}
-                        onChange={(e) => setLogDate(e.target.value)}
-                        className="rounded-xl"
-                        data-testid="log-date"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Time</label>
-                      <Input
-                        type="time"
-                        value={logTime}
-                        onChange={(e) => setLogTime(e.target.value)}
-                        className="rounded-xl"
-                        data-testid="log-time"
-                      />
-                    </div>
-                  </div>
-
-                  {medInfo?.formulation === "injection" && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {INJECTION_SITES.map((site) => (
-                          <button
-                            key={site}
-                            data-testid={`log-site-${site.toLowerCase().replace(" ", "-")}`}
-                            className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                              logSite === site
-                                ? "border-secondary bg-secondary/10 text-secondary"
-                                : "border-border bg-background text-foreground"
-                            }`}
-                            onClick={() => setLogSite(site)}
-                          >
-                            {site}
-                          </button>
-                        ))}
+                  {/* Scrollable confirm body */}
+                  <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-2" data-testid="dose-confirm-screen">
+                    <div className="flex flex-col items-center gap-3 py-2">
+                      <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                        <CheckCircle2 size={28} className="text-secondary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-semibold text-foreground">
+                          {medication.dose} {medInfo?.unit ?? "mg"} logged
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
                       </div>
                     </div>
-                  )}
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
-                    <Input
-                      placeholder="How are you feeling?"
-                      value={logNotes}
-                      onChange={(e) => setLogNotes(e.target.value)}
-                      className="rounded-xl"
-                      data-testid="log-notes"
-                    />
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
+                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                      </div>
+                      <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                        {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
+                      </p>
+                      <button
+                        data-testid="view-med-guide-link"
+                        className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                        onClick={() => { handleCloseLogForm(); navigate("/med-info"); }}
+                      >
+                        View medication guide →
+                      </button>
+                    </div>
                   </div>
 
-                  <Button
-                    className="w-full h-12 rounded-2xl font-semibold"
-                    onClick={handleLogDose}
-                    data-testid="submit-log-dose"
-                  >
-                    <Plus size={16} className="mr-2" />
-                    Log This Dose
-                  </Button>
+                  {/* Sticky confirm footer */}
+                  <div className="px-6 pt-3 pb-6 flex-shrink-0" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
+                    <Button
+                      className="w-full h-12 rounded-2xl font-semibold"
+                      onClick={handleCloseLogForm}
+                      data-testid="done-dose-confirm"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Scrollable form body */}
+                  <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                        <Input
+                          type="date"
+                          value={logDate}
+                          onChange={(e) => setLogDate(e.target.value)}
+                          className="rounded-xl"
+                          data-testid="log-date"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Time</label>
+                        <Input
+                          type="time"
+                          value={logTime}
+                          onChange={(e) => setLogTime(e.target.value)}
+                          className="rounded-xl"
+                          data-testid="log-time"
+                        />
+                      </div>
+                    </div>
+
+                    {medInfo?.formulation === "injection" && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {INJECTION_SITES.map((site) => (
+                            <button
+                              key={site}
+                              data-testid={`log-site-${site.toLowerCase().replace(" ", "-")}`}
+                              className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
+                                logSite === site
+                                  ? "border-secondary bg-secondary/10 text-secondary"
+                                  : "border-border bg-background text-foreground"
+                              }`}
+                              onClick={() => setLogSite(site)}
+                            >
+                              {site}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
+                      <Input
+                        placeholder="How are you feeling?"
+                        value={logNotes}
+                        onChange={(e) => setLogNotes(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="log-notes"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sticky action footer — always visible above home indicator */}
+                  <div className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
+                    style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
+                    <Button
+                      className="w-full h-12 rounded-2xl font-semibold"
+                      onClick={handleLogDose}
+                      data-testid="submit-log-dose"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      Log This Dose
+                    </Button>
+                  </div>
                 </>
               )}
             </motion.div>
