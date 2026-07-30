@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – iPad App S1 Dashboard Hero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 2064px; height: 2752px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D; position: relative;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 86px 144px 0; font-size: 60px; font-weight: 600;
+  }
+  .caption-band {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #1A1D3D; border-radius: 115px 115px 0 0;
+    padding: 110px 154px 160px;
+  }
+  .caption-band h1 { font-size: 150px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -4px; }
+  .caption-band p { font-size: 76px; font-weight: 500; color: rgba(255,255,255,0.72); margin-top: 36px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:24px;align-items:center">
+    <svg width="54" height="38" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="84" height="38" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<!-- App header -->
+<div style="margin:72px 144px 0;display:flex;justify-content:space-between;align-items:flex-start">
+  <div>
+    <div style="font-size:108px;font-weight:900;color:#1A1D3D;letter-spacing:-3px">Good Evening</div>
+    <div style="font-size:60px;color:#6E7585;margin-top:18px">Wegovy · 0.5 mg · Weekly</div>
+  </div>
+  <div style="background:rgba(212,165,116,0.12);border-radius:42px;padding:30px 72px;font-size:60px;font-weight:700;color:#D4A574">Weekly</div>
+</div>
+
+<!-- Two-column layout -->
+<div style="margin:72px 144px 0;display:flex;gap:72px;align-items:flex-start">
+
+  <!-- Left column -->
+  <div style="flex:1;display:flex;flex-direction:column;gap:54px">
+
+    <!-- Countdown ring card -->
+    <div style="background:#fff;border-radius:84px;padding:84px 96px;box-shadow:0 24px 80px rgba(212,165,116,0.14);display:flex;align-items:center;gap:72px">
+      <svg width="340" height="340" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#F7F2EA" stroke-width="14"/>
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#D4A574" stroke-width="14"
+          stroke-dasharray="553" stroke-dashoffset="158" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+        <text x="100" y="88" text-anchor="middle" font-size="54" font-weight="900" fill="#1A1D3D" font-family="Inter,sans-serif">5</text>
+        <text x="100" y="128" text-anchor="middle" font-size="24" font-weight="500" fill="#6E7585" font-family="Inter,sans-serif">days</text>
+      </svg>
+      <div>
+        <div style="font-size:60px;font-weight:500;color:#6E7585">Next dose in</div>
+        <div style="font-size:90px;font-weight:800;color:#1A1D3D;margin-top:14px">5 days</div>
+        <div style="font-size:56px;font-weight:600;color:#D4A574;margin-top:12px">Fri, Aug 1 · Abdomen</div>
+      </div>
+    </div>
+
+    <!-- Log dose button -->
+    <div style="background:linear-gradient(135deg,#C4956A,#D4A574);border-radius:66px;padding:84px;display:flex;align-items:center;justify-content:center;gap:54px;box-shadow:0 24px 66px rgba(212,165,116,0.38)">
+      <svg width="84" height="84" viewBox="0 0 24 24" fill="none"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="#fff" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span style="font-size:96px;font-weight:800;color:#fff">Log Today's Dose</span>
+    </div>
+
+    <!-- Pharmacy tip card -->
+    <div style="background:#fff;border-radius:72px;padding:72px;box-shadow:0 12px 40px rgba(0,0,0,0.05);display:flex;align-items:flex-start;gap:60px">
+      <div style="width:120px;height:120px;background:linear-gradient(135deg,#D4A574,#C4956A);border-radius:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="68" height="68" viewBox="0 0 24 24" fill="none"><path d="M9 3H15M12 3v4M5 7h14l-1.5 10.5a2 2 0 01-2 1.5h-7a2 2 0 01-2-1.5L5 7z" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:50px;font-weight:700;color:#D4A574;margin-bottom:16px">Pharmacist Tip</div>
+        <div style="font-size:56px;color:#1A1D3D;line-height:1.5">Rotate injection sites weekly to reduce bruising and improve absorption.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right column -->
+  <div style="flex:1">
+
+    <!-- Today's Targets card -->
+    <div style="background:#fff;border-radius:84px;padding:84px;box-shadow:0 24px 80px rgba(0,0,0,0.05)">
+      <div style="font-size:72px;font-weight:800;color:#1A1D3D;margin-bottom:60px">Today's Targets</div>
+      <div style="display:flex;flex-direction:column;gap:42px">
+        <!-- Water -->
+        <div style="background:#F0FDFC;border-radius:54px;padding:54px 60px;border:3px solid #2EC4B6;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:36px">
+            <span style="font-size:72px">💧</span>
+            <div style="font-size:52px;font-weight:600;color:#2EC4B6">Water</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:84px;font-weight:900;color:#2EC4B6">6<span style="font-size:48px;font-weight:600">/8</span></div>
+            <div style="font-size:44px;font-weight:600;color:#2EC4B6">cups</div>
+          </div>
+        </div>
+        <!-- Protein -->
+        <div style="background:#FFF8F0;border-radius:54px;padding:54px 60px;border:3px solid #D4A574;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:36px">
+            <span style="font-size:72px">🥩</span>
+            <div style="font-size:52px;font-weight:600;color:#D4A574">Protein</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:84px;font-weight:900;color:#D4A574">52<span style="font-size:48px;font-weight:600">/69</span></div>
+            <div style="font-size:44px;font-weight:600;color:#D4A574">grams</div>
+          </div>
+        </div>
+        <!-- Steps -->
+        <div style="background:#F0FFF4;border-radius:54px;padding:54px 60px;border:3px solid #34C759;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:36px">
+            <span style="font-size:72px">👟</span>
+            <div style="font-size:52px;font-weight:600;color:#34C759">Steps</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:84px;font-weight:900;color:#34C759">3.2k<span style="font-size:48px;font-weight:600">/7k</span></div>
+            <div style="font-size:44px;font-weight:600;color:#34C759">steps</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Marketing caption band -->
+<div class="caption-band">
+  <h1>Never Miss a Dose</h1>
+  <p>Built by pharmacists. Designed for your GLP-1 journey.</p>
+</div>
+
+</body>
+</html>

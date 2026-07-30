@@ -28,10 +28,16 @@
  *     s4-weight-tracker.html → Jotrea-S4.png   (Weight Tracker)
  *
  *   iPad 11" (2064×2752):
- *     ipad-s1-onboarding.html     → Jotrea-iPad-S1.png
- *     ipad-s2-goal-weight.html    → Jotrea-iPad-S2.png
- *     ipad-s3-dashboard.html      → Jotrea-iPad-S3.png
- *     ipad-s4-weight-tracker.html → Jotrea-iPad-S4.png
+ *     ipad-s1-onboarding.html              → Jotrea-iPad-S1.png
+ *     ipad-s2-goal-weight.html             → Jotrea-iPad-S2.png
+ *     ipad-s3-dashboard.html               → Jotrea-iPad-S3.png
+ *     ipad-s4-weight-tracker.html          → Jotrea-iPad-S4.png
+ *     ipad-app-s1-dashboard-hero.html      → Jotrea-iPad-App-S1.png
+ *     ipad-app-s2-dose-tracking.html       → Jotrea-iPad-App-S2.png
+ *     ipad-app-s3-weight-progress.html     → Jotrea-iPad-App-S3.png
+ *     ipad-app-s4-med-info.html            → Jotrea-iPad-App-S4.png
+ *     ipad-app-s5-side-effects.html        → Jotrea-iPad-App-S5.png
+ *     ipad-app-s6-personalized-plan.html   → Jotrea-iPad-App-S6.png
  *
  * Brand colors (keep these in sync with artifacts/jotrea/src/index.css):
  *   --primary (tan):    #D4A574  (hsl 32 55% 64%)
@@ -58,12 +64,18 @@ const ALL_JOBS = [
   { id: 's3', device: 'ipad',   html: 'ipad-s3-dashboard.html',      out: 'Jotrea-iPad-S3.png', w: 2064, h: 2752 },
   { id: 's4', device: 'ipad',   html: 'ipad-s4-weight-tracker.html', out: 'Jotrea-iPad-S4.png', w: 2064, h: 2752 },
   // ── App Store marketing set (A1–A6) ────────────────────────────────────────
-  { id: 'a1', device: 'iphone', html: 'app-s1-dashboard-hero.html',     out: 'Jotrea-App-S1.png', w: 1290, h: 2796 },
-  { id: 'a2', device: 'iphone', html: 'app-s2-dose-tracking.html',      out: 'Jotrea-App-S2.png', w: 1290, h: 2796 },
-  { id: 'a3', device: 'iphone', html: 'app-s3-weight-progress.html',    out: 'Jotrea-App-S3.png', w: 1290, h: 2796 },
-  { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',           out: 'Jotrea-App-S4.png', w: 1290, h: 2796 },
-  { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',       out: 'Jotrea-App-S5.png', w: 1290, h: 2796 },
-  { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',  out: 'Jotrea-App-S6.png', w: 1290, h: 2796 },
+  { id: 'a1', device: 'iphone', html: 'app-s1-dashboard-hero.html',          out: 'Jotrea-App-S1.png',      w: 1290, h: 2796 },
+  { id: 'a2', device: 'iphone', html: 'app-s2-dose-tracking.html',           out: 'Jotrea-App-S2.png',      w: 1290, h: 2796 },
+  { id: 'a3', device: 'iphone', html: 'app-s3-weight-progress.html',         out: 'Jotrea-App-S3.png',      w: 1290, h: 2796 },
+  { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',                out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
+  { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',            out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
+  { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
+  { id: 'ia1', device: 'ipad',  html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad-App-S1.png', w: 2064, h: 2752 },
+  { id: 'ia2', device: 'ipad',  html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad-App-S2.png', w: 2064, h: 2752 },
+  { id: 'ia3', device: 'ipad',  html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad-App-S3.png', w: 2064, h: 2752 },
+  { id: 'ia4', device: 'ipad',  html: 'ipad-app-s4-med-info.html',           out: 'Jotrea-iPad-App-S4.png', w: 2064, h: 2752 },
+  { id: 'ia5', device: 'ipad',  html: 'ipad-app-s5-side-effects.html',       out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
+  { id: 'ia6', device: 'ipad',  html: 'ipad-app-s6-personalized-plan.html',  out: 'Jotrea-iPad-App-S6.png', w: 2064, h: 2752 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -89,13 +101,13 @@ function selectJobs(args) {
   if (args.length === 0) return ALL_JOBS;
 
   const deviceFilters = args.filter(a => a === 'iphone' || a === 'ipad');
-  const slideFilters  = args.filter(a => /^[sa][1-6]$/.test(a));
+  const slideFilters  = args.filter(a => /^(s[1-4]|a[1-6]|ia[1-6])$/.test(a));
   const unknown       = args.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
 
   if (unknown.length > 0) {
     console.error(`Unknown filter(s): ${unknown.join(', ')}`);
     console.error('Valid device filters: iphone, ipad');
-    console.error('Valid slide filters:  s1, s2, s3, s4');
+    console.error('Valid slide filters:  s1–s4, a1–a6, ia1–ia6');
     process.exit(1);
   }
 
