@@ -48,6 +48,7 @@ export default function DoseLog() {
   const [logNotes, setLogNotes] = useState("");
   const [logDoseAmount, setLogDoseAmount] = useState<number>(medication?.dose ?? 0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   if (!medication) return null;
 
@@ -114,6 +115,14 @@ export default function DoseLog() {
 
   const sortedDoses = [...doses].sort((a, b) => b.date.localeCompare(a.date));
 
+  const availableFilters = SIDE_EFFECTS_LIST.filter((effect) =>
+    sortedDoses.some((dose) => dose.sideEffects?.includes(effect.id))
+  );
+
+  const filteredDoses = activeFilter
+    ? sortedDoses.filter((dose) => dose.sideEffects?.includes(activeFilter))
+    : sortedDoses;
+
   return (
     <PageContainer className="pb-4">
       <div className="pb-4 flex items-center justify-between">
@@ -123,7 +132,7 @@ export default function DoseLog() {
             <button
               data-testid="calendar-view-btn"
               className={`p-1.5 rounded-lg transition-all ${view === "calendar" ? "bg-card shadow-sm" : ""}`}
-              onClick={() => setView("calendar")}
+              onClick={() => { setView("calendar"); setActiveFilter(null); }}
             >
               <CalendarDays size={16} className={view === "calendar" ? "text-primary" : "text-muted-foreground"} />
             </button>
@@ -267,6 +276,29 @@ export default function DoseLog() {
         </div>
       ) : (
         <div className="space-y-3">
+          {availableFilters.length > 0 && (
+            <div
+              className="flex gap-2 overflow-x-auto pb-1"
+              data-testid="side-effect-filter-bar"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {availableFilters.map((effect) => (
+                <button
+                  key={effect.id}
+                  data-testid={`filter-chip-${effect.id}`}
+                  className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    activeFilter === effect.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card text-foreground border-border hover:bg-muted"
+                  }`}
+                  onClick={() => setActiveFilter(activeFilter === effect.id ? null : effect.id)}
+                >
+                  {effect.emoji} {effect.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {sortedDoses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center mb-4">
@@ -275,8 +307,16 @@ export default function DoseLog() {
               <p className="font-semibold text-foreground">No doses logged yet</p>
               <p className="text-sm text-muted-foreground mt-1">Start tracking by logging your first dose</p>
             </div>
+          ) : filteredDoses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center mb-4">
+                <List size={28} className="text-muted-foreground" />
+              </div>
+              <p className="font-semibold text-foreground">No matching doses</p>
+              <p className="text-sm text-muted-foreground mt-1">No doses logged with this side effect</p>
+            </div>
           ) : (
-            sortedDoses.map((dose) => (
+            filteredDoses.map((dose) => (
               <DoseCard key={dose.id} dose={dose} unit={medInfo?.unit ?? "mg"} onEdit={openEdit} onDelete={deleteDose} />
             ))
           )}
