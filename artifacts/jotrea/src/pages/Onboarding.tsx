@@ -985,17 +985,17 @@ export default function Onboarding() {
               {!isCustomMed && selectedMed && (
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 mt-3">
                     {selectedMed.doses.map((d: number, i: number) => {
                       const isStart = i === 0;
                       const isSelected = selectedDose === d;
                       return (
-                        <div key={d} className="relative">
+                        <div key={d} className="relative overflow-visible">
                           <motion.button whileTap={{ scale:0.95 }}
-                            className="w-full rounded-2xl text-sm font-bold border-2 transition-all"
+                            className="w-full rounded-2xl text-sm font-bold border-2 transition-all min-h-[3rem]"
                             style={{
-                              paddingTop: isStart ? "18px" : "14px",
-                              paddingBottom: "14px",
+                              paddingTop: isStart ? "1.25rem" : "0.875rem",
+                              paddingBottom: "0.875rem",
                               backgroundColor: isSelected ? BRAND : "hsl(var(--card))",
                               borderColor: isSelected ? BRAND : isStart ? `${BRAND}60` : "hsl(var(--border))",
                               color: isSelected ? "white" : "hsl(var(--foreground))",
