@@ -286,6 +286,10 @@ export default function Settings() {
             type="text"
             value={user.name && user.name !== "User" ? user.name : ""}
             onChange={(e) => setUser({ ...user, name: e.target.value })}
+            onFocus={(e) => {
+              const el = e.currentTarget;
+              setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+            }}
             placeholder="Enter your name"
             className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right max-w-[150px]"
           />
@@ -681,6 +685,10 @@ export default function Settings() {
                   type="time"
                   value={notifTime}
                   onChange={(e) => setUser({ ...user, notificationTime: e.target.value })}
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+                  }}
                   className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none"
                   data-testid="notif-time"
                 />
