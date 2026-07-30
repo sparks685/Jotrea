@@ -270,13 +270,6 @@ export default function Settings() {
     <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <button
-          onClick={handleChangeMed}
-          className="text-xs font-semibold px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted/40 transition-colors"
-          data-testid="restart-onboarding-btn"
-        >
-          Restart Setup
-        </button>
       </div>
 
       {/* Profile */}
@@ -769,12 +762,12 @@ export default function Settings() {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="w-full rounded-2xl h-14 font-semibold shadow-lg">
-              Delete Account
+              Delete All Data
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent className="rounded-3xl max-w-[calc(100%-40px)] w-full mx-auto p-6">
             <AlertDialogHeader className="space-y-3">
-              <AlertDialogTitle className="text-xl">Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle className="text-xl">Delete All Data?</AlertDialogTitle>
               <AlertDialogDescription className="text-base text-muted-foreground">
                 This will permanently delete all your data. This cannot be undone.
               </AlertDialogDescription>
@@ -789,10 +782,11 @@ export default function Settings() {
                   localStorage.removeItem("jotrea_weights");
                   localStorage.removeItem("jotrea_user");
                   localStorage.removeItem("jotrea_onboarding");
+                  localStorage.removeItem("jotrea_theme");
                   setLocation("/onboarding", { replace: true });
                 }}
               >
-                Delete Account
+                Delete All Data
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
