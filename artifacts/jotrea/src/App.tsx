@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { useMedication } from "@/hooks/useMedication";
 import { initGA, pageView } from "@/lib/analytics";
+import { registerNotificationSW } from "@/utils/notifications";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import DoseLog from "@/pages/DoseLog";
@@ -155,6 +156,7 @@ function AppRoutes() {
 function App() {
   useEffect(() => {
     initGA();
+    registerNotificationSW();
   }, []);
 
   return (

@@ -74,23 +74,3 @@ export function downloadCSV(filename: string, content: string): void {
   URL.revokeObjectURL(url);
 }
 
-export function scheduleNextDoseNotification(
-  nextDoseDate: string,
-  medicationName: string,
-  dose: number,
-  unit: string,
-  advanceHours: number
-): void {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-  const doseTime = new Date(nextDoseDate + "T09:00:00");
-  const notifTime = new Date(doseTime.getTime() - advanceHours * 60 * 60 * 1000);
-  const delay = notifTime.getTime() - Date.now();
-  if (delay <= 0 || delay > 7 * 24 * 60 * 60 * 1000) return;
-  setTimeout(() => {
-    new Notification("💉 Jotrea — Dose Reminder", {
-      body: `${medicationName} ${dose}${unit} is due ${advanceHours >= 24 ? "tomorrow" : `in ${advanceHours} hour${advanceHours !== 1 ? "s" : ""}`}`,
-      icon: "/icon-192x192.png",
-      tag: "jotrea-dose-reminder",
-    });
-  }, delay);
-}

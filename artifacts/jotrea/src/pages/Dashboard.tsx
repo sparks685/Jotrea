@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, differenceInWeeks } from "date-fns";
@@ -22,6 +22,7 @@ import {
   getLast7WeightEntries,
 } from "@/utils/calculations";
 import { trackEvent } from "@/lib/analytics";
+import { cancelNotificationTag, rescheduleAllNotifications } from "@/utils/notifications";
 import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
 import type { DoseEntry, WeightEntry } from "@/types";
 
@@ -70,6 +71,13 @@ export default function Dashboard() {
 
   const { checkin, toggle } = useDailyCheckin();
   const [whyDismissed, setWhyDismissed] = useLocalStorage<boolean>("jotrea_why_dismissed", false);
+
+  // Reschedule all notifications on every Dashboard mount (i.e. each app open)
+  useEffect(() => {
+    if (medication && user.notificationsEnabled) {
+      rescheduleAllNotifications(medication, doses, user);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!medication) return null;
 
@@ -193,6 +201,8 @@ export default function Dashboard() {
     };
     setDoses([...doses, newDose]);
     setPendingDoseId(doseId);
+    // Cancel the missed-dose notification for this specific dose day
+    cancelNotificationTag(`jotrea-missed-dose-${logDate}`);
 
     if (finalSite !== "oral") {
       const newHistoryEntry = { site: finalSite, date: format(parseISO(logDate), "MMM d") };

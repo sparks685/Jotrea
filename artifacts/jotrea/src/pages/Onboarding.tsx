@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
 import { useMedication, useWeights, useUser } from "@/hooks/useMedication";
+import { requestNotificationPermission, scheduleAllNotifications } from "@/utils/notifications";
 import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 
@@ -121,7 +122,7 @@ export default function Onboarding() {
   const [customFrequency, setCustomFrequency] = useState("weekly");
   const [customFreqOther, setCustomFreqOther] = useState("");
 
-  const { setMedication } = useMedication();
+  const { medication, setMedication } = useMedication();
   const { setWeights } = useWeights();
   const { user, setUser } = useUser();
 
@@ -1466,7 +1467,15 @@ export default function Onboarding() {
             <div className="w-full max-w-xs space-y-3">
               <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
                 style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
-                onClick={() => { haptic([10,20,10]); setLocation("/", { replace:true }); }}>
+                onClick={async () => {
+                  haptic([10,20,10]);
+                  const result = await requestNotificationPermission();
+                  if (result === "granted" && medication) {
+                    setUser({ ...user, notificationsEnabled: true });
+                    await scheduleAllNotifications(medication, [], user);
+                  }
+                  setLocation("/", { replace:true });
+                }}>
                 Allow Notifications
               </Button>
               <Button variant="outline" className="w-full h-12 rounded-2xl text-sm font-semibold text-muted-foreground border-2 hover:bg-muted"
