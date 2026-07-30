@@ -16,7 +16,7 @@ export function PageContainer({
   return (
     <div
       className={cn("px-5 pb-4", className)}
-      style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
+      style={{ paddingTop: "1rem" }}
     >
       {children}
     </div>
