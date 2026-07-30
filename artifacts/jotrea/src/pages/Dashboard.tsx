@@ -369,7 +369,7 @@ export default function Dashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-end"
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end"
             onClick={(e) => e.target === e.currentTarget && handleCloseLogForm()}
           >
             <motion.div
@@ -526,7 +526,7 @@ export default function Dashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-end"
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end"
             onClick={(e) => e.target === e.currentTarget && setShowWeightForm(false)}
           >
             <motion.div
