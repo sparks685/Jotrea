@@ -229,7 +229,14 @@ export default function Dashboard() {
         >
           <Button
             className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg"
-            onClick={() => setShowLogForm(true)}
+            onClick={() => {
+              const history = user?.injectionSiteHistory;
+              const lastSite = history && history.length > 0
+                ? history[history.length - 1].site
+                : INJECTION_SITES[0];
+              setLogSite(lastSite);
+              setShowLogForm(true);
+            }}
             data-testid="log-dose-btn"
           >
             <Syringe size={18} className="mr-2" />
