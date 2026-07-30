@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -38,11 +38,17 @@ const SIDE_EFFECTS_LIST = [
 export default function DoseLog() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showDoseConfirm, setShowDoseConfirm] = useState(false);
+
+  // Close sheets immediately on navigation to prevent fixed backdrop blocking the incoming page
+  useEffect(() => {
+    setShowAdd(false);
+    setShowDoseConfirm(false);
+  }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
   const [view, setView] = useState<"calendar" | "list">("calendar");
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);

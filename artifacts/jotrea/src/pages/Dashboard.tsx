@@ -52,7 +52,7 @@ export default function Dashboard() {
   const { doses, setDoses } = useDoses();
   const { weights, setWeights } = useWeights();
   const { user, setUser } = useUser();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   const [showLogForm, setShowLogForm] = useState(false);
   const [showDoseConfirm, setShowDoseConfirm] = useState(false);
@@ -71,6 +71,14 @@ export default function Dashboard() {
 
   const { checkin, toggle } = useDailyCheckin();
   const [whyDismissed, setWhyDismissed] = useLocalStorage<boolean>("jotrea_why_dismissed", false);
+
+  // Close all bottom sheets immediately when navigating away — prevents the
+  // fixed backdrop from blocking the incoming page during the exit animation.
+  useEffect(() => {
+    setShowLogForm(false);
+    setShowDoseConfirm(false);
+    setShowWeightForm(false);
+  }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reschedule all notifications on every Dashboard mount (i.e. each app open)
   useEffect(() => {

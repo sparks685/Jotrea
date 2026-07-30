@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { Plus, Trash2, TrendingDown, Target, X } from "lucide-react";
@@ -61,10 +62,16 @@ export default function WeightTracker() {
 
   const initGoal = getDisplayGoal(user, units);
 
+  const [location] = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [inputWeight, setInputWeight] = useState("");
   const [inputDate, setInputDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [inputNotes, setInputNotes] = useState("");
+
+  // Close sheet immediately on navigation to prevent fixed backdrop blocking the incoming page
+  useEffect(() => {
+    setShowForm(false);
+  }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
   const [goalInput, setGoalInput] = useState(initGoal != null ? String(initGoal) : "");
 
   const sortedWeights = [...weights].sort((a, b) => a.date.localeCompare(b.date));
