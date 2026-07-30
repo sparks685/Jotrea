@@ -133,6 +133,104 @@ function checkCssDrift(cssPath) {
   return warnings;
 }
 
+// ---------------------------------------------------------------------------
+// Ruler dark-mode contrast check
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the .dark block from index.css, extract --ruler-card-bg, and verify
+ * the RGBA alpha is >= 0.85 (the fix value).  Returns a list of warning strings.
+ */
+function checkRulerContrast(cssPath) {
+  const css = fs.readFileSync(cssPath, 'utf8');
+
+  // Extract the .dark { … } block
+  const darkMatch = css.match(/\.dark\s*\{([^}]+)\}/s);
+  if (!darkMatch) return ['Could not find .dark block in index.css'];
+
+  const darkBlock = darkMatch[1];
+  const re = /--ruler-card-bg\s*:\s*rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/i;
+  const m  = darkBlock.match(re);
+  if (!m) {
+    return ['--ruler-card-bg not found (or not in rgba form) inside .dark block'];
+  }
+
+  const alpha = parseFloat(m[4]);
+  if (alpha < 0.85) {
+    return [
+      `--ruler-card-bg alpha is ${alpha} (rgba(${m[1]},${m[2]},${m[3]},${m[4]})) — ` +
+      `must be >= 0.85 for sufficient tick contrast in dark mode. ` +
+      `Was reduced from 0.85 back toward 0.70?`
+    ];
+  }
+  return [];
+}
+
+/**
+ * Screenshot ruler-dark-mode-check.html and run the opacity guard.
+ * When outPath already exists, a fresh copy is written alongside it as
+ * ruler-dark-mode-check-latest.png so diffs are always available.
+ */
+function runRulerCheck(dir, cssPath) {
+  console.log('\n── Ruler Dark-Mode Contrast Check ──────────────────────────\n');
+
+  // ── 1. CSS opacity guard ────────────────────────────────────────────────────
+  let opacityWarnings = [];
+  try {
+    opacityWarnings = checkRulerContrast(cssPath);
+  } catch (err) {
+    console.warn(`  ⚠  Could not read ${cssPath}: ${err.message}`);
+  }
+
+  if (opacityWarnings.length > 0) {
+    console.log('  ✗  Ruler opacity check FAILED:');
+    for (const w of opacityWarnings) console.log(`     • ${w}`);
+  } else {
+    console.log('  ✓  --ruler-card-bg alpha >= 0.85 in .dark block.');
+  }
+
+  // ── 2. Capture screenshot of the verification page ──────────────────────────
+  const htmlFile = 'ruler-dark-mode-check.html';
+  const htmlPath = path.join(dir, htmlFile);
+  const refPath  = path.join(dir, 'ruler-dark-mode-ref.png');
+  const latestPath = path.join(dir, 'ruler-dark-mode-check-latest.png');
+
+  if (!fs.existsSync(htmlPath)) {
+    console.warn(`  ⚠  ${htmlFile} not found — skipping screenshot capture.`);
+  } else {
+    // Always capture a fresh "latest" copy
+    const captureTarget = fs.existsSync(refPath) ? latestPath : refPath;
+    const cmd = [
+      'nix-shell -p chromium --run',
+      `"chromium --headless --no-sandbox --disable-gpu`,
+      `--screenshot='${captureTarget}'`,
+      `--window-size=900,900`,
+      `'file://${htmlPath}'"`,
+    ].join(' ');
+
+    try {
+      execSync(cmd, { stdio: 'inherit' });
+      if (captureTarget === refPath) {
+        console.log(`  ✓  Reference snapshot saved → ruler-dark-mode-ref.png`);
+      } else {
+        console.log(`  ✓  Latest snapshot saved   → ruler-dark-mode-check-latest.png`);
+        console.log('     Diff against ruler-dark-mode-ref.png to spot regressions.');
+      }
+    } catch (err) {
+      console.warn(`  ⚠  Screenshot capture failed: ${err.message}`);
+    }
+  }
+
+  // ── 3. Final verdict ─────────────────────────────────────────────────────────
+  console.log('\n' + '─'.repeat(60));
+  if (opacityWarnings.length > 0) {
+    console.log('Ruler contrast check FAILED (see above).\n');
+    process.exit(1);
+  } else {
+    console.log('Ruler contrast check PASSED.\n');
+  }
+}
+
 /**
  * The 12 new A-series HTML files that must be checked.
  */
@@ -278,6 +376,7 @@ Usage:
   node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A6)
   node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S6)
   node generate-screenshots.js --check-colors    Verify brand hex values in all 12 A-series HTML files
+  node generate-screenshots.js --check-ruler     Verify ruler dark-mode contrast (opacity guard + snapshot)
   node generate-screenshots.js --help            Print this usage message
 `);
   process.exit(0);
@@ -287,6 +386,13 @@ Usage:
 if (args.includes('--check-colors')) {
   const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
   runColorCheck(DIR, cssPath);
+  process.exit(0);
+}
+
+// --check-ruler: standalone ruler dark-mode contrast check
+if (args.includes('--check-ruler')) {
+  const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
+  runRulerCheck(DIR, cssPath);
   process.exit(0);
 }
 
@@ -384,11 +490,22 @@ console.log('─'.repeat(48));
 console.log(`Done.  ${passed} succeeded, ${failed} failed.`);
 if (failed > 0) process.exit(1);
 
+const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
+
 // ---------------------------------------------------------------------------
 // Automatic brand-color check when any A-series job was in the run
 // ---------------------------------------------------------------------------
 const hasASeriesJob = jobs.some(job => /^(a[1-6]|ia[1-6])$/.test(job.id));
 if (hasASeriesJob) {
-  const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
   runColorCheck(DIR, cssPath);
+}
+
+// ---------------------------------------------------------------------------
+// Automatic ruler dark-mode contrast check on every full run
+// (also runs whenever s2 / goal-weight slides are included)
+// ---------------------------------------------------------------------------
+const isFullRun  = process.argv.slice(2).filter(a => !a.startsWith('--')).length === 0;
+const hasGoalJob = jobs.some(job => job.html.includes('goal-weight'));
+if (isFullRun || hasGoalJob) {
+  runRulerCheck(DIR, cssPath);
 }
