@@ -41,6 +41,27 @@ const ADVANCE_OPTIONS = [
   { value: "24", label: "Day before" },
 ];
 
+function calcAge(birthday: string): string {
+  const birth = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
+  return String(age);
+}
+
+function fmtActivity(level: string): string {
+  const map: Record<string, string> = {
+    sedentary: "Sedentary", lightly_active: "Lightly Active",
+    active: "Active", very_active: "Very Active",
+  };
+  return map[level] ?? level;
+}
+
+function fmtPace(pace: number): string {
+  const map: Record<number, string> = { 0.5: "Gentle", 1.0: "Moderate", 1.5: "Steady", 2.0: "Aggressive" };
+  return map[pace] ?? `${pace} lbs/wk`;
+}
+
 export default function Settings() {
   const { user, setUser } = useUser();
   const { medication, setMedication } = useMedication();
@@ -154,7 +175,36 @@ export default function Settings() {
         <SettingsRow label="Gender">
           <span className="text-sm text-muted-foreground capitalize">{user.gender?.replace(/_/g, " ") || "Not set"}</span>
         </SettingsRow>
-        
+        {user.birthday && (
+          <SettingsRow label="Age">
+            <span className="text-sm text-muted-foreground">{calcAge(user.birthday)}</span>
+          </SettingsRow>
+        )}
+        {user.activityLevel && (
+          <SettingsRow label="Activity">
+            <span className="text-sm text-muted-foreground">{fmtActivity(user.activityLevel)}</span>
+          </SettingsRow>
+        )}
+        {user.goalPaceLbs && (
+          <SettingsRow label="Goal Pace">
+            <span className="text-sm text-muted-foreground">{fmtPace(user.goalPaceLbs)} · {user.goalPaceLbs} lbs/wk</span>
+          </SettingsRow>
+        )}
+        {user.motivations && user.motivations.length > 0 && (
+          <SettingsRow label="Motivations">
+            <span className="text-sm text-muted-foreground text-right max-w-[180px] leading-snug">
+              {user.motivations.slice(0, 2).join(", ")}{user.motivations.length > 2 ? ` +${user.motivations.length - 2}` : ""}
+            </span>
+          </SettingsRow>
+        )}
+        {user.troublesomeSideEffects && user.troublesomeSideEffects.length > 0 && (
+          <SettingsRow label="Side Effects">
+            <span className="text-sm text-muted-foreground text-right max-w-[180px] leading-snug">
+              {user.troublesomeSideEffects.slice(0, 2).join(", ")}{user.troublesomeSideEffects.length > 2 ? ` +${user.troublesomeSideEffects.length - 2}` : ""}
+            </span>
+          </SettingsRow>
+        )}
+
         <div className="pt-2 pb-1 border-t border-border mt-2">
           <SettingsRow label="Weight Units">
             <div className="flex gap-1 bg-muted rounded-lg p-0.5">

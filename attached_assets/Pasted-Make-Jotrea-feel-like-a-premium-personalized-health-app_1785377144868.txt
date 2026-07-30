@@ -1,0 +1,78 @@
+Make Jotrea feel like a premium, personalized health app by surfacing ALL onboarding data in the core experience. Do not add new screens — enhance existing cards and sections.
+
+=== HOME DASHBOARD PERSONALIZATION ===
+
+1. REPLACE the generic "Pharmacist Tip" box with a SMART TIP system:
+   - IF the user selected side effects during onboarding, show a tip specific to their FIRST selected side effect:
+     * Nausea → "Tip: Taking your dose with a light meal may help ease nausea."
+     * Fatigue → "Tip: Try dosing in the evening if fatigue is affecting your day."
+     * Constipation → "Tip: Increase water intake and fiber on dose days."
+     * Bloating → "Tip: Smaller, more frequent meals can help with bloating."
+     * Sulfur Burps → "Tip: Avoid carbonated drinks around your dose time."
+     * Heartburn → "Tip: Stay upright for 30 minutes after dosing to reduce reflux."
+     * Hair Loss → "Tip: Ensure adequate protein intake — aim for your daily goal."
+     * Food Noise → "Tip: High-protein snacks can help quiet food noise between meals."
+   - IF no side effects selected, show the default rotation tip (current behavior)
+   - Card header: CHANGE "TIP FROM OUR PHARMACY TEAM" TO "PERSONALIZED FOR YOU"
+   - Use the same yellow/beige styling. Just change the text logic.
+
+2. ADD a "Your Why" card below the Upcoming Doses section:
+   - Show the user's selected motivation(s) from onboarding
+   - Display as: "💫 Feel more confident" (or whatever they picked)
+   - If multiple selected, show the first one with "+2 more" 
+   - Subtext: "We'll keep this in mind as you progress."
+   - Style: White card, rounded corners, subtle border, left-aligned. Match existing card styling.
+
+3. ADD an "Activity" badge next to the "Once weekly" pill at the top:
+   - Show: "⚡ Lightly Active" (or whatever they selected)
+   - Small, pill-shaped badge, muted gold/beige background
+   - This makes the header feel alive and personal
+
+=== WEIGHT TAB ENHANCEMENTS ===
+
+4. ADD a "Goal Pace" stat card next to "Total Lost" and "Per Week":
+   - Show the pace they selected during onboarding: "Moderate", "Steady", etc.
+   - Subtext: "1.0 lb/week"
+   - If they haven't set one, hide the card.
+
+5. PROMINENTLY display "Dream Weight" at the top of the Weight tab:
+   - Large number: "190 lbs" with label "Your Goal"
+   - Below it: "At your pace, you'll reach this by [calculated date]"
+   - This was shown in onboarding but disappears forever. Bring it back.
+
+=== SETTINGS PROFILE ENHANCEMENTS ===
+
+6. EXPAND the Profile section to show ALL collected onboarding data:
+   - Name: [User]
+   - Gender: [Male]
+   - Age: [36] (calculated from birthDate)
+   - Activity: [Lightly Active]
+   - Motivations: [Feel more confident, Boost my energy]
+   - Side Effects: [Nausea]
+   - Goal Pace: [Moderate]
+   - Display each as a clean row with label on left, value on right
+   - Use the same styling as existing Settings rows
+   - Add a small "Edit" button or make them tappable to go back to onboarding (if easy, otherwise just display for now)
+
+=== MED INFO ENHANCEMENTS ===
+
+7. In the Dosing Tips accordion, ADD a bullet point based on their activity level:
+   - Sedentary → "Light movement after dosing can help with digestion."
+   - Lightly Active → "Your activity level supports healthy weight loss. Keep it up."
+   - Active → "Regular exercise pairs well with GLP-1 therapy. Stay consistent."
+   - Very Active → "High activity levels may increase hydration needs. Prioritize water."
+
+=== COPY POLISH ===
+
+8. Change the Home greeting from "Good morning" to something that uses their name:
+   - "Good morning, [Name]" (if name is set, otherwise "Good morning")
+   - If name is the default "User", keep "Good morning"
+
+9. In the Plan Summary screen (onboarding final step), ensure the Daily Goals cards (Water, Protein, Steps) are actually calculated from the user's data:
+   - Protein: 69g is fine for MVP, but add a comment in code that this should eventually be calculated from weight/activity
+   - Water: 8 cups is fine for MVP
+   - Steps: 8,000 is fine for MVP
+   - Add a small note on the card: "Based on your [Activity Level] lifestyle"
+
+=== BUILD & VERIFY ===
+Build the app. Verify all cards render correctly with test data. Ensure no console errors. Push changes.

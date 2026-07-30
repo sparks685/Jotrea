@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Syringe, Pill, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
-import { useMedication } from "@/hooks/useMedication";
+import { useMedication, useUser } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
 import { PageContainer } from "@/components/PageContainer";
 
@@ -86,8 +86,16 @@ interface Section {
   content: React.ReactNode;
 }
 
+const ACTIVITY_TIPS: Record<string, string> = {
+  sedentary: "Light movement after dosing can help with digestion.",
+  lightly_active: "Your activity level supports healthy weight loss. Keep it up.",
+  active: "Regular exercise pairs well with GLP-1 therapy. Stay consistent.",
+  very_active: "High activity levels may increase hydration needs. Prioritize water.",
+};
+
 export default function MedInfo() {
   const { medication } = useMedication();
+  const { user } = useUser();
   const [openSection, setOpenSection] = useState<string | null>("dosing");
 
   if (!medication) return null;
@@ -109,6 +117,12 @@ export default function MedInfo() {
               {tip}
             </li>
           ))}
+          {user.activityLevel && ACTIVITY_TIPS[user.activityLevel] && (
+            <li className="flex items-start gap-2.5 text-sm text-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+              {ACTIVITY_TIPS[user.activityLevel]}
+            </li>
+          )}
           {medInfo?.pharmacistNote && (
             <li className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
               <p className="text-xs font-semibold text-amber-800 mb-1">Pharmacist Note</p>

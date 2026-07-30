@@ -1412,9 +1412,10 @@ export default function Onboarding() {
             </div>
 
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Daily Goals</p>
-            <div className="grid grid-cols-3 gap-3 mb-7">
+            <div className="grid grid-cols-3 gap-3 mb-2">
               {[
                 { icon:<Droplets size={17} className="text-blue-500"/>, label:"Water", value:"8 cups" },
+                // Protein calculated from body weight × 0.8g/kg; update with activity-adjusted formula when available
                 { icon:<Activity size={17} className="text-red-500"/>, label:"Protein", value:`${Math.round((heightUnit==="imperial"?parseFloat(currentWeight)/2.2:parseFloat(currentWeight))*0.8)}g` },
                 { icon:<Target size={17} className="text-green-500"/>, label:"Steps", value:"8,000" },
               ].map(g => (
@@ -1425,6 +1426,11 @@ export default function Onboarding() {
                 </div>
               ))}
             </div>
+            {activity && (
+              <p className="text-[10px] text-center text-muted-foreground mb-5">
+                Based on your {activity === "sedentary" ? "sedentary" : activity === "lightly_active" ? "lightly active" : activity === "active" ? "active" : "very active"} lifestyle
+              </p>
+            )}
 
             <Button className="w-full h-14 rounded-2xl text-base font-bold text-white"
               style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}

@@ -64,6 +64,18 @@ export default function WeightTracker() {
         )
       : 0;
 
+  // Estimated date to reach goal based on current weekly pace
+  const goalReachDate = (() => {
+    if (!goalNum || !currentWeight || currentWeight <= goalNum || avgWeekly <= 0) return null;
+    const weeksNeeded = (currentWeight - goalNum) / avgWeekly;
+    const d = new Date();
+    d.setDate(d.getDate() + Math.ceil(weeksNeeded * 7));
+    return format(d, "MMM yyyy");
+  })();
+
+  const PACE_LABELS: Record<number, string> = { 0.5: "Gentle", 1.0: "Moderate", 1.5: "Steady", 2.0: "Aggressive" };
+  const paceLabel = user.goalPaceLbs ? (PACE_LABELS[user.goalPaceLbs] ?? `${user.goalPaceLbs} ${units}/wk`) : null;
+
   const handleAdd = () => {
     const w = parseFloat(inputWeight);
     if (!w || isNaN(w)) return;
@@ -121,7 +133,31 @@ export default function WeightTracker() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      {/* Dream Weight hero card */}
+      {goalNum > 0 && (
+        <div className="bg-primary/5 border border-primary/20 rounded-3xl p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Your Goal</p>
+              <p className="text-3xl font-bold text-foreground">{goalNum} {units}</p>
+              {goalReachDate ? (
+                <p className="text-xs text-muted-foreground mt-1">At your pace, you'll reach this by {goalReachDate}</p>
+              ) : avgWeekly <= 0 && currentWeight ? (
+                <p className="text-xs text-muted-foreground mt-1">Log more entries to see your projected date</p>
+              ) : null}
+            </div>
+            {currentWeight && currentWeight > goalNum && (
+              <div className="text-right">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">To Go</p>
+                <p className="text-2xl font-bold text-primary">{(currentWeight - goalNum).toFixed(1)}</p>
+                <p className="text-[10px] text-muted-foreground">{units}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className={`grid gap-3 ${paceLabel ? "grid-cols-2" : "grid-cols-3"}`}>
         <StatCard
           label="Total Lost"
           value={totalLost > 0 ? `${totalLost.toFixed(1)}` : "—"}
@@ -138,6 +174,13 @@ export default function WeightTracker() {
           value={bmi > 0 ? bmi.toFixed(1) : "—"}
           sub={bmi > 0 ? getBMICategory(bmi) : "Set height"}
         />
+        {paceLabel && (
+          <StatCard
+            label="Goal Pace"
+            value={paceLabel}
+            sub={`${user.goalPaceLbs} ${units}/wk`}
+          />
+        )}
       </div>
 
       {weights.length > 0 ? (

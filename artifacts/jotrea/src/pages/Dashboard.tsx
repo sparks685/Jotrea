@@ -68,25 +68,27 @@ export default function Dashboard() {
     weight: w.weight,
   }));
 
-  const PHARMACY_TIPS = [
-    "Take semaglutide on the same day each week for best results.",
-    "Inject into a new area within the same site to avoid lipodystrophy.",
+  const SIDE_EFFECT_TIPS: Record<string, string> = {
+    nausea: "Tip: Taking your dose with a light meal may help ease nausea.",
+    fatigue: "Tip: Try dosing in the evening if fatigue is affecting your day.",
+    constipation: "Tip: Increase water intake and fiber on dose days.",
+    bloating: "Tip: Smaller, more frequent meals can help with bloating.",
+    "sulfur burps": "Tip: Avoid carbonated drinks around your dose time.",
+    heartburn: "Tip: Stay upright for 30 minutes after dosing to reduce reflux.",
+    "hair loss": "Tip: Ensure adequate protein intake — aim for your daily goal.",
+    "food noise": "Tip: High-protein snacks can help quiet food noise between meals.",
+  };
+  const GENERIC_TIPS = [
+    "Rotate injection sites each dose to reduce scar tissue buildup.",
     "Stay hydrated — at least 8 glasses of water daily reduces nausea.",
     "Eating slowly and stopping at 80% full helps maximize GLP-1 effects.",
     "Protein at every meal preserves muscle while losing fat on GLP-1s.",
-    "If you forget a dose, take it within 5 days (weekly) or skip if too late.",
-    "Nausea usually improves after 4–8 weeks as your body adjusts.",
-    "Tirzepatide works on both GLP-1 and GIP receptors for enhanced effect.",
-    "Rotating injection sites reduces scar tissue buildup over time.",
     "Log your dose within 2 hours for the most accurate streak tracking.",
-    "Sulfur burps? Avoid high-fat foods and eat smaller, more frequent meals.",
-    "Constipation on GLP-1? Try fiber-rich foods and magnesium citrate.",
-    "Hair loss on GLP-1s is usually temporary — ensure adequate protein intake.",
     "Always store pen injectors in the refrigerator until opened.",
   ];
-  
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  const tip = PHARMACY_TIPS[dayOfYear % PHARMACY_TIPS.length];
+  const firstSideEffect = user.troublesomeSideEffects?.[0]?.toLowerCase();
+  const tip = (firstSideEffect && SIDE_EFFECT_TIPS[firstSideEffect]) ?? GENERIC_TIPS[dayOfYear % GENERIC_TIPS.length];
 
   const GENERIC_PHARMACIST_NOTE =
     "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
@@ -143,13 +145,22 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Good {getGreeting()}</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Good {getGreeting()}{user.name && user.name !== "User" ? `, ${user.name}` : ""}
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {medication.brandName} · {medication.dose} {medInfo?.unit}
           </p>
         </div>
-        <div className="bg-primary/10 rounded-2xl px-3 py-1.5">
-          <p className="text-xs font-semibold text-primary">{getFrequencyLabel(medication.frequency)}</p>
+        <div className="flex items-center gap-2">
+          {user.activityLevel && (
+            <div className="bg-amber-100/80 rounded-full px-2.5 py-1">
+              <p className="text-[11px] font-medium text-amber-800">⚡ {formatActivityLevel(user.activityLevel)}</p>
+            </div>
+          )}
+          <div className="bg-primary/10 rounded-2xl px-3 py-1.5">
+            <p className="text-xs font-semibold text-primary">{getFrequencyLabel(medication.frequency)}</p>
+          </div>
         </div>
       </div>
 
@@ -244,7 +255,7 @@ export default function Dashboard() {
           <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
             <FlaskConical size={16} className="text-amber-600" />
           </div>
-          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Tip from Our Pharmacy Team</p>
+          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Personalized For You</p>
         </div>
         <p className="text-sm text-amber-900 leading-relaxed">{tip}</p>
       </div>
@@ -331,6 +342,23 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Your Why card */}
+      {user.motivations && user.motivations.length > 0 && (
+        <div className="bg-card border border-border rounded-3xl p-5 shadow-sm space-y-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-base">💫</div>
+            <p className="text-sm font-semibold text-foreground">Your Why</p>
+          </div>
+          <p className="text-sm text-foreground">
+            💫 {user.motivations[0]}
+            {user.motivations.length > 1 && (
+              <span className="text-muted-foreground"> +{user.motivations.length - 1} more</span>
+            )}
+          </p>
+          <p className="text-xs text-muted-foreground">We'll keep this in mind as you progress.</p>
         </div>
       )}
 
@@ -578,6 +606,16 @@ function StatCard({
       <p className="text-[10px] text-muted-foreground">{sub}</p>
     </div>
   );
+}
+
+function formatActivityLevel(level: string) {
+  const map: Record<string, string> = {
+    sedentary: "Sedentary",
+    lightly_active: "Lightly Active",
+    active: "Active",
+    very_active: "Very Active",
+  };
+  return map[level] ?? level;
 }
 
 function getGreeting() {
