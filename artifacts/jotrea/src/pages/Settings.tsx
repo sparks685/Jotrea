@@ -49,6 +49,13 @@ import type { MedicationData } from "@/types";
 const LBS_PER_KG = 2.20462;
 const CM_PER_INCH = 2.54;
 
+const STEPS_BY_ACTIVITY: Record<string, number> = {
+  sedentary: 5000,
+  lightly_active: 7000,
+  active: 9000,
+  very_active: 10000,
+};
+
 const ADVANCE_OPTIONS = [
   { value: "1", label: "1 hour before" },
   { value: "2", label: "2 hours before" },
@@ -106,7 +113,7 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
-  const [editingField, setEditingField] = useState<"motivations" | "side-effects" | null>(null);
+  const [editingField, setEditingField] = useState<"motivations" | "side-effects" | "daily-targets" | null>(null);
   const { theme, setTheme } = useTheme();
 
   const toggleMotivation = useCallback((text: string) => {
@@ -511,6 +518,111 @@ export default function Settings() {
             ))}
           </div>
         </SettingsRow>
+      </SettingsSection>
+
+      {/* Daily Targets */}
+      <SettingsSection title="Daily Targets" icon={<span className="text-sm">🎯</span>}>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Your health goals for each day</p>
+            <button
+              className="text-xs font-semibold text-primary px-2 py-0.5 rounded-lg hover:bg-primary/10 transition-colors"
+              onClick={() => setEditingField(editingField === "daily-targets" ? null : "daily-targets")}
+              data-testid="edit-daily-targets-btn"
+            >
+              {editingField === "daily-targets" ? "Done" : "Edit"}
+            </button>
+          </div>
+
+          {editingField === "daily-targets" ? (
+            <div className="space-y-3 pt-1">
+              <SettingsRow label="💧 Water (cups)">
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={user.waterGoalCups ?? 8}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setUser({ ...user, waterGoalCups: isNaN(v) || v <= 0 ? undefined : v });
+                  }}
+                  className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right w-20"
+                  data-testid="water-goal-input"
+                />
+              </SettingsRow>
+              <SettingsRow label="🥩 Protein (g)">
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={user.proteinGoalG ?? ""}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setUser({ ...user, proteinGoalG: isNaN(v) || v <= 0 ? undefined : v });
+                  }}
+                  placeholder={
+                    user.currentWeightLbs
+                      ? String(Math.round((user.currentWeightLbs / 2.20462) * 0.8))
+                      : "Auto"
+                  }
+                  className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right w-20 placeholder:text-muted-foreground"
+                  data-testid="protein-goal-input"
+                />
+              </SettingsRow>
+              <SettingsRow label="👟 Steps / day">
+                <input
+                  type="number"
+                  min={100}
+                  max={100000}
+                  step={500}
+                  value={user.stepsGoal ?? ""}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setUser({ ...user, stepsGoal: isNaN(v) || v <= 0 ? undefined : v });
+                  }}
+                  placeholder={
+                    user.activityLevel
+                      ? String(STEPS_BY_ACTIVITY[user.activityLevel] ?? 7000)
+                      : "7000"
+                  }
+                  className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right w-20 placeholder:text-muted-foreground"
+                  data-testid="steps-goal-input"
+                />
+              </SettingsRow>
+              <p className="text-[11px] text-muted-foreground px-0.5">
+                Leave blank to use the smart default based on your profile.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 pt-0.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">💧 Water</span>
+                <span className="text-sm font-medium text-foreground">{user.waterGoalCups ?? 8} cups</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">🥩 Protein</span>
+                <span className="text-sm font-medium text-foreground">
+                  {user.proteinGoalG
+                    ? `${user.proteinGoalG}g`
+                    : user.currentWeightLbs
+                    ? `${Math.round((user.currentWeightLbs / 2.20462) * 0.8)}g`
+                    : "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">👟 Steps</span>
+                <span className="text-sm font-medium text-foreground">
+                  {(
+                    user.stepsGoal ??
+                    (user.activityLevel ? STEPS_BY_ACTIVITY[user.activityLevel] : 7000) ??
+                    7000
+                  ).toLocaleString()}{" "}
+                  / day
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </SettingsSection>
 
       {/* Notifications */}
