@@ -403,4 +403,21 @@ describe("ChangeMedicationSheet – history inconsistency note", () => {
       screen.queryByTestId("history-inconsistency-note"),
     ).not.toBeInTheDocument();
   });
+
+  it("inconsistency note uses singular 'dose' when pastDoseCount is 1", () => {
+    renderSheet({ currentMedication, pastDoseCount: 1 });
+    fireEvent.click(screen.getByText("Ozempic"));
+    fireEvent.click(screen.getByText("0.25 mg")); // different from 0.5
+    const note = screen.getByTestId("history-inconsistency-note");
+    expect(note).toHaveTextContent("1 past dose");
+    expect(note).not.toHaveTextContent("1 past doses");
+  });
+
+  it("inconsistency note uses plural 'doses' and shows the correct count when pastDoseCount is > 1", () => {
+    renderSheet({ currentMedication, pastDoseCount: 5 });
+    fireEvent.click(screen.getByText("Ozempic"));
+    fireEvent.click(screen.getByText("0.25 mg")); // different from 0.5
+    const note = screen.getByTestId("history-inconsistency-note");
+    expect(note).toHaveTextContent("5 past doses");
+  });
 });
