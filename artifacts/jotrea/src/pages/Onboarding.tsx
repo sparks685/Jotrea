@@ -10,8 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
-import { useMedication, useDoses, useWeights, useUser } from "@/hooks/useMedication";
-import { format, subDays, subWeeks, addWeeks } from "date-fns";
+import { useMedication, useWeights, useUser } from "@/hooks/useMedication";
+import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -21,31 +21,20 @@ const haptic = (pattern: number | number[] = 10) => {
   if ("vibrate" in navigator) navigator.vibrate(pattern);
 };
 
-function seedDemoData(
-  medId: string,
-  frequency: string,
-  dose: number,
-  setDoses: (v: any) => void,
+/** Seed only the user's real starting weight on their GLP-1 start date. */
+function seedStartingWeight(
+  currentWeight: number,
+  startDateGlp: string,
   setWeights: (v: any) => void
 ) {
-  const today = new Date();
-  const demoWeights = Array.from({ length: 5 }, (_, i) => ({
-    id: `w${i}`,
-    date: format(subDays(today, (4 - i) * 7), "yyyy-MM-dd"),
-    weight: 215 - i * 2.3,
-  }));
-  const demoDoses: any[] = [];
-  if (frequency === "weekly") {
-    for (let i = 4; i >= 1; i--) {
-      demoDoses.push({ id: `d${i}`, date: format(subWeeks(today, i), "yyyy-MM-dd"), time: "09:00", doseAmount: dose, site: INJECTION_SITES[i % 4], notes: "", taken: true });
-    }
-  } else {
-    for (let i = 4; i >= 1; i--) {
-      demoDoses.push({ id: `d${i}`, date: format(subDays(today, i), "yyyy-MM-dd"), time: "08:00", doseAmount: dose, site: INJECTION_SITES[0], notes: "", taken: true });
-    }
-  }
-  setDoses(demoDoses);
-  setWeights(demoWeights);
+  if (!currentWeight || isNaN(currentWeight)) return;
+  setWeights([
+    {
+      id: "w0",
+      date: startDateGlp || format(new Date(), "yyyy-MM-dd"),
+      weight: currentWeight,
+    },
+  ]);
 }
 
 // BODY_SVG replaced by inline SVG in the injection site section
@@ -126,7 +115,6 @@ export default function Onboarding() {
   const [customFreqOther, setCustomFreqOther] = useState("");
 
   const { setMedication } = useMedication();
-  const { setDoses } = useDoses();
   const { setWeights } = useWeights();
   const { user, setUser } = useUser();
 
@@ -156,13 +144,13 @@ export default function Onboarding() {
       const dose = parseFloat(customDoseAmt) || 0;
       setMedication({ id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true });
       setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
-      seedDemoData("custom", freq, dose, setDoses, setWeights);
+      seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: customBrand || "custom" });
     } else {
       if (!selectedMed || !selectedDose) return;
       setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
       setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
-      seedDemoData(selectedMed.id, selectedMed.frequency, selectedDose, setDoses, setWeights);
+      seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: selectedMed.genericName });
     }
   };
