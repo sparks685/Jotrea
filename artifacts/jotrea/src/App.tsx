@@ -16,7 +16,7 @@ import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
-class PageErrorBoundary extends Component<
+export class PageErrorBoundary extends Component<
   { children: ReactNode },
   { error: Error | null; confirmingWipe: boolean }
 > {
