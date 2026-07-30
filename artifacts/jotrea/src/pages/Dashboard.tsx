@@ -703,9 +703,11 @@ export default function Dashboard() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-md mx-auto bg-card rounded-t-3xl p-6 space-y-4"
+              className="w-full max-w-md mx-auto bg-card rounded-t-3xl flex flex-col"
+              style={{ maxHeight: "88dvh" }}
             >
-              <div className="flex items-center justify-between">
+              {/* Fixed header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
                 <h3 className="text-lg font-bold text-foreground">Add Weight</h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
@@ -716,51 +718,60 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Weight ({user.units})
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder={user.units === "lbs" ? "e.g. 195" : "e.g. 88"}
-                    value={weightValue}
-                    onChange={(e) => setWeightValue(e.target.value)}
-                    className="rounded-xl"
-                    data-testid="quick-weight-value"
-                  />
+              {/* Scrollable form body */}
+              <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Weight ({user.units})
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder={user.units === "lbs" ? "e.g. 195" : "e.g. 88"}
+                      value={weightValue}
+                      onChange={(e) => setWeightValue(e.target.value)}
+                      className="rounded-xl"
+                      data-testid="quick-weight-value"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                    <Input
+                      type="date"
+                      value={weightDate}
+                      onChange={(e) => setWeightDate(e.target.value)}
+                      className="rounded-xl"
+                      data-testid="quick-weight-date"
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                  <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
                   <Input
-                    type="date"
-                    value={weightDate}
-                    onChange={(e) => setWeightDate(e.target.value)}
+                    placeholder="Morning weight, post-workout..."
+                    value={weightNotes}
+                    onChange={(e) => setWeightNotes(e.target.value)}
                     className="rounded-xl"
-                    data-testid="quick-weight-date"
+                    data-testid="quick-weight-notes"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
-                <Input
-                  placeholder="Morning weight, post-workout..."
-                  value={weightNotes}
-                  onChange={(e) => setWeightNotes(e.target.value)}
-                  className="rounded-xl"
-                  data-testid="quick-weight-notes"
-                />
-              </div>
-
-              <Button
-                className="w-full h-12 rounded-2xl font-semibold"
-                onClick={handleAddWeight}
-                data-testid="submit-weight-btn"
+              {/* Sticky footer — always visible above home indicator */}
+              <div
+                className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
+                style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
               >
-                <Scale size={16} className="mr-2" />
-                Save Entry
-              </Button>
+                <Button
+                  className="w-full h-12 rounded-2xl font-semibold"
+                  onClick={handleAddWeight}
+                  data-testid="submit-weight-btn"
+                >
+                  <Scale size={16} className="mr-2" />
+                  Save Entry
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
         )}
