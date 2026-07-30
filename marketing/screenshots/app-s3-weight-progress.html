@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – App S3 Weight Progress</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1290px; height: 2796px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D; position: relative;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 54px 90px 0; font-size: 48px; font-weight: 600;
+  }
+  .caption-band {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #1A1D3D; border-radius: 72px 72px 0 0;
+    padding: 90px 96px 140px;
+  }
+  .caption-band h1 { font-size: 112px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -3px; }
+  .caption-band p { font-size: 56px; font-weight: 500; color: rgba(255,255,255,0.72); margin-top: 30px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:18px;align-items:center">
+    <svg width="42" height="30" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="66" height="30" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<!-- Page header -->
+<div style="margin:60px 90px 0;font-size:84px;font-weight:900;letter-spacing:-2px">Weight Tracker</div>
+
+<!-- Stats row -->
+<div style="margin:48px 90px 0;display:flex;gap:30px">
+  <div style="flex:1;background:#fff;border-radius:48px;padding:48px 36px;box-shadow:0 8px 30px rgba(0,0,0,0.05);text-align:center">
+    <div style="font-size:38px;color:#6E7585;margin-bottom:16px">Total Lost</div>
+    <div style="font-size:78px;font-weight:900;color:#2EC4B6;letter-spacing:-2px">−9.2</div>
+    <div style="font-size:38px;color:#6E7585;margin-top:10px">lbs</div>
+  </div>
+  <div style="flex:1;background:#fff;border-radius:48px;padding:48px 36px;box-shadow:0 8px 30px rgba(0,0,0,0.05);text-align:center">
+    <div style="font-size:38px;color:#6E7585;margin-bottom:16px">Per Week</div>
+    <div style="font-size:78px;font-weight:900;color:#D4A574;letter-spacing:-2px">−2.3</div>
+    <div style="font-size:38px;color:#6E7585;margin-top:10px">lbs</div>
+  </div>
+  <div style="flex:1;background:#fff;border-radius:48px;padding:48px 36px;box-shadow:0 8px 30px rgba(0,0,0,0.05);text-align:center">
+    <div style="font-size:38px;color:#6E7585;margin-bottom:16px">BMI</div>
+    <div style="font-size:78px;font-weight:900;color:#1A1D3D;letter-spacing:-2px">27.1</div>
+    <div style="font-size:38px;color:#6E7585;margin-top:10px">Overweight</div>
+  </div>
+</div>
+
+<!-- Weight chart -->
+<div style="margin:36px 90px 0;background:#fff;border-radius:60px;padding:66px;box-shadow:0 16px 60px rgba(0,0,0,0.05)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:48px">
+    <div style="font-size:54px;font-weight:700">Progress Chart</div>
+    <div style="font-size:42px;font-weight:700;color:#2EC4B6">↓ 9.2 lbs</div>
+  </div>
+  <svg width="1110" height="360" viewBox="0 0 1110 360">
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2EC4B6" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#2EC4B6" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <line x1="0" y1="70" x2="1110" y2="70" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="140" x2="1110" y2="140" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="210" x2="1110" y2="210" stroke="#F7F2EA" stroke-width="2"/>
+    <line x1="0" y1="280" x2="1110" y2="280" stroke="#EDE8E2" stroke-width="2"/>
+    <!-- Goal line -->
+    <line x1="0" y1="265" x2="1110" y2="265" stroke="#D4A574" stroke-width="3" stroke-dasharray="18 10" opacity="0.4"/>
+    <!-- Area fill -->
+    <path d="M60,266 L280,240 L510,210 L730,176 L960,148 L960,280 L60,280Z" fill="url(#areaGrad)"/>
+    <!-- Teal line -->
+    <polyline points="60,266 280,240 510,210 730,176 960,148"
+      fill="none" stroke="#2EC4B6" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Dots -->
+    <circle cx="60" cy="266" r="10" fill="#2EC4B6" opacity="0.6"/>
+    <circle cx="280" cy="240" r="10" fill="#2EC4B6" opacity="0.75"/>
+    <circle cx="510" cy="210" r="10" fill="#2EC4B6" opacity="0.85"/>
+    <circle cx="730" cy="176" r="10" fill="#2EC4B6" opacity="0.9"/>
+    <circle cx="960" cy="148" r="16" fill="#fff" stroke="#2EC4B6" stroke-width="5"/>
+    <!-- Current label -->
+    <rect x="880" y="82" width="196" height="58" rx="14" fill="#2EC4B6"/>
+    <text x="978" y="122" text-anchor="middle" font-size="30" fill="#fff" font-weight="700" font-family="Inter,sans-serif">205.6 lbs</text>
+    <!-- X labels -->
+    <text x="60" y="340" text-anchor="middle" font-size="28" fill="#6E7585" font-family="Inter,sans-serif">Jun 3</text>
+    <text x="280" y="340" text-anchor="middle" font-size="28" fill="#6E7585" font-family="Inter,sans-serif">Jun 17</text>
+    <text x="510" y="340" text-anchor="middle" font-size="28" fill="#6E7585" font-family="Inter,sans-serif">Jul 1</text>
+    <text x="730" y="340" text-anchor="middle" font-size="28" fill="#6E7585" font-family="Inter,sans-serif">Jul 15</text>
+    <text x="960" y="340" text-anchor="middle" font-size="28" fill="#6E7585" font-family="Inter,sans-serif">Jul 29</text>
+  </svg>
+  <!-- Goal progress bar -->
+  <div style="margin-top:36px;background:#F7F2EA;border-radius:16px;height:18px;overflow:hidden">
+    <div style="width:37%;height:100%;background:linear-gradient(90deg,#2EC4B6,#D4A574);border-radius:16px"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:16px">
+    <span style="font-size:38px;font-weight:600;color:#2EC4B6">Started: 214.8 lbs</span>
+    <span style="font-size:38px;font-weight:600;color:#D4A574">Goal: 190 lbs</span>
+  </div>
+</div>
+
+<!-- Weight history -->
+<div style="margin:42px 90px 0;background:#fff;border-radius:60px;padding:66px;box-shadow:0 8px 30px rgba(0,0,0,0.05)">
+  <div style="font-size:52px;font-weight:800;margin-bottom:36px">History</div>
+  <!-- Entry 1 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:30px 0;border-bottom:2px solid #F7F2EA">
+    <div style="font-size:46px;font-weight:600">Tue, Jul 29</div>
+    <div style="display:flex;align-items:center;gap:24px">
+      <span style="font-size:56px;font-weight:900">205.6</span>
+      <span style="font-size:38px;color:#6E7585">lbs</span>
+      <span style="font-size:38px;font-weight:700;color:#2EC4B6;background:#F0FDFC;padding:10px 24px;border-radius:14px">−1.8</span>
+    </div>
+  </div>
+  <!-- Entry 2 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:30px 0;border-bottom:2px solid #F7F2EA">
+    <div style="font-size:46px;font-weight:600">Tue, Jul 15</div>
+    <div style="display:flex;align-items:center;gap:24px">
+      <span style="font-size:56px;font-weight:900">207.4</span>
+      <span style="font-size:38px;color:#6E7585">lbs</span>
+      <span style="font-size:38px;font-weight:700;color:#2EC4B6;background:#F0FDFC;padding:10px 24px;border-radius:14px">−2.6</span>
+    </div>
+  </div>
+  <!-- Entry 3 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:30px 0">
+    <div style="font-size:46px;font-weight:600">Tue, Jul 1</div>
+    <div style="display:flex;align-items:center;gap:24px">
+      <span style="font-size:56px;font-weight:900">210.0</span>
+      <span style="font-size:38px;color:#6E7585">lbs</span>
+      <span style="font-size:38px;font-weight:700;color:#2EC4B6;background:#F0FDFC;padding:10px 24px;border-radius:14px">−2.8</span>
+    </div>
+  </div>
+</div>
+
+<!-- Marketing caption band -->
+<div class="caption-band">
+  <h1>Watch the Weight Drop</h1>
+  <p>Trends, BMI, and goal tracking that actually motivates.</p>
+</div>
+
+</body>
+</html>

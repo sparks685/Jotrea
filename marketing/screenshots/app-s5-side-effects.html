@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea – App S5 Side Effects</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1290px; height: 2796px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D; position: relative;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 54px 90px 0; font-size: 48px; font-weight: 600;
+  }
+  .caption-band {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #1A1D3D; border-radius: 72px 72px 0 0;
+    padding: 90px 96px 140px;
+  }
+  .caption-band h1 { font-size: 112px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -3px; }
+  .caption-band p { font-size: 56px; font-weight: 500; color: rgba(255,255,255,0.72); margin-top: 30px; line-height: 1.4; }
+  .chip {
+    display: flex; align-items: center; gap: 18px;
+    background: #fff; border-radius: 36px; padding: 30px 42px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.06); border: 3px solid transparent;
+    font-size: 46px; font-weight: 600;
+  }
+  .chip.selected {
+    background: rgba(52,199,89,0.08); border-color: #34C759; color: #34C759;
+  }
+  .chip.mild { background: rgba(212,165,116,0.08); border-color: rgba(212,165,116,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:18px;align-items:center">
+    <svg width="42" height="30" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="66" height="30" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<!-- Dose confirmation header -->
+<div style="margin:60px 90px 0;background:linear-gradient(135deg,#1A1D3D,#2D3163);border-radius:60px;padding:66px">
+  <div style="display:flex;align-items:center;gap:36px;margin-bottom:30px">
+    <div style="width:90px;height:90px;background:linear-gradient(135deg,#C4956A,#D4A574);border-radius:28px;display:flex;align-items:center;justify-content:center">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div style="font-size:52px;font-weight:800;color:#fff">Dose Logged</div>
+      <div style="font-size:42px;color:rgba(255,255,255,0.65);margin-top:8px">Wegovy 0.5 mg · Abdomen · Today</div>
+    </div>
+  </div>
+</div>
+
+<!-- How are you feeling heading -->
+<div style="margin:60px 90px 0">
+  <div style="font-size:78px;font-weight:900;color:#1A1D3D;letter-spacing:-2px;line-height:1.1">How are you<br>feeling today?</div>
+  <div style="font-size:48px;color:#6E7585;margin-top:20px">Select all that apply after your dose</div>
+</div>
+
+<!-- 3×3 chip grid -->
+<div style="margin:54px 90px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:28px">
+  <div class="chip selected"><span style="font-size:64px">✅</span><span>Feeling great</span></div>
+  <div class="chip"><span style="font-size:64px">🤢</span><span>Nausea</span></div>
+  <div class="chip"><span style="font-size:64px">😴</span><span>Fatigue</span></div>
+  <div class="chip mild"><span style="font-size:64px">🤕</span><span>Headache</span></div>
+  <div class="chip"><span style="font-size:64px">💊</span><span>No appetite</span></div>
+  <div class="chip"><span style="font-size:64px">🥴</span><span>Dizziness</span></div>
+  <div class="chip"><span style="font-size:64px">🤮</span><span>Vomiting</span></div>
+  <div class="chip"><span style="font-size:64px">😣</span><span>Stomach pain</span></div>
+  <div class="chip"><span style="font-size:64px">💉</span><span>Injection site</span></div>
+</div>
+
+<!-- Done button -->
+<div style="margin:54px 90px 0;background:linear-gradient(135deg,#C4956A,#D4A574);border-radius:48px;padding:72px;display:flex;align-items:center;justify-content:center;gap:36px;box-shadow:0 16px 48px rgba(212,165,116,0.38)">
+  <span style="font-size:72px;font-weight:800;color:#fff">Done</span>
+</div>
+
+<!-- History note -->
+<div style="margin:42px 90px 0;background:#fff;border-radius:42px;padding:48px 60px;box-shadow:0 6px 24px rgba(0,0,0,0.05);display:flex;align-items:center;gap:36px">
+  <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#6E7585" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div style="font-size:42px;color:#6E7585;line-height:1.4">Side effects are saved with your dose log. Share your history with your care team anytime.</div>
+</div>
+
+<!-- Marketing caption band -->
+<div class="caption-band">
+  <h1>Log How You Feel</h1>
+  <p>Track symptoms after every dose. Share reports with your doctor.</p>
+</div>
+
+</body>
+</html>

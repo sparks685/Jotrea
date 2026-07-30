@@ -46,8 +46,9 @@ const fs = require('fs');
 
 const DIR = path.resolve(__dirname);
 
-/** All 8 canonical App Store screenshot jobs. */
+/** All canonical App Store screenshot jobs. */
 const ALL_JOBS = [
+  // ── Original set (S1–S4) ───────────────────────────────────────────────────
   { id: 's1', device: 'iphone', html: 's1-onboarding.html',         out: 'Jotrea-S1.png',      w: 1290, h: 2796 },
   { id: 's2', device: 'iphone', html: 's2-goal-weight.html',         out: 'Jotrea-S2.png',      w: 1290, h: 2796 },
   { id: 's3', device: 'iphone', html: 's3-dashboard.html',           out: 'Jotrea-S3.png',      w: 1290, h: 2796 },
@@ -56,6 +57,13 @@ const ALL_JOBS = [
   { id: 's2', device: 'ipad',   html: 'ipad-s2-goal-weight.html',    out: 'Jotrea-iPad-S2.png', w: 2064, h: 2752 },
   { id: 's3', device: 'ipad',   html: 'ipad-s3-dashboard.html',      out: 'Jotrea-iPad-S3.png', w: 2064, h: 2752 },
   { id: 's4', device: 'ipad',   html: 'ipad-s4-weight-tracker.html', out: 'Jotrea-iPad-S4.png', w: 2064, h: 2752 },
+  // ── App Store marketing set (A1–A6) ────────────────────────────────────────
+  { id: 'a1', device: 'iphone', html: 'app-s1-dashboard-hero.html',     out: 'Jotrea-App-S1.png', w: 1290, h: 2796 },
+  { id: 'a2', device: 'iphone', html: 'app-s2-dose-tracking.html',      out: 'Jotrea-App-S2.png', w: 1290, h: 2796 },
+  { id: 'a3', device: 'iphone', html: 'app-s3-weight-progress.html',    out: 'Jotrea-App-S3.png', w: 1290, h: 2796 },
+  { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',           out: 'Jotrea-App-S4.png', w: 1290, h: 2796 },
+  { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',       out: 'Jotrea-App-S5.png', w: 1290, h: 2796 },
+  { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',  out: 'Jotrea-App-S6.png', w: 1290, h: 2796 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -81,7 +89,7 @@ function selectJobs(args) {
   if (args.length === 0) return ALL_JOBS;
 
   const deviceFilters = args.filter(a => a === 'iphone' || a === 'ipad');
-  const slideFilters  = args.filter(a => /^s[1-4]$/.test(a));
+  const slideFilters  = args.filter(a => /^[sa][1-6]$/.test(a));
   const unknown       = args.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
 
   if (unknown.length > 0) {
