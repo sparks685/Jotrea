@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInWeeks } from "date-fns";
 import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target } from "lucide-react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { PageContainer } from "@/components/PageContainer";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -68,8 +69,20 @@ export default function Dashboard() {
   const [selectedSideEffects, setSelectedSideEffects] = useState<string[]>([]);
 
   const { checkin, toggle } = useDailyCheckin();
+  const [whyDismissed, setWhyDismissed] = useLocalStorage<boolean>("jotrea_why_dismissed", false);
 
   if (!medication) return null;
+
+  // Show the 'Why you started' banner only within the first 12 weeks of treatment
+  const weeksOnTreatment = user.glpStartDate
+    ? differenceInWeeks(new Date(), parseISO(user.glpStartDate))
+    : 0;
+  const withinFirstTwelveWeeks = user.glpStartDate ? weeksOnTreatment < 12 : true;
+  const showWhyBanner =
+    !whyDismissed &&
+    withinFirstTwelveWeeks &&
+    Array.isArray(user.motivations) &&
+    user.motivations.length > 0;
 
   const medInfo = medications.find((m) => m.id === medication.id);
   const nextDoseDate = getNextDoseDate(medication.startDate, medication.frequency, doses);
@@ -507,22 +520,49 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Your Why card */}
-      {user.motivations && user.motivations.length > 0 && (
-        <div className="bg-card border border-border rounded-3xl p-5 shadow-sm space-y-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-base">💫</div>
-            <p className="text-sm font-semibold text-foreground">Your Why</p>
-          </div>
-          <p className="text-sm text-foreground">
-            💫 {user.motivations[0]}
-            {user.motivations.length > 1 && (
-              <span className="text-muted-foreground"> +{user.motivations.length - 1} more</span>
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground">We'll keep this in mind as you progress.</p>
-        </div>
-      )}
+      {/* Why you started banner */}
+      <AnimatePresence>
+        {showWhyBanner && (
+          <motion.div
+            key="why-banner"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, height: 0, marginTop: 0, marginBottom: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="bg-primary/5 border border-primary/20 rounded-3xl p-4 shadow-sm"
+            data-testid="why-banner"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-base flex-shrink-0 mt-0.5">
+                  💫
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <p className="text-[10px] font-black text-primary/70 uppercase tracking-widest">
+                    Why you started
+                  </p>
+                  <p className="text-sm text-foreground leading-snug">
+                    {user.motivations![0]}
+                  </p>
+                  {user.motivations!.length > 1 && (
+                    <p className="text-sm text-foreground/80 leading-snug">
+                      {user.motivations![1]}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                aria-label="Dismiss"
+                data-testid="dismiss-why-banner"
+                onClick={() => setWhyDismissed(true)}
+                className="p-1.5 rounded-xl bg-muted/60 hover:bg-muted transition-colors flex-shrink-0 mt-0.5"
+              >
+                <X size={14} className="text-muted-foreground" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Log Dose bottom sheet */}
       <AnimatePresence>
