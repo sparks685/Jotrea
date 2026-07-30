@@ -140,11 +140,12 @@ export default function Settings() {
       setUser({ ...user, notificationsEnabled: false });
       return;
     }
-    const result = await requestPermission();
-    if (result === "granted") {
-      setUser({ ...user, notificationsEnabled: true });
-      trackEvent("notifications_enabled");
-    }
+    // Try to request browser permission, but enable the preference regardless
+    // so iOS users (where the Notifications API is unavailable) can still
+    // configure their reminder time.
+    await requestPermission();
+    setUser({ ...user, notificationsEnabled: true });
+    trackEvent("notifications_enabled");
   };
 
   const handleExport = () => {
@@ -417,20 +418,20 @@ export default function Settings() {
             <button
               data-testid="push-toggle"
               className="relative w-12 h-6 rounded-full flex-shrink-0 overflow-hidden"
-              style={{ backgroundColor: pushEnabled && permission === "granted" ? '#D4A574' : 'var(--color-muted)' }}
+              style={{ backgroundColor: pushEnabled ? '#D4A574' : 'var(--color-muted)' }}
               onClick={handlePushToggle}
             >
               <motion.span
                 layout
                 transition={{ type: "spring", stiffness: 700, damping: 30 }}
                 className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md"
-                style={{ left: pushEnabled && permission === "granted" ? 'calc(100% - 22px)' : '2px' }}
+                style={{ left: pushEnabled ? 'calc(100% - 22px)' : '2px' }}
               />
             </button>
           </SettingsRow>
           <p className="text-xs text-muted-foreground px-1">We'll help you stay on schedule</p>
 
-          {pushEnabled && permission === "granted" && (
+          {pushEnabled && (
             <>
               <SettingsRow label="Reminder Time">
                 <input
@@ -455,7 +456,9 @@ export default function Settings() {
               </SettingsRow>
               {nextDoseDate && (
                 <div className="text-xs text-muted-foreground bg-muted rounded-xl px-3 py-2">
-                  Next reminder: {nextDoseDate} at {notifTime}
+                  {permission === "granted"
+                    ? `Next reminder: ${nextDoseDate} at ${notifTime}`
+                    : `Open the app on ${nextDoseDate} to see your reminder`}
                 </div>
               )}
             </>
