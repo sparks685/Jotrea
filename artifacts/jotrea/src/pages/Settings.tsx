@@ -10,6 +10,9 @@ import {
   XCircle,
   AlertCircle,
   User,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
+import { useTheme } from "@/hooks/useTheme";
 import { medications } from "@/data/medications";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
@@ -96,6 +100,7 @@ export default function Settings() {
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
   const [editingField, setEditingField] = useState<"motivations" | "side-effects" | null>(null);
+  const { theme, setTheme } = useTheme();
 
   const toggleMotivation = useCallback((text: string) => {
     const current = user.motivations ?? [];
@@ -470,6 +475,34 @@ export default function Settings() {
             Set up Medication
           </Button>
         )}
+      </SettingsSection>
+
+      {/* Appearance */}
+      <SettingsSection title="Appearance" icon={<Sun size={14} className="text-muted-foreground" />}>
+        <SettingsRow label="Theme">
+          <div className="flex items-center gap-1 bg-muted rounded-xl p-0.5">
+            {(
+              [
+                { value: "light", icon: <Sun size={13} />, label: "Light" },
+                { value: "system", icon: <Monitor size={13} />, label: "Auto" },
+                { value: "dark", icon: <Moon size={13} />, label: "Dark" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  theme === opt.value
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {opt.icon}
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </SettingsRow>
       </SettingsSection>
 
       {/* Notifications */}
