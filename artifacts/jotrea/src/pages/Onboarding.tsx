@@ -1008,7 +1008,7 @@ export default function Onboarding() {
                           </motion.button>
                           {isStart && (
                             <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide whitespace-nowrap"
-                              style={{ backgroundColor: isSelected ? BRAND : `${BRAND}18`, color: isSelected ? "white" : BRAND, border: `1px solid ${BRAND}40` }}>
+                              style={{ backgroundColor: `${BRAND}18`, color: BRAND, border: `1px solid ${BRAND}40` }}>
                               <Star size={7} strokeWidth={3} fill="currentColor" />
                               Start here
                             </div>
