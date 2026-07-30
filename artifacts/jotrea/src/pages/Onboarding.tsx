@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
 import { useMedication, useWeights, useUser } from "@/hooks/useMedication";
+import { useTheme } from "@/hooks/useTheme";
 import { requestNotificationPermission, scheduleAllNotifications } from "@/utils/notifications";
 import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
@@ -125,6 +126,7 @@ export default function Onboarding() {
   const { medication, setMedication } = useMedication();
   const { setWeights } = useWeights();
   const { user, setUser } = useUser();
+  const { resolved: resolvedTheme } = useTheme();
 
   const rMin = heightUnit === "imperial" ? 80 : 30;
   const rMax = heightUnit === "imperial" ? 400 : 200;
@@ -577,10 +579,17 @@ export default function Onboarding() {
                         else               tickH=is5?14:5;
 
                         const t = Math.min(1, dist / 8);
-                        const cr = Math.round(212 + (200-212)*t);
-                        const cg = Math.round(165 + (210-165)*t);
-                        const cb = Math.round(116 + (210-116)*t);
-                        const ca = dist===0 ? 1 : Math.max(0.12, 0.88 - dist*0.1);
+                        // Near-centre colour: brand amber (same in both modes).
+                        // Far-edge colour: adapts to the card background so ticks
+                        // remain readable without disappearing in dark mode.
+                        const nearR = 212, nearG = 165, nearB = 116;
+                        const [farR, farG, farB] = resolvedTheme === 'dark'
+                          ? [100, 110, 145]   // cool blue-grey, visible on dark card
+                          : [200, 210, 210];  // warm light-grey, visible on white card
+                        const cr = Math.round(nearR + (farR - nearR) * t);
+                        const cg = Math.round(nearG + (farG - nearG) * t);
+                        const cb = Math.round(nearB + (farB - nearB) * t);
+                        const ca = dist===0 ? 1 : Math.max(0.15, 0.88 - dist*0.1);
 
                         return (
                           <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
@@ -609,7 +618,7 @@ export default function Onboarding() {
                             <span style={{
                               fontSize:'11px',
                               fontWeight: dist===0 ? 800 : 500,
-                              color: dist===0 ? 'hsl(var(--foreground))' : `rgba(156,163,175,${Math.max(0.2, 0.65-dist*0.05)})`,
+                              color: dist===0 ? 'hsl(var(--foreground))' : `rgba(${resolvedTheme === 'dark' ? '160,170,200' : '156,163,175'},${Math.max(0.2, 0.65-dist*0.05)})`,
                               userSelect:'none',
                             }}>{val}</span>
                           </div>
