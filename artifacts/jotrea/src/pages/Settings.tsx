@@ -27,7 +27,7 @@ import {
 import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
 import { buildDoseCSV, buildWeightCSV, downloadCSV, scheduleNextDoseNotification } from "@/utils/featureGates";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -232,11 +232,21 @@ export default function Settings() {
 
         <div className="pt-2 pb-1 border-t border-border mt-2 space-y-2">
           <p className="text-sm font-semibold text-foreground">Injection History</p>
-          {user.injectionSiteHistory && user.injectionSiteHistory.length > 0 ? (
-            <div className="space-y-1">
-              {[...user.injectionSiteHistory].reverse().slice(0, 5).map((entry, i) => (
-                <p key={i} className="text-xs text-muted-foreground">{entry.site} · {entry.date}</p>
-              ))}
+          {doses.length > 0 ? (
+            <div className="space-y-1.5">
+              {[...doses]
+                .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+                .slice(0, 5)
+                .map((d) => (
+                  <div key={d.id} className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {d.site !== "oral" ? d.site : "Oral"} · {format(parseISO(d.date), "MMM d")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {d.doseAmount} · {d.time}
+                    </p>
+                  </div>
+                ))}
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">No injection history yet.</p>
@@ -287,26 +297,21 @@ export default function Settings() {
       <SettingsSection title="Notifications" icon={<Bell size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <SettingsRow label="Reminder Preferences">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                {permissionIcon}
-                <span>{permissionLabel}</span>
-              </div>
-              <button
-                data-testid="push-toggle"
-                className="relative w-12 h-6 rounded-full flex-shrink-0 overflow-hidden"
-                style={{ backgroundColor: pushEnabled && permission === "granted" ? '#D4A574' : 'var(--color-muted)' }}
-                onClick={handlePushToggle}
-              >
-                <motion.span
-                  layout
-                  transition={{ type: "spring", stiffness: 700, damping: 30 }}
-                  className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md"
-                  style={{ left: pushEnabled && permission === "granted" ? 'calc(100% - 22px)' : '2px' }}
-                />
-              </button>
-            </div>
+            <button
+              data-testid="push-toggle"
+              className="relative w-12 h-6 rounded-full flex-shrink-0 overflow-hidden"
+              style={{ backgroundColor: pushEnabled && permission === "granted" ? '#D4A574' : 'var(--color-muted)' }}
+              onClick={handlePushToggle}
+            >
+              <motion.span
+                layout
+                transition={{ type: "spring", stiffness: 700, damping: 30 }}
+                className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+                style={{ left: pushEnabled && permission === "granted" ? 'calc(100% - 22px)' : '2px' }}
+              />
+            </button>
           </SettingsRow>
+          <p className="text-xs text-muted-foreground px-1">We'll help you stay on schedule</p>
 
           {pushEnabled && permission === "granted" && (
             <>
@@ -339,11 +344,6 @@ export default function Settings() {
             </>
           )}
 
-          {permission === "denied" && (
-            <p className="text-xs text-muted-foreground bg-destructive/10 rounded-xl px-3 py-2">
-              Notifications are blocked. Enable them in your browser settings to receive dose reminders.
-            </p>
-          )}
         </div>
       </SettingsSection>
 
@@ -372,6 +372,9 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             Backed by pharmacy expertise for your GLP-1 journey.
           </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Jotrea is for informational and tracking purposes only. It does not provide medical advice, diagnose conditions, or replace your healthcare provider. Always consult your doctor or pharmacist before making changes to your medication regimen.
+          </p>
           <div className="space-y-1">
             <div className="flex items-center justify-between py-1">
               <span className="text-sm text-muted-foreground">App Name</span>
@@ -382,9 +385,6 @@ export default function Settings() {
               <span className="text-sm font-semibold text-foreground">1.0.0</span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Jotrea is for informational and tracking purposes only. It does not provide medical advice, diagnose conditions, or replace your healthcare provider. Always consult your doctor or pharmacist before making changes to your medication regimen.
-          </p>
           <div className="pt-2 border-t border-border flex gap-4 text-xs font-medium text-muted-foreground">
             <button
               className="hover:text-foreground transition-colors"
