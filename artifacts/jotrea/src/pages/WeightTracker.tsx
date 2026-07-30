@@ -60,14 +60,12 @@ export default function WeightTracker() {
   const units = user.units;
 
   const initGoal = getDisplayGoal(user, units);
-  const initHeight = getDisplayHeight(user, units);
 
   const [showForm, setShowForm] = useState(false);
   const [inputWeight, setInputWeight] = useState("");
   const [inputDate, setInputDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [inputNotes, setInputNotes] = useState("");
   const [goalInput, setGoalInput] = useState(initGoal != null ? String(initGoal) : "");
-  const [heightInput, setHeightInput] = useState(initHeight != null ? String(initHeight) : "");
 
   const sortedWeights = [...weights].sort((a, b) => a.date.localeCompare(b.date));
 
@@ -80,7 +78,7 @@ export default function WeightTracker() {
   const avgWeekly = calculateAvgWeeklyLoss(weights);
   const currentWeight = sortedWeights.length > 0 ? sortedWeights[sortedWeights.length - 1].weight : null;
 
-  const heightForBMI = parseFloat(heightInput) || 0;
+  const heightForBMI = getDisplayHeight(user, units) ?? 0;
   let bmi = 0;
   if (currentWeight && heightForBMI > 0) {
     bmi =
@@ -148,17 +146,14 @@ export default function WeightTracker() {
     }
     setGoalInput(newGoal != null ? String(newGoal) : "");
 
-    // Convert height
-    const currentHeight = parseFloat(heightInput);
+    // Convert stored height
+    const currentHeight = getDisplayHeight(user, units);
     let newHeight: number | null = null;
-    if (!isNaN(currentHeight) && currentHeight > 0) {
+    if (currentHeight != null && currentHeight > 0) {
       newHeight = toLbs
         ? parseFloat((currentHeight / CM_PER_INCH).toFixed(1))
         : parseFloat((currentHeight * CM_PER_INCH).toFixed(1));
-    } else {
-      newHeight = getDisplayHeight(user, newUnits);
     }
-    setHeightInput(newHeight != null ? String(newHeight) : "");
 
     // Persist conversion into user
     const updatedUser: UserData = { ...user, units: newUnits };
@@ -203,27 +198,6 @@ export default function WeightTracker() {
 
   const handleDeleteWeight = (id: string) => {
     setWeights(weights.filter((w) => w.id !== id));
-  };
-
-  const handleSaveHeight = () => {
-    const h = parseFloat(heightInput);
-    if (isNaN(h) || h <= 0) return;
-    const updatedUser: UserData = { ...user };
-    if (units === "lbs") {
-      updatedUser.height = h;
-      updatedUser.heightFt = Math.floor(h / 12);
-      updatedUser.heightIn = parseFloat((h % 12).toFixed(1));
-      // keep cm in sync
-      updatedUser.heightCm = parseFloat((h * CM_PER_INCH).toFixed(1));
-    } else {
-      updatedUser.heightCm = h;
-      updatedUser.height = h;
-      // keep imperial in sync
-      const inches = h / CM_PER_INCH;
-      updatedUser.heightFt = Math.floor(inches / 12);
-      updatedUser.heightIn = parseFloat((inches % 12).toFixed(1));
-    }
-    setUser(updatedUser);
   };
 
   const handleSaveGoal = (val: string) => {
@@ -427,29 +401,6 @@ export default function WeightTracker() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Height for BMI */}
-      <div className="bg-card rounded-3xl p-4 shadow-sm border border-border space-y-3">
-        <p className="text-sm font-semibold text-foreground">Height (for BMI)</p>
-        <div className="flex gap-2">
-          <Input
-            type="number"
-            placeholder={units === "lbs" ? "Height in inches" : "Height in cm"}
-            value={heightInput}
-            onChange={(e) => setHeightInput(e.target.value)}
-            className="rounded-xl flex-1"
-            data-testid="height-input"
-          />
-          <Button
-            variant="outline"
-            className="rounded-xl"
-            onClick={handleSaveHeight}
-            data-testid="save-height-btn"
-          >
-            Save
-          </Button>
-        </div>
       </div>
 
       {/* History */}
