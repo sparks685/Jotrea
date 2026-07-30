@@ -22,6 +22,18 @@ import type { DoseEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 
+const SIDE_EFFECTS_LIST = [
+  { id: "none", label: "Feeling great", emoji: "✅" },
+  { id: "nausea", label: "Nausea", emoji: "🤢" },
+  { id: "fatigue", label: "Fatigue", emoji: "😴" },
+  { id: "headache", label: "Headache", emoji: "🤕" },
+  { id: "constipation", label: "Constipation", emoji: "😣" },
+  { id: "diarrhea", label: "Diarrhea", emoji: "🏃" },
+  { id: "dizziness", label: "Dizziness", emoji: "😵" },
+  { id: "site_reaction", label: "Site reaction", emoji: "💉" },
+  { id: "low_appetite", label: "Low appetite", emoji: "🍽️" },
+];
+
 export default function DoseLog() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
@@ -497,6 +509,33 @@ function DoseCard({
           {dose.notes && (
             <p className="text-xs text-muted-foreground italic truncate mt-0.5">{dose.notes}</p>
           )}
+          {dose.sideEffects && dose.sideEffects.length > 0 && (() => {
+            const isNoneOnly = dose.sideEffects!.length === 1 && dose.sideEffects![0] === "none";
+            if (isNoneOnly) {
+              return (
+                <div className="flex items-center gap-1 mt-1.5" data-testid={`side-effects-${dose.id}`}>
+                  <span className="text-[10px] text-secondary font-semibold">✅ Feeling great</span>
+                </div>
+              );
+            }
+            const effects = dose.sideEffects!
+              .filter((id) => id !== "none")
+              .map((id) => SIDE_EFFECTS_LIST.find((e) => e.id === id))
+              .filter(Boolean);
+            if (effects.length === 0) return null;
+            return (
+              <div className="flex flex-wrap gap-1 mt-1.5" data-testid={`side-effects-${dose.id}`}>
+                {effects.map((e) => (
+                  <span
+                    key={e!.id}
+                    className="inline-flex items-center gap-0.5 text-[10px] font-medium bg-muted text-muted-foreground rounded-full px-1.5 py-0.5"
+                  >
+                    {e!.emoji} {e!.label}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
       <div className="flex gap-1.5">
