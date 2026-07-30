@@ -89,18 +89,14 @@ export default function WeightTracker() {
 
   const goalNum = parseFloat(goalInput) || 0;
 
-  const goalProgress =
-    goalNum > 0 && currentWeight && sortedWeights.length > 0
-      ? Math.min(
-          100,
-          Math.max(
-            0,
-            ((sortedWeights[0].weight - currentWeight) /
-              (sortedWeights[0].weight - goalNum)) *
-              100
-          )
-        )
-      : 0;
+  const goalProgress = (() => {
+    if (!goalNum || goalNum <= 0 || !currentWeight || sortedWeights.length === 0) return 0;
+    const startW = sortedWeights[0].weight;
+    const denom = startW - goalNum;
+    // Denominator is 0 when start weight equals goal — user is already at goal
+    if (denom === 0) return currentWeight === goalNum ? 100 : 0;
+    return Math.min(100, Math.max(0, ((startW - currentWeight) / denom) * 100));
+  })();
 
   const goalReachDate = (() => {
     if (!goalNum || !currentWeight || currentWeight <= goalNum || avgWeekly <= 0) return null;
@@ -386,10 +382,16 @@ export default function WeightTracker() {
         {goalNum > 0 && currentWeight && (
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{goalProgress.toFixed(0)}% to goal</span>
-              <span>
-                {Math.max(0, currentWeight - goalNum).toFixed(1)} {units} to go
-              </span>
+              {currentWeight === goalNum ? (
+                <span className="text-primary font-semibold">Goal reached! 🎉</span>
+              ) : (
+                <>
+                  <span>{goalProgress.toFixed(0)}% to goal</span>
+                  <span>
+                    {Math.abs(currentWeight - goalNum).toFixed(1)} {units} to go
+                  </span>
+                </>
+              )}
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <motion.div
