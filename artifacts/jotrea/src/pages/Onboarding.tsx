@@ -1091,9 +1091,9 @@ export default function Onboarding() {
                   {/* ── Premium body diagram ── */}
                   <div className="relative w-full rounded-3xl flex items-center justify-center" style={{
                     height:'224px',
-                    background:'linear-gradient(145deg,#fef9f4,#fdf5ee)',
+                    background:'var(--injection-diagram-bg)',
                     border:`1.5px solid ${BRAND}28`,
-                    boxShadow:`0 10px 40px ${BRAND}18, 0 2px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.85)`,
+                    boxShadow:`0 10px 40px ${BRAND}18, 0 2px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.15)`,
                   }}>
                     <svg viewBox="0 0 100 240" style={{ height:'212px', width:'auto' }} fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>

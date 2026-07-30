@@ -160,6 +160,8 @@
   --muted-border: hsl(var(--muted));
   --accent-border: hsl(var(--accent));
   --destructive-border: hsl(var(--destructive));
+
+  --injection-diagram-bg: linear-gradient(145deg, #fef9f4, #fdf5ee);
 }
 
 .dark {
@@ -212,6 +214,8 @@
   --shadow-lg: 0px 2px 0px 0px rgba(0,0,0,0.2), 0px 4px 6px -1px rgba(0,0,0,0.4);
   --shadow-xl: 0px 2px 0px 0px rgba(0,0,0,0.2), 0px 8px 10px -1px rgba(0,0,0,0.5);
   --shadow-2xl: 0px 2px 0px 0px rgba(0,0,0,0.2);
+
+  --injection-diagram-bg: linear-gradient(145deg, hsl(240 39% 16%), hsl(240 39% 19%));
 }
 
 @layer base {
