@@ -112,7 +112,7 @@ function AppRoutes() {
       <RouteTracker />
       <div
         className={`flex-1 overflow-y-auto`}
-        style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)", paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
+        style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
         <AnimatePresence>
           <motion.div
@@ -122,6 +122,7 @@ function AppRoutes() {
             exit={{ opacity: 0, position: "absolute", top: 0, left: 0, right: 0 }}
             transition={pageTransition}
             className="min-h-full w-full"
+            style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
           >
             <PageErrorBoundary>
               <Switch>
