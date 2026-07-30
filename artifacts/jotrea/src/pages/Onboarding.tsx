@@ -1255,7 +1255,7 @@ export default function Onboarding() {
                             {/* Site dot */}
                             <circle cx={site.cx} cy={site.cy}
                               r={active ? 5.5 : 3.5}
-                              fill={active ? BRAND : "rgba(160,100,60,0.42)"}
+                              fill={active ? BRAND : "hsl(var(--muted-foreground) / 0.5)"}
                             />
                             {/* Inner white pip */}
                             {active && <circle cx={site.cx} cy={site.cy} r="2" fill="white"/>}
