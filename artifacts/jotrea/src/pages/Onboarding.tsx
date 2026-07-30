@@ -153,7 +153,7 @@ export default function Onboarding() {
     const proteinGoalG = Math.round(weightKg * 0.8);
     const stepsGoal = STEPS_BY_ACTIVITY[activity] ?? 7000;
     if (isCustomMed) {
-      const freq = customFrequency === "other" ? (customFreqOther || "custom") : customFrequency;
+      const freq = (customFrequency === "other" ? (customFreqOther || "custom") : customFrequency) as "weekly" | "daily" | "twice-daily";
       const dose = parseFloat(customDoseAmt) || 0;
       setMedication({ id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true });
       setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
@@ -198,6 +198,7 @@ export default function Onboarding() {
         return () => { clearTimeout(t1); clearTimeout(t2); };
       }
     }
+    return undefined;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
