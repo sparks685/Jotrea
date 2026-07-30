@@ -86,23 +86,49 @@ const args = process.argv.slice(2).map(a => a.toLowerCase());
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
 Usage:
-  node generate-screenshots.js                   Regenerate all 8 screenshots
+  node generate-screenshots.js                   Regenerate all screenshots
   node generate-screenshots.js iphone            iPhone set only (S1-S4)
   node generate-screenshots.js ipad              iPad set only (iPad-S1–S4)
   node generate-screenshots.js s1                Slide 1 for both device sizes
   node generate-screenshots.js s2 s4             Slides 2 and 4 for both device sizes
   node generate-screenshots.js iphone s1         Specific device + slide combo
+  node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A6)
+  node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S6)
   node generate-screenshots.js --help            Print this usage message
 `);
   process.exit(0);
 }
 
 function selectJobs(args) {
-  if (args.length === 0) return ALL_JOBS;
+  const marketing = args.includes('--marketing');
 
-  const deviceFilters = args.filter(a => a === 'iphone' || a === 'ipad');
-  const slideFilters  = args.filter(a => /^(s[1-4]|a[1-6]|ia[1-6])$/.test(a));
-  const unknown       = args.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
+  // Strip flag tokens before further processing
+  const positional = args.filter(a => !a.startsWith('--'));
+
+  if (marketing) {
+    const deviceFilters = positional.filter(a => a === 'iphone' || a === 'ipad');
+    const unknown       = positional.filter(a => a !== 'iphone' && a !== 'ipad');
+
+    if (unknown.length > 0) {
+      console.error(`Unknown filter(s) for --marketing: ${unknown.join(', ')}`);
+      console.error('Valid device filters with --marketing: iphone (default), ipad');
+      process.exit(1);
+    }
+
+    // Default to iphone when no device filter is given with --marketing
+    const devices = deviceFilters.length > 0 ? deviceFilters : ['iphone'];
+
+    return ALL_JOBS.filter(job => {
+      const isMarketingSlide = /^(a[1-6]|ia[1-6])$/.test(job.id);
+      return isMarketingSlide && devices.includes(job.device);
+    });
+  }
+
+  if (positional.length === 0) return ALL_JOBS;
+
+  const deviceFilters = positional.filter(a => a === 'iphone' || a === 'ipad');
+  const slideFilters  = positional.filter(a => /^(s[1-4]|a[1-6]|ia[1-6])$/.test(a));
+  const unknown       = positional.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
 
   if (unknown.length > 0) {
     console.error(`Unknown filter(s): ${unknown.join(', ')}`);
