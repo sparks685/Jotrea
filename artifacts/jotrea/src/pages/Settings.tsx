@@ -148,6 +148,7 @@ export default function Settings() {
       onConfirm={handleMedConfirmed}
       injectionSiteHistory={user.injectionSiteHistory}
       currentMedication={medication}
+      pastDoseCount={doses.length}
     />
     <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">

@@ -24,6 +24,7 @@ interface ChangeMedicationSheetProps {
   onConfirm: (medication: MedicationData) => void;
   injectionSiteHistory?: { site: string; date: string }[];
   currentMedication?: MedicationData | null;
+  pastDoseCount?: number;
 }
 
 type View = "select" | "dose";
@@ -34,6 +35,7 @@ export function ChangeMedicationSheet({
   onConfirm,
   injectionSiteHistory,
   currentMedication,
+  pastDoseCount = 0,
 }: ChangeMedicationSheetProps) {
   const [view, setView] = useState<View>("select");
   const [search, setSearch] = useState("");
@@ -149,6 +151,7 @@ export function ChangeMedicationSheet({
 
   const historyWillLookInconsistent = (() => {
     if (!currentMedication) return false;
+    if (pastDoseCount === 0) return false;
     if (isCustomMed) {
       return customBrand.trim() !== "" && (
         customBrand.trim().toLowerCase() !== currentMedication.brandName.toLowerCase() ||
@@ -165,7 +168,8 @@ export function ChangeMedicationSheet({
   const historyNoteText = (() => {
     if (!currentMedication) return "";
     const oldLabel = `${currentMedication.dose} mg ${currentMedication.brandName}`;
-    return `Your past doses will still show as ${oldLabel}. History is never deleted when you switch.`;
+    const doseWord = pastDoseCount === 1 ? "dose" : "doses";
+    return `Your ${pastDoseCount} past ${doseWord} will still show as ${oldLabel}. History is never deleted when you switch.`;
   })();
 
   return (
