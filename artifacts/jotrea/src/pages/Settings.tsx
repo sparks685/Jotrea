@@ -236,7 +236,7 @@ export default function Settings() {
       {/* Notifications */}
       <SettingsSection title="Notifications" icon={<Bell size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
-          <SettingsRow label="Push Notifications">
+          <SettingsRow label="Reminder Preferences">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 {permissionIcon}
@@ -332,10 +332,24 @@ export default function Settings() {
               <span className="text-sm font-semibold text-foreground">1.0.0</span>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Jotrea is for informational and tracking purposes only. It does not provide medical advice, diagnose conditions, or replace your healthcare provider. Always consult your doctor or pharmacist before making changes to your medication regimen.
+          </p>
           <div className="pt-2 border-t border-border flex gap-4 text-xs font-medium text-muted-foreground">
-            <span>Privacy Policy</span>
+            <button
+              className="hover:text-foreground transition-colors"
+              onClick={() => window.open("https://jotrea.carrd.co/privacy", "_blank")}
+            >Privacy Policy</button>
             <span>·</span>
-            <span>Terms of Service</span>
+            <button
+              className="hover:text-foreground transition-colors"
+              onClick={() => window.open("https://jotrea.carrd.co/terms", "_blank")}
+            >Terms of Service</button>
+            <span>·</span>
+            <button
+              className="hover:text-foreground transition-colors"
+              onClick={() => window.open("https://jotrea.carrd.co", "_blank")}
+            >Support</button>
           </div>
         </div>
       </SettingsSection>

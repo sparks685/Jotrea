@@ -264,7 +264,7 @@ export default function Onboarding() {
               {[
                 { icon:<CheckCircle2 size={15}/>, text:"Track doses effortlessly" },
                 { icon:<TrendingDown size={15}/>, text:"Monitor your weight progress" },
-                { icon:<Bell size={15}/>, text:"Smart injection reminders" },
+                { icon:<Bell size={15}/>, text:"Dose tracking & scheduling" },
                 { icon:<Heart size={15}/>, text:"Pharmacist-curated guidance" },
               ].map(item => (
                 <div key={item.text} className="flex items-center gap-3">
@@ -1296,7 +1296,7 @@ export default function Onboarding() {
               <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-border/60 shadow-sm">
                 <div>
                   <p className="text-sm font-bold text-foreground">Dose Reminders</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Get notified on dose days</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">We'll help you stay on schedule</p>
                 </div>
                 <button onClick={() => { setReminderEnabled(!reminderEnabled); haptic(); }}
                   className="relative w-12 h-6 rounded-full overflow-hidden transition-colors"
@@ -1442,9 +1442,9 @@ export default function Onboarding() {
               <Bell size={40} style={{ color:BRAND }} strokeWidth={1.8}/>
             </motion.div>
 
-            <h2 className="text-[28px] font-black text-foreground mb-3 leading-tight">Never miss a dose</h2>
+            <h2 className="text-[28px] font-black text-foreground mb-3 leading-tight">Set your reminder preferences</h2>
             <p className="text-muted-foreground mb-8 text-sm leading-relaxed max-w-xs">
-              Turn on notifications for smart reminders on your injection days and weekly weight check-ins.
+              Set your preferred reminder time for dose days and weight check-ins.
             </p>
 
             {/* Mock notification */}

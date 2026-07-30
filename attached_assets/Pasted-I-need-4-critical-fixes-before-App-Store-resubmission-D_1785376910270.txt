@@ -1,0 +1,35 @@
+I need 4 critical fixes before App Store resubmission. Do these in order:
+
+=== FIX 1: PRIVACY POLICY, TERMS & SUPPORT LINKS ===
+In Settings > About, the "Privacy Policy" and "Terms of Service" are dead <span> tags with no href or onClick.
+
+- Make "Privacy Policy" link to: https://jotrea.carrd.co/privacy
+- Make "Terms of Service" link to: https://jotrea.carrd.co/terms
+- ADD a "Support" row below Terms of Service that links to: https://jotrea.carrd.co
+- Open all links in external browser (Safari) using window.open or Linking API
+
+=== FIX 2: SOFTEN NOTIFICATION COPY ===
+The app uses setTimeout-based reminders that don't work reliably on iOS when the app is closed. Change copy so we don't promise something that doesn't work:
+
+- Welcome screen bullet: CHANGE "Smart injection reminders" TO "Dose tracking & scheduling"
+- Onboarding notification screen header: CHANGE "Never miss a dose" TO "Set your reminder preferences"
+- Onboarding notification screen subtext: CHANGE "Turn on notifications for smart reminders on your injection days and weekly weight check-ins." TO "Set your preferred reminder time for dose days and weight check-ins."
+- Settings > Notifications toggle label: CHANGE "Push Notifications" TO "Reminder Preferences"
+- Settings > Notifications subtext: CHANGE "Get notified on dose days" TO "We'll help you stay on schedule"
+
+=== FIX 3: REMOVE CALENDAR PREMIUM LOCK ===
+In Calendar (DoseLog), months older than 30 days are locked behind a premium check, but there is no premium upgrade UI. This creates a dead paywall.
+
+- Remove the premium lock entirely from the calendar
+- Allow all users to view and edit any month, regardless of date
+- Keep the featureGates.ts code for later, just don't apply the lock in the UI
+
+=== FIX 4: ADD MEDICAL DISCLAIMER ===
+In Settings > About, add this disclaimer text at the bottom of the About card, above the App Name line:
+
+"Jotrea is for informational and tracking purposes only. It does not provide medical advice, diagnose conditions, or replace your healthcare provider. Always consult your doctor or pharmacist before making changes to your medication regimen."
+
+Use smaller, gray text (text-sm text-muted-foreground). Keep it subtle but visible.
+
+=== BUILD & VERIFY ===
+After all changes, build the app, verify no console errors, and push. Confirm all 4 fixes are working.
