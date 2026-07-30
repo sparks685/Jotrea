@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   format,
@@ -24,6 +25,7 @@ const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 export default function DoseLog() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
+  const [, navigate] = useLocation();
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -320,6 +322,13 @@ export default function DoseLog() {
                     <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
                       {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
                     </p>
+                    <button
+                      data-testid="view-med-guide-link"
+                      className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                      onClick={() => { handleCloseAddForm(); navigate("/med-info"); }}
+                    >
+                      View medication guide →
+                    </button>
                   </div>
 
                   <Button

@@ -386,6 +386,13 @@ export default function Dashboard() {
                     <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
                       {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
                     </p>
+                    <button
+                      data-testid="view-med-guide-link"
+                      className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                      onClick={() => { handleCloseLogForm(); navigate("/med-info"); }}
+                    >
+                      View medication guide →
+                    </button>
                   </div>
 
                   <Button
