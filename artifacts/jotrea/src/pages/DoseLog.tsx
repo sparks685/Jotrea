@@ -48,6 +48,7 @@ export default function DoseLog() {
   const [logNotes, setLogNotes] = useState("");
   const [logDoseAmount, setLogDoseAmount] = useState<number>(medication?.dose ?? 0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [logSideEffects, setLogSideEffects] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   if (!medication) return null;
@@ -72,6 +73,7 @@ export default function DoseLog() {
       site: medInfo?.formulation === "injection" ? logSite : "oral",
       notes: logNotes,
       taken: true,
+      sideEffects: logSideEffects.length > 0 ? logSideEffects : undefined,
     };
     if (editingId) {
       setDoses(doses.map((d) => (d.id === editingId ? { ...newDose, id: editingId } : d)));
@@ -95,6 +97,7 @@ export default function DoseLog() {
     setLogSite(INJECTION_SITES[0]);
     setLogNotes("");
     setLogDoseAmount(medication.dose);
+    setLogSideEffects([]);
     setEditingId(null);
     setShowAdd(true);
   };
@@ -105,6 +108,7 @@ export default function DoseLog() {
     setLogSite(dose.site);
     setLogNotes(dose.notes);
     setLogDoseAmount(dose.doseAmount);
+    setLogSideEffects(dose.sideEffects ?? []);
     setEditingId(dose.id);
     setShowAdd(true);
   };
