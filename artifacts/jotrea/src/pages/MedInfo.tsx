@@ -138,6 +138,24 @@ export default function MedInfo() {
       icon: AlertTriangle,
       content: (
         <ul className="space-y-2">
+          {user.troublesomeSideEffects && user.troublesomeSideEffects.length > 0 && (
+            <li className="mb-3 p-3 bg-primary/8 rounded-xl border border-primary/20">
+              <p className="text-xs font-semibold text-primary mb-2">You flagged these during setup</p>
+              <div className="flex flex-wrap gap-1.5">
+                {user.troublesomeSideEffects.map((se) => (
+                  <span
+                    key={se}
+                    className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-primary/15 text-primary"
+                  >
+                    {se}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                These are common — they typically improve after the first few weeks.
+              </p>
+            </li>
+          )}
           {SIDE_EFFECTS.default.map((se) => (
             <li key={se} className="flex items-start gap-2.5 text-sm text-foreground">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-1.5" />

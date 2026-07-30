@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import {
   Bell,
@@ -41,6 +41,28 @@ const ADVANCE_OPTIONS = [
   { value: "24", label: "Day before" },
 ];
 
+const ALL_MOTIVATIONS = [
+  { text: "Feel more confident", emoji: "✨" },
+  { text: "Fresh start", emoji: "🌱" },
+  { text: "Boost my energy", emoji: "⚡" },
+  { text: "Improve my health", emoji: "❤️" },
+  { text: "Show up for loved ones", emoji: "👨‍👩‍👧" },
+  { text: "Special event coming up", emoji: "🎉" },
+  { text: "Feel good in my clothes", emoji: "👗" },
+  { text: "Other", emoji: "💬" },
+];
+
+const ALL_SIDE_EFFECTS = [
+  { label: "Nausea", emoji: "🤢" },
+  { label: "Fatigue", emoji: "😴" },
+  { label: "Hair Loss", emoji: "💇" },
+  { label: "Constipation", emoji: "😣" },
+  { label: "Bloating", emoji: "😮‍💨" },
+  { label: "Sulfur Burps", emoji: "💨" },
+  { label: "Heartburn", emoji: "🔥" },
+  { label: "Food Noise", emoji: "🍕" },
+];
+
 function calcAge(birthday: string): string {
   const birth = new Date(birthday);
   const today = new Date();
@@ -70,6 +92,19 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
+  const [editingField, setEditingField] = useState<"motivations" | "side-effects" | null>(null);
+
+  const toggleMotivation = useCallback((text: string) => {
+    const current = user.motivations ?? [];
+    const updated = current.includes(text) ? current.filter((m) => m !== text) : [...current, text];
+    setUser({ ...user, motivations: updated });
+  }, [user, setUser]);
+
+  const toggleSideEffect = useCallback((label: string) => {
+    const current = user.troublesomeSideEffects ?? [];
+    const updated = current.includes(label) ? current.filter((s) => s !== label) : [...current, label];
+    setUser({ ...user, troublesomeSideEffects: updated });
+  }, [user, setUser]);
 
   const notifTime = user.notificationTime ?? "09:00";
   const notifAdvance = user.notificationAdvance ?? "1";
@@ -191,20 +226,101 @@ export default function Settings() {
             <span className="text-sm text-muted-foreground">{fmtPace(user.goalPaceLbs)} · {user.goalPaceLbs} lbs/wk</span>
           </SettingsRow>
         )}
-        {user.motivations && user.motivations.length > 0 && (
-          <SettingsRow label="Motivations">
-            <span className="text-sm text-muted-foreground text-right max-w-[180px] leading-snug">
-              {user.motivations.slice(0, 2).join(", ")}{user.motivations.length > 2 ? ` +${user.motivations.length - 2}` : ""}
-            </span>
-          </SettingsRow>
-        )}
-        {user.troublesomeSideEffects && user.troublesomeSideEffects.length > 0 && (
-          <SettingsRow label="Side Effects">
-            <span className="text-sm text-muted-foreground text-right max-w-[180px] leading-snug">
-              {user.troublesomeSideEffects.slice(0, 2).join(", ")}{user.troublesomeSideEffects.length > 2 ? ` +${user.troublesomeSideEffects.length - 2}` : ""}
-            </span>
-          </SettingsRow>
-        )}
+        {/* Motivations */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-foreground">Motivations</span>
+            <button
+              className="text-xs font-semibold text-primary px-2 py-0.5 rounded-lg hover:bg-primary/10 transition-colors"
+              onClick={() => setEditingField(editingField === "motivations" ? null : "motivations")}
+              data-testid="edit-motivations-btn"
+            >
+              {editingField === "motivations" ? "Done" : "Edit"}
+            </button>
+          </div>
+          {editingField === "motivations" ? (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {ALL_MOTIVATIONS.map((opt) => {
+                const selected = (user.motivations ?? []).includes(opt.text);
+                return (
+                  <button
+                    key={opt.text}
+                    onClick={() => toggleMotivation(opt.text)}
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full border transition-all ${
+                      selected
+                        ? "bg-primary/15 border-primary/30 text-primary"
+                        : "bg-muted border-border text-muted-foreground"
+                    }`}
+                  >
+                    <span>{opt.emoji}</span>
+                    {opt.text}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (user.motivations ?? []).length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {(user.motivations ?? []).map((m) => (
+                <span
+                  key={m}
+                  className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary"
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">None set — tap Edit to add</p>
+          )}
+        </div>
+
+        {/* Side Effects */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-foreground">Side Effects</span>
+            <button
+              className="text-xs font-semibold text-primary px-2 py-0.5 rounded-lg hover:bg-primary/10 transition-colors"
+              onClick={() => setEditingField(editingField === "side-effects" ? null : "side-effects")}
+              data-testid="edit-side-effects-btn"
+            >
+              {editingField === "side-effects" ? "Done" : "Edit"}
+            </button>
+          </div>
+          {editingField === "side-effects" ? (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {ALL_SIDE_EFFECTS.map((opt) => {
+                const selected = (user.troublesomeSideEffects ?? []).includes(opt.label);
+                return (
+                  <button
+                    key={opt.label}
+                    onClick={() => toggleSideEffect(opt.label)}
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-full border transition-all ${
+                      selected
+                        ? "bg-amber-100 border-amber-300 text-amber-800"
+                        : "bg-muted border-border text-muted-foreground"
+                    }`}
+                  >
+                    <span>{opt.emoji}</span>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (user.troublesomeSideEffects ?? []).length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              {(user.troublesomeSideEffects ?? []).map((se) => (
+                <span
+                  key={se}
+                  className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200"
+                >
+                  {se}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">None reported — tap Edit to add</p>
+          )}
+        </div>
 
         <div className="pt-2 pb-1 border-t border-border mt-2">
           <SettingsRow label="Weight Units">
