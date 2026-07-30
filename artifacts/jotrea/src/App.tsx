@@ -81,7 +81,7 @@ export class PageErrorBoundary extends Component<
 
 
 
-const pageTransition = { duration: 0.15 };
+const pageTransition = { duration: 0.1 };
 
 
 function ResetAndRedirect() {
@@ -114,12 +114,12 @@ function AppRoutes() {
         className={`flex-1 overflow-y-auto`}
         style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           <motion.div
             key={location}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, position: "absolute", top: 0, left: 0, right: 0 }}
+            exit={{ opacity: 0 }}
             transition={pageTransition}
             className="min-h-full w-full"
             style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
