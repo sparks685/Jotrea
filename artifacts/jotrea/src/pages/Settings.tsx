@@ -35,6 +35,9 @@ import { trackEvent } from "@/lib/analytics";
 import { ChangeMedicationSheet } from "@/components/ChangeMedicationSheet";
 import type { MedicationData } from "@/types";
 
+const LBS_PER_KG = 2.20462;
+const CM_PER_INCH = 2.54;
+
 const ADVANCE_OPTIONS = [
   { value: "1", label: "1 hour before" },
   { value: "2", label: "2 hours before" },
@@ -88,7 +91,7 @@ export default function Settings() {
   const { user, setUser } = useUser();
   const { medication, setMedication } = useMedication();
   const { doses } = useDoses();
-  const { weights } = useWeights();
+  const { weights, setWeights } = useWeights();
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
@@ -154,6 +157,64 @@ export default function Settings() {
     downloadCSV("jotrea-doses.csv", doseCsv);
     setTimeout(() => downloadCSV("jotrea-weights.csv", weightCsv), 300);
     trackEvent("data_exported");
+  };
+
+  const handleToggleUnits = (newUnits: "lbs" | "kg") => {
+    const currentUnits = user.units;
+    if (newUnits === currentUnits) return;
+    const toLbs = newUnits === "lbs";
+    const factor = toLbs ? LBS_PER_KG : 1 / LBS_PER_KG;
+
+    // Convert all weight entries
+    const convertedWeights = weights.map((w) => ({
+      ...w,
+      weight: parseFloat((w.weight * factor).toFixed(1)),
+    }));
+    setWeights(convertedWeights);
+
+    // Convert goal weight (source from stored canonical fields)
+    let newGoal: number | null = null;
+    if (toLbs) {
+      const lbsGoal = user.goalWeightLbs ?? (user.goalWeightKg ? parseFloat((user.goalWeightKg * LBS_PER_KG).toFixed(1)) : null);
+      newGoal = lbsGoal;
+    } else {
+      const kgGoal = user.goalWeightKg ?? (user.goalWeightLbs ? parseFloat((user.goalWeightLbs / LBS_PER_KG).toFixed(1)) : null);
+      newGoal = kgGoal;
+    }
+
+    // Convert stored height
+    let newHeight: number | null = null;
+    const currentHeightInches = (user.heightFt ?? 0) * 12 + (user.heightIn ?? 0) || user.height || null;
+    const currentHeightCm = user.heightCm ?? (currentHeightInches ? parseFloat((currentHeightInches * CM_PER_INCH).toFixed(1)) : null);
+    if (toLbs && currentHeightCm) {
+      newHeight = parseFloat((currentHeightCm / CM_PER_INCH).toFixed(1));
+    } else if (!toLbs && currentHeightInches) {
+      newHeight = parseFloat((currentHeightInches * CM_PER_INCH).toFixed(1));
+    }
+
+    // Persist conversion into user
+    const updatedUser = { ...user, units: newUnits };
+    if (newGoal != null) {
+      if (toLbs) {
+        updatedUser.goalWeightLbs = newGoal;
+        updatedUser.goalWeightKg = parseFloat((newGoal / LBS_PER_KG).toFixed(1));
+      } else {
+        updatedUser.goalWeightKg = newGoal;
+        updatedUser.goalWeightLbs = parseFloat((newGoal * LBS_PER_KG).toFixed(1));
+      }
+      updatedUser.goalWeight = newGoal;
+    }
+    if (newHeight != null) {
+      if (toLbs) {
+        updatedUser.height = newHeight;
+        updatedUser.heightFt = Math.floor(newHeight / 12);
+        updatedUser.heightIn = parseFloat((newHeight % 12).toFixed(1));
+      } else {
+        updatedUser.heightCm = newHeight;
+        updatedUser.height = newHeight;
+      }
+    }
+    setUser(updatedUser);
   };
 
   const handleChangeMed = () => {
@@ -330,7 +391,7 @@ export default function Settings() {
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
                   user.units === "lbs" ? "bg-card shadow text-foreground" : "text-muted-foreground"
                 }`}
-                onClick={() => setUser({ ...user, units: "lbs" })}
+                onClick={() => handleToggleUnits("lbs")}
                 data-testid="setting-units-lbs"
               >
                 lbs
@@ -339,7 +400,7 @@ export default function Settings() {
                 className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-all ${
                   user.units === "kg" ? "bg-card shadow text-foreground" : "text-muted-foreground"
                 }`}
-                onClick={() => setUser({ ...user, units: "kg" })}
+                onClick={() => handleToggleUnits("kg")}
                 data-testid="setting-units-kg"
               >
                 kg
