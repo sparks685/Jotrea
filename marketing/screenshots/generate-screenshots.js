@@ -7,11 +7,12 @@
  *   - chromium available via nix-shell (nix-shell -p chromium)
  *
  * Usage:
- *   node generate-screenshots.js                   # regenerate all 8 screenshots
+ *   node generate-screenshots.js                   # regenerate all screenshots
  *   node generate-screenshots.js iphone            # iPhone set only (S1-S4)
  *   node generate-screenshots.js ipad              # iPad set only (iPad-S1–S4)
  *   node generate-screenshots.js s1                # slide 1 for both iPhone and iPad
  *   node generate-screenshots.js s2 s4             # slides 2 and 4 (both device sizes)
+ *   node generate-screenshots.js --check-colors    # verify brand colors in all A-series HTML files
  *   node generate-screenshots.js --help            # print this usage
  *
  * Or run manually for a single file:
@@ -49,6 +50,188 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+
+// ---------------------------------------------------------------------------
+// Brand color utilities
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical brand color table.
+ *
+ * These hex values are the authoritative brand palette.  They must stay in
+ * sync with the HSL tokens in artifacts/jotrea/src/index.css (light mode :root).
+ * If the CSS tokens change, update BOTH this table AND the index.css values.
+ *
+ * The check below reads the CSS and warns when the documented HSL no longer
+ * rounds to within ±1 channel of these hex values, which catches silent drift.
+ */
+const BRAND_COLORS = [
+  { name: 'primary (tan)',          token: '--primary',     hex: '#D4A574', hsl: [32,  55, 64] },
+  { name: 'background',             token: '--background',  hex: '#FFFDF7', hsl: [40, 100, 98] },
+  { name: 'foreground (navy)',       token: '--foreground',  hex: '#1A1D3D', hsl: [240, 39, 14] },
+  { name: 'primary-dark (gradient)', token: '--primary-dark',hex: '#C4956A', hsl: null },
+];
+
+/**
+ * Convert HSL (0–360, 0–100, 0–100) to an RGB triple [r, g, b] (0–255).
+ */
+function hslToRgb(h, s, l) {
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if      (h <  60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else              { r = c; g = 0; b = x; }
+  return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+}
+
+/** Parse a 6-digit hex string to [r, g, b]. */
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+/**
+ * Read the :root block from index.css and verify that each token's HSL value
+ * is consistent with the documented canonical hex (within ±2 per channel).
+ * Returns a list of warning strings (empty = all good).
+ */
+function checkCssDrift(cssPath) {
+  const css       = fs.readFileSync(cssPath, 'utf8');
+  const rootMatch = css.match(/:root\s*\{([^}]+)\}/s);
+  if (!rootMatch) return ['Could not find :root block in index.css'];
+
+  const rootBlock = rootMatch[1];
+  const warnings  = [];
+
+  for (const { name, token, hex, hsl } of BRAND_COLORS) {
+    if (!hsl) continue; // primary-dark is not a CSS variable
+
+    const re = new RegExp(token + ':\\s*([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%');
+    const m  = rootBlock.match(re);
+    if (!m) {
+      warnings.push(`${token} not found in :root`);
+      continue;
+    }
+    const [, h, s, l] = m.map(Number);
+
+    // Check if the documented canonical HSL matches what's in the file
+    if (h !== hsl[0] || s !== hsl[1] || l !== hsl[2]) {
+      const cssRgb = hslToRgb(h, s, l);
+      const cssHex = '#' + cssRgb.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      warnings.push(
+        `${token} (${name}): index.css has hsl(${h} ${s}% ${l}%) → ${cssHex}, ` +
+        `but screenshots use canonical ${hex} — update HTML files or this table`
+      );
+    }
+  }
+  return warnings;
+}
+
+/**
+ * The 12 new A-series HTML files that must be checked.
+ */
+const A_SERIES_HTML = [
+  'app-s1-dashboard-hero.html',
+  'app-s2-dose-tracking.html',
+  'app-s3-weight-progress.html',
+  'app-s4-med-info.html',
+  'app-s5-side-effects.html',
+  'app-s6-personalized-plan.html',
+  'ipad-app-s1-dashboard-hero.html',
+  'ipad-app-s2-dose-tracking.html',
+  'ipad-app-s3-weight-progress.html',
+  'ipad-app-s4-med-info.html',
+  'ipad-app-s5-side-effects.html',
+  'ipad-app-s6-personalized-plan.html',
+];
+
+/**
+ * Check that each A-series HTML file contains the expected brand hex values,
+ * and that the canonical hex table still agrees with index.css.
+ *
+ * Prints a per-file, per-token report and exits 1 if any check fails.
+ *
+ * @param {string} dir      Directory containing the HTML files
+ * @param {string} cssPath  Absolute path to index.css
+ */
+function runColorCheck(dir, cssPath) {
+  console.log('\n── Brand Color Check ────────────────────────────────────────\n');
+
+  // ── 1. Drift check: warn if index.css no longer matches the canonical table ─
+  let driftWarnings = [];
+  try {
+    driftWarnings = checkCssDrift(cssPath);
+  } catch (err) {
+    console.warn(`  ⚠  Could not read ${cssPath}: ${err.message}`);
+  }
+
+  console.log('Canonical brand palette (must match artifacts/jotrea/src/index.css):');
+  for (const { name, token, hex, hsl } of BRAND_COLORS) {
+    const hslLabel = hsl ? `hsl(${hsl[0]} ${hsl[1]}% ${hsl[2]}%)` : 'hardcoded (no CSS var)';
+    console.log(`  ${token.padEnd(22)} ${hex}  ${hslLabel}  (${name})`);
+  }
+
+  if (driftWarnings.length > 0) {
+    console.log('\n  ⚠  CSS drift detected — index.css no longer matches the canonical table:');
+    for (const w of driftWarnings) console.log(`     • ${w}`);
+  } else {
+    console.log('\n  ✓  index.css tokens agree with canonical hex values.');
+  }
+  console.log();
+
+  // ── 2. Per-file check: every A-series HTML must contain each brand hex ──────
+  let filesPassed = 0;
+  let filesFailed = 0;
+
+  for (const htmlFile of A_SERIES_HTML) {
+    const htmlPath = path.join(dir, htmlFile);
+    if (!fs.existsSync(htmlPath)) {
+      console.log(`SKIP  ${htmlFile} — file not found`);
+      continue;
+    }
+
+    const content = fs.readFileSync(htmlPath, 'utf8').toUpperCase();
+    const missing = [];
+
+    for (const { name, hex } of BRAND_COLORS) {
+      if (!content.includes(hex.replace('#', '').toUpperCase())) {
+        missing.push(`${hex} (${name})`);
+      }
+    }
+
+    if (missing.length === 0) {
+      console.log(`  ✓  ${htmlFile}`);
+      filesPassed++;
+    } else {
+      console.log(`  ✗  ${htmlFile}`);
+      for (const m of missing) console.log(`       MISSING: ${m}`);
+      filesFailed++;
+    }
+  }
+
+  // ── 3. Final verdict ─────────────────────────────────────────────────────────
+  const overallFail = filesFailed > 0 || driftWarnings.length > 0;
+  console.log('\n' + '─'.repeat(60));
+  if (!overallFail) {
+    console.log(`Brand color check PASSED — all ${filesPassed} A-series files use correct hex values.\n`);
+  } else {
+    if (filesFailed > 0) {
+      console.log(`Brand color check FAILED — ${filesFailed} file(s) have color mismatches (see above).`);
+      console.log('Fix: update the HTML files to use the canonical hex values listed above.\n');
+    }
+    if (driftWarnings.length > 0) {
+      console.log('Brand color check FAILED — index.css palette has drifted from screenshots.');
+      console.log('Fix: update BRAND_COLORS in generate-screenshots.js AND the A-series HTML files.\n');
+    }
+    process.exit(1);
+  }
+}
 
 const DIR = path.resolve(__dirname);
 
@@ -94,8 +277,16 @@ Usage:
   node generate-screenshots.js iphone s1         Specific device + slide combo
   node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A6)
   node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S6)
+  node generate-screenshots.js --check-colors    Verify brand hex values in all 12 A-series HTML files
   node generate-screenshots.js --help            Print this usage message
 `);
+  process.exit(0);
+}
+
+// --check-colors: standalone brand color spot-check (no screenshot generation)
+if (args.includes('--check-colors')) {
+  const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
+  runColorCheck(DIR, cssPath);
   process.exit(0);
 }
 
@@ -192,3 +383,12 @@ for (const job of jobs) {
 console.log('─'.repeat(48));
 console.log(`Done.  ${passed} succeeded, ${failed} failed.`);
 if (failed > 0) process.exit(1);
+
+// ---------------------------------------------------------------------------
+// Automatic brand-color check when any A-series job was in the run
+// ---------------------------------------------------------------------------
+const hasASeriesJob = jobs.some(job => /^(a[1-6]|ia[1-6])$/.test(job.id));
+if (hasASeriesJob) {
+  const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
+  runColorCheck(DIR, cssPath);
+}
