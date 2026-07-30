@@ -49,10 +49,14 @@ vi.mock("recharts", () => ({
   ResponsiveContainer: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
+  BarChart: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+  Bar: () => null,
   LineChart: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
   Line: () => null,
   Tooltip: () => null,
   XAxis: () => null,
+  YAxis: () => null,
+  CartesianGrid: () => null,
 }));
 
 vi.mock("@/components/CountdownRing", () => ({

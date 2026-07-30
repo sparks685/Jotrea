@@ -18,6 +18,7 @@ import { useMedication, useDoses } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
 import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
 import { PageContainer } from "@/components/PageContainer";
+import { SideEffectTrendsChart } from "@/components/SideEffectTrendsChart";
 import type { DoseEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -302,6 +303,8 @@ export default function DoseLog() {
               ))}
             </div>
           )}
+
+          <SideEffectTrendsChart doses={sortedDoses} />
 
           {sortedDoses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
