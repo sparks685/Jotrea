@@ -102,17 +102,53 @@ export default function Dashboard() {
     "hair loss": "Tip: Ensure adequate protein intake — aim for your daily goal.",
     "food noise": "Tip: High-protein snacks can help quiet food noise between meals.",
   };
-  const GENERIC_TIPS = [
-    "Rotate injection sites each dose to reduce scar tissue buildup.",
-    "Stay hydrated — at least 8 glasses of water daily reduces nausea.",
-    "Eating slowly and stopping at 80% full helps maximize GLP-1 effects.",
-    "Protein at every meal preserves muscle while losing fat on GLP-1s.",
-    "Log your dose within 2 hours for the most accurate streak tracking.",
-    "Always store pen injectors in the refrigerator until opened.",
-  ];
+
+  // Build a pool of medication-specific tips from the stored medication's pharmacistNote
+  // plus formulation/frequency-aware extras. Falls back to generic tips if no med is found.
+  const buildMedTipPool = (): string[] => {
+    if (!medInfo) {
+      return [
+        "Rotate injection sites each dose to reduce scar tissue buildup.",
+        "Stay hydrated — at least 8 glasses of water daily reduces nausea.",
+        "Eating slowly and stopping at 80% full helps maximize GLP-1 effects.",
+        "Protein at every meal preserves muscle while losing fat on GLP-1s.",
+        "Log your dose within 2 hours for the most accurate streak tracking.",
+        "Always store pen injectors in the refrigerator until opened.",
+      ];
+    }
+
+    // Split the medication's pharmacistNote into individual tip sentences
+    const noteSentences = medInfo.pharmacistNote
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    // Formulation-specific supplemental tips
+    const extra: string[] = [];
+    if (medInfo.formulation === "pill") {
+      extra.push("Take at the same time each day to build a consistent habit.");
+      extra.push("Stay hydrated — at least 8 glasses of water daily can help with GLP-1 side effects.");
+    }
+    if (medInfo.formulation === "injection") {
+      extra.push("Eating slowly and stopping when 80% full helps maximize the effects of your medication.");
+      extra.push("Protein at every meal helps preserve muscle while losing fat on GLP-1s.");
+    }
+    if (medInfo.frequency === "weekly") {
+      extra.push("Log your dose within 2 hours of taking it for the most accurate streak tracking.");
+    }
+    if (medInfo.frequency === "daily" || medInfo.frequency === "twice-daily") {
+      extra.push("Setting a recurring alarm for dose time can help you stay on schedule.");
+    }
+
+    return [...noteSentences, ...extra];
+  };
+
+  const medTipPool = buildMedTipPool();
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const firstSideEffect = user.troublesomeSideEffects?.[0]?.toLowerCase();
-  const tip = (firstSideEffect && SIDE_EFFECT_TIPS[firstSideEffect]) ?? GENERIC_TIPS[dayOfYear % GENERIC_TIPS.length];
+  const tip =
+    (firstSideEffect && SIDE_EFFECT_TIPS[firstSideEffect]) ??
+    medTipPool[dayOfYear % medTipPool.length];
 
   const handleLogDose = () => {
     const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
