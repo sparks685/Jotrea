@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
-import { medications } from "@/data/medications";
+import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
 import { PageContainer } from "@/components/PageContainer";
 import type { DoseEntry } from "@/types";
 
@@ -36,9 +36,6 @@ export default function DoseLog() {
   const [logNotes, setLogNotes] = useState("");
   const [logDoseAmount, setLogDoseAmount] = useState<number>(medication?.dose ?? 0);
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  const GENERIC_PHARMACIST_NOTE =
-    "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
 
   if (!medication) return null;
 

@@ -1,3 +1,6 @@
+export const GENERIC_PHARMACIST_NOTE =
+  "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
+
 export const medications = [
   { id: "semaglutide-ozempic", genericName: "Semaglutide", brandNames: ["Ozempic"], formulation: "injection", frequency: "weekly", doses: [0.25, 0.5, 1, 2], unit: "mg", description: "Once-weekly injection for type 2 diabetes and weight management.", pharmacistNote: "Rotate injection sites weekly. Store pen in refrigerator until first use." },
   { id: "semaglutide-wegovy", genericName: "Semaglutide", brandNames: ["Wegovy"], formulation: "injection", frequency: "weekly", doses: [0.25, 0.5, 1, 1.7, 2.4], unit: "mg", description: "Once-weekly injection specifically for chronic weight management.", pharmacistNote: "Follow the dose escalation schedule prescribed. Keep refrigerated." },

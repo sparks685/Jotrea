@@ -21,7 +21,7 @@ import {
   getLast7WeightEntries,
 } from "@/utils/calculations";
 import { trackEvent } from "@/lib/analytics";
-import { medications } from "@/data/medications";
+import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -113,9 +113,6 @@ export default function Dashboard() {
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const firstSideEffect = user.troublesomeSideEffects?.[0]?.toLowerCase();
   const tip = (firstSideEffect && SIDE_EFFECT_TIPS[firstSideEffect]) ?? GENERIC_TIPS[dayOfYear % GENERIC_TIPS.length];
-
-  const GENERIC_PHARMACIST_NOTE =
-    "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
 
   const handleLogDose = () => {
     const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
