@@ -11,7 +11,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays, CheckCircle2, FlaskConical } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays, CheckCircle2, FlaskConical, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
@@ -34,6 +34,7 @@ export default function DoseLog() {
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
   const [logNotes, setLogNotes] = useState("");
+  const [logDoseAmount, setLogDoseAmount] = useState<number>(medication?.dose ?? 0);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const GENERIC_PHARMACIST_NOTE =
@@ -57,7 +58,7 @@ export default function DoseLog() {
       id: Date.now().toString(),
       date: selectedDate,
       time: logTime,
-      doseAmount: medication.dose,
+      doseAmount: logDoseAmount,
       site: medInfo?.formulation === "injection" ? logSite : "oral",
       notes: logNotes,
       taken: true,
@@ -83,6 +84,7 @@ export default function DoseLog() {
     setLogTime(format(new Date(), "HH:mm"));
     setLogSite(INJECTION_SITES[0]);
     setLogNotes("");
+    setLogDoseAmount(medication.dose);
     setEditingId(null);
     setShowAdd(true);
   };
@@ -92,6 +94,7 @@ export default function DoseLog() {
     setLogTime(dose.time);
     setLogSite(dose.site);
     setLogNotes(dose.notes);
+    setLogDoseAmount(dose.doseAmount);
     setEditingId(dose.id);
     setShowAdd(true);
   };
@@ -363,6 +366,64 @@ export default function DoseLog() {
                       />
                     </div>
                   </div>
+
+                  {medInfo && medInfo.doses.length > 1 && (() => {
+                    const currentIdx = medInfo.doses.indexOf(medication.dose);
+                    const selectedIdx = medInfo.doses.indexOf(logDoseAmount);
+                    const isAheadOfSchedule = selectedIdx > currentIdx && currentIdx !== -1;
+                    return (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-muted-foreground">Dose Amount</label>
+                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            Current step: {medication.dose} {medInfo.unit}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2" data-testid="dose-amount-picker">
+                          {medInfo.doses.map((d) => {
+                            const isCurrent = d === medication.dose;
+                            const isSelected = d === logDoseAmount;
+                            return (
+                              <button
+                                key={d}
+                                data-testid={`dose-amount-${d}`}
+                                className={`relative rounded-2xl py-3 text-sm font-bold border-2 transition-all ${
+                                  isSelected
+                                    ? "border-secondary bg-secondary/10 text-secondary"
+                                    : "border-border bg-background text-foreground"
+                                }`}
+                                onClick={() => setLogDoseAmount(d)}
+                              >
+                                {d} {medInfo.unit}
+                                {isCurrent && (
+                                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-black bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
+                                    My step
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <AnimatePresence>
+                          {isAheadOfSchedule && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.2 }}
+                              className="flex items-start gap-2 rounded-2xl p-3 bg-amber-50 border border-amber-200"
+                              data-testid="escalation-skip-warning"
+                            >
+                              <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-amber-800 leading-relaxed">
+                                {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })()}
 
                   {medInfo?.formulation === "injection" && (
                     <div className="space-y-1.5">
