@@ -546,6 +546,10 @@ export default function Settings() {
                     const v = parseInt(e.target.value, 10);
                     setUser({ ...user, waterGoalCups: isNaN(v) || v <= 0 ? undefined : v });
                   }}
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
+                  }}
                   className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right w-20"
                   data-testid="water-goal-input"
                 />
@@ -559,6 +563,10 @@ export default function Settings() {
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
                     setUser({ ...user, proteinGoalG: isNaN(v) || v <= 0 ? undefined : v });
+                  }}
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
                   }}
                   placeholder={
                     user.currentWeightLbs
@@ -579,6 +587,10 @@ export default function Settings() {
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
                     setUser({ ...user, stepsGoal: isNaN(v) || v <= 0 ? undefined : v });
+                  }}
+                  onFocus={(e) => {
+                    const el = e.currentTarget;
+                    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 120);
                   }}
                   placeholder={
                     user.activityLevel
