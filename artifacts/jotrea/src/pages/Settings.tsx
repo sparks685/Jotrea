@@ -166,9 +166,9 @@ export default function Settings() {
         <SettingsRow label="Name">
           <input
             type="text"
-            value={user.name || ""}
+            value={user.name && user.name !== "User" ? user.name : ""}
             onChange={(e) => setUser({ ...user, name: e.target.value })}
-            placeholder="Your Name"
+            placeholder="Enter your name"
             className="text-sm font-medium text-foreground bg-muted px-2 py-1 rounded-lg border-0 outline-none text-right max-w-[150px]"
           />
         </SettingsRow>
