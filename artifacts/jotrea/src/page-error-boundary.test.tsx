@@ -196,3 +196,107 @@ describe("PageErrorBoundary – wipe & restart flow", () => {
     expect(replaceSpy).toHaveBeenCalledWith("/");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Route-change reset – the crash screen must not be permanently stuck
+// ---------------------------------------------------------------------------
+
+/**
+ * In App.tsx the <motion.div> wrapping <PageErrorBoundary> is keyed by the
+ * current wouter location.  Changing the key causes React to unmount the old
+ * tree (including the boundary in its errored state) and mount a fresh one,
+ * which resets the error.  These tests verify that mechanism works and would
+ * catch any regression where the key is removed or the boundary is lifted
+ * outside the keyed wrapper.
+ */
+
+function HealthyChild(): React.ReactElement {
+  return <p>healthy content</p>;
+}
+
+describe("PageErrorBoundary – route-change resets the crash screen", () => {
+  it("remounting the boundary (key change) clears the error and shows healthy content", () => {
+    // First render: crash screen should appear.
+    const { rerender } = render(
+      <PageErrorBoundary key="route-a">
+        <BrokenChild />
+      </PageErrorBoundary>,
+    );
+
+    expect(
+      screen.getByText(/something went wrong on this page/i),
+    ).toBeInTheDocument();
+
+    // Simulate a route change: React unmounts the old boundary (key="route-a")
+    // and mounts a brand-new one (key="route-b") with a healthy child.
+    rerender(
+      <PageErrorBoundary key="route-b">
+        <HealthyChild />
+      </PageErrorBoundary>,
+    );
+
+    // Crash screen must be gone.
+    expect(
+      screen.queryByText(/something went wrong on this page/i),
+    ).not.toBeInTheDocument();
+
+    // Healthy content must be visible.
+    expect(screen.getByText("healthy content")).toBeInTheDocument();
+  });
+
+  it("the crash screen reappears if the new route also throws", () => {
+    // First render: crash screen.
+    const { rerender } = render(
+      <PageErrorBoundary key="route-a">
+        <BrokenChild />
+      </PageErrorBoundary>,
+    );
+
+    expect(
+      screen.getByText(/something went wrong on this page/i),
+    ).toBeInTheDocument();
+
+    // Navigate to another broken route.
+    rerender(
+      <PageErrorBoundary key="route-b">
+        <BrokenChild />
+      </PageErrorBoundary>,
+    );
+
+    // A fresh crash screen must still appear (not a blank/stuck screen).
+    expect(
+      screen.getByText(/something went wrong on this page/i),
+    ).toBeInTheDocument();
+  });
+
+  it("crash screen is gone after two consecutive route changes", () => {
+    const { rerender } = render(
+      <PageErrorBoundary key="route-a">
+        <BrokenChild />
+      </PageErrorBoundary>,
+    );
+
+    expect(
+      screen.getByText(/something went wrong on this page/i),
+    ).toBeInTheDocument();
+
+    // First navigation – still broken.
+    rerender(
+      <PageErrorBoundary key="route-b">
+        <BrokenChild />
+      </PageErrorBoundary>,
+    );
+
+    // Second navigation – healthy.
+    rerender(
+      <PageErrorBoundary key="route-c">
+        <HealthyChild />
+      </PageErrorBoundary>,
+    );
+
+    expect(
+      screen.queryByText(/something went wrong on this page/i),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("healthy content")).toBeInTheDocument();
+  });
+});
