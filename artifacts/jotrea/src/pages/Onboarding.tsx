@@ -513,8 +513,8 @@ export default function Onboarding() {
                   <div className="relative w-full rounded-2xl overflow-hidden select-none" style={{
                     height:'140px',
                     border:`1.5px solid ${BRAND}38`,
-                    boxShadow:`0 6px 32px ${BRAND}18, 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)`,
-                    background:'rgba(255,252,248,0.7)',
+                    boxShadow:`0 6px 32px ${BRAND}18, 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 var(--ruler-card-shine)`,
+                    background:'var(--ruler-card-bg)',
                     touchAction:'none',
                     cursor:'ew-resize',
                     transform:`translateX(${rulerHintX}px)`,
@@ -554,7 +554,7 @@ export default function Onboarding() {
                     }}/>
                     {/* Edge fade */}
                     <div className="absolute inset-0 z-10 pointer-events-none" style={{
-                      background:`linear-gradient(to right, rgba(255,252,248,0.85) 0%, transparent 18%, transparent 82%, rgba(255,252,248,0.85) 100%)`,
+                      background:`linear-gradient(to right, var(--ruler-edge-fade) 0%, transparent 18%, transparent 82%, var(--ruler-edge-fade) 100%)`,
                     }}/>
 
                     {/* Ticks — state-driven, always centred on gw */}
@@ -815,9 +815,9 @@ export default function Onboarding() {
               {sideEffects.length>0 && (
                 <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }} exit={{ opacity:0, height:0 }}
                   className="flex gap-3 px-4 py-3.5 rounded-2xl border mb-2 overflow-hidden"
-                  style={{ background:"#fef9ec", borderColor:"#f3e5b0" }}>
-                  <Info size={15} className="flex-shrink-0 mt-0.5 text-amber-600"/>
-                  <p className="text-sm font-medium text-amber-900 leading-relaxed">
+                  style={{ background:"var(--tip-info-bg)", borderColor:"var(--tip-info-border)" }}>
+                  <Info size={15} className="flex-shrink-0 mt-0.5 text-amber-500"/>
+                  <p className="text-sm font-medium leading-relaxed" style={{ color:"var(--tip-info-text)" }}>
                     We'll share tips for managing {sideEffects.length===1?"this":"these"}.
                   </p>
                 </motion.div>
@@ -1094,7 +1094,7 @@ export default function Onboarding() {
                     height:'224px',
                     background:'var(--injection-diagram-bg)',
                     border:`1.5px solid ${BRAND}28`,
-                    boxShadow:`0 10px 40px ${BRAND}18, 0 2px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.15)`,
+                    boxShadow:`0 10px 40px ${BRAND}18, 0 2px 10px rgba(0,0,0,0.05), inset 0 1px 0 var(--ruler-card-shine)`,
                   }}>
                     <svg viewBox="0 0 100 240" style={{ height:'212px', width:'auto' }} fill="none" xmlns="http://www.w3.org/2000/svg">
                       <defs>

@@ -162,6 +162,12 @@
   --destructive-border: hsl(var(--destructive));
 
   --injection-diagram-bg: linear-gradient(145deg, #fef9f4, #fdf5ee);
+  --ruler-card-bg: rgba(255,252,248,0.7);
+  --ruler-card-shine: rgba(255,255,255,0.9);
+  --ruler-edge-fade: rgba(255,252,248,0.85);
+  --tip-info-bg: #fef9ec;
+  --tip-info-border: #f3e5b0;
+  --tip-info-text: #78350f;
 }
 
 .dark {
@@ -216,6 +222,12 @@
   --shadow-2xl: 0px 2px 0px 0px rgba(0,0,0,0.2);
 
   --injection-diagram-bg: linear-gradient(145deg, hsl(240 39% 16%), hsl(240 39% 19%));
+  --ruler-card-bg: rgba(30,32,55,0.7);
+  --ruler-card-shine: rgba(255,255,255,0.08);
+  --ruler-edge-fade: rgba(30,32,55,0.85);
+  --tip-info-bg: hsl(240 39% 18%);
+  --tip-info-border: hsl(240 39% 28%);
+  --tip-info-text: hsl(40 100% 85%);
 }
 
 @layer base {
