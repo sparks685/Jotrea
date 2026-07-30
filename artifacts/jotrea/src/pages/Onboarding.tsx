@@ -21,6 +21,13 @@ const haptic = (pattern: number | number[] = 10) => {
   if ("vibrate" in navigator) navigator.vibrate(pattern);
 };
 
+const STEPS_BY_ACTIVITY: Record<string, number> = {
+  sedentary: 5000,
+  lightly_active: 7000,
+  active: 9000,
+  very_active: 10000,
+};
+
 /** Seed only the user's real starting weight on their GLP-1 start date. */
 function seedStartingWeight(
   currentWeight: number,
@@ -139,17 +146,20 @@ export default function Onboarding() {
 
   const handleComplete = () => {
     const cw = parseFloat(currentWeight), sw = parseFloat(startWeight) || cw, gw = parseFloat(goalWeight);
+    const weightKg = heightUnit === "imperial" ? cw / 2.20462 : cw;
+    const proteinGoalG = Math.round(weightKg * 0.8);
+    const stepsGoal = STEPS_BY_ACTIVITY[activity] ?? 7000;
     if (isCustomMed) {
       const freq = customFrequency === "other" ? (customFreqOther || "custom") : customFrequency;
       const dose = parseFloat(customDoseAmt) || 0;
       setMedication({ id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true });
-      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
+      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: customBrand || "custom" });
     } else {
       if (!selectedMed || !selectedDose) return;
       setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
-      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", subscription: "free" });
+      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: selectedMed.genericName });
     }
@@ -1405,7 +1415,7 @@ export default function Onboarding() {
                 { icon:<Droplets size={17} className="text-blue-500"/>, label:"Water", value:"8 cups" },
                 // Protein calculated from body weight × 0.8g/kg; update with activity-adjusted formula when available
                 { icon:<Activity size={17} className="text-red-500"/>, label:"Protein", value:`${Math.round((heightUnit==="imperial"?parseFloat(currentWeight)/2.2:parseFloat(currentWeight))*0.8)}g` },
-                { icon:<Target size={17} className="text-green-500"/>, label:"Steps", value:"8,000" },
+                { icon:<Target size={17} className="text-green-500"/>, label:"Steps", value:(STEPS_BY_ACTIVITY[activity] ?? 7000).toLocaleString() },
               ].map(g => (
                 <div key={g.label} className="bg-card rounded-2xl p-4 border border-border/60 text-center shadow-sm">
                   <div className="flex justify-center mb-2">{g.icon}</div>

@@ -2,8 +2,8 @@ import type { DoseEntry, WeightEntry } from "@/types";
 
 export const FREE_HISTORY_DAYS = 30;
 
-export function isPremium(subscription: string): boolean {
-  return subscription === "premium";
+export function isPremium(_subscription: string): boolean {
+  return true; // free for launch — all features unlocked
 }
 
 export function getFreeHistoryCutoff(): Date {

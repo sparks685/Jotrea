@@ -26,6 +26,9 @@ export interface UserData {
   notificationTime?: string;
   notificationAdvance?: string;
   injectionSiteHistory?: { site: string; date: string }[];
+  waterGoalCups?: number;
+  proteinGoalG?: number;
+  stepsGoal?: number;
 }
 
 export interface MedicationData {
@@ -47,6 +50,7 @@ export interface DoseEntry {
   site: string;
   notes: string;
   taken: boolean;
+  sideEffects?: string[];
 }
 
 export interface WeightEntry {

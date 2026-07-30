@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2 } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountdownRing } from "@/components/CountdownRing";
-import { useMedication, useDoses, useWeights, useUser } from "@/hooks/useMedication";
+import { useMedication, useDoses, useWeights, useUser, useDailyCheckin } from "@/hooks/useMedication";
 import {
   getNextDoseDate,
   getDaysUntilDose,
@@ -25,6 +25,25 @@ import { medications } from "@/data/medications";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
+
+const STEPS_BY_ACTIVITY: Record<string, number> = {
+  sedentary: 5000,
+  lightly_active: 7000,
+  active: 9000,
+  very_active: 10000,
+};
+
+const SIDE_EFFECTS_LIST = [
+  { id: "none", label: "Feeling great", emoji: "✅" },
+  { id: "nausea", label: "Nausea", emoji: "🤢" },
+  { id: "fatigue", label: "Fatigue", emoji: "😴" },
+  { id: "headache", label: "Headache", emoji: "🤕" },
+  { id: "constipation", label: "Constipation", emoji: "😣" },
+  { id: "diarrhea", label: "Diarrhea", emoji: "🏃" },
+  { id: "dizziness", label: "Dizziness", emoji: "😵" },
+  { id: "site_reaction", label: "Site reaction", emoji: "💉" },
+  { id: "low_appetite", label: "Low appetite", emoji: "🍽️" },
+];
 
 export default function Dashboard() {
   const { medication } = useMedication();
@@ -44,6 +63,11 @@ export default function Dashboard() {
   const [weightValue, setWeightValue] = useState("");
   const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [weightNotes, setWeightNotes] = useState("");
+
+  const [pendingDoseId, setPendingDoseId] = useState<string | null>(null);
+  const [selectedSideEffects, setSelectedSideEffects] = useState<string[]>([]);
+
+  const { checkin, toggle } = useDailyCheckin();
 
   if (!medication) return null;
 
@@ -95,8 +119,9 @@ export default function Dashboard() {
 
   const handleLogDose = () => {
     const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
+    const doseId = Date.now().toString();
     const newDose: DoseEntry = {
-      id: Date.now().toString(),
+      id: doseId,
       date: logDate,
       time: logTime,
       doseAmount: medication.dose,
@@ -105,6 +130,7 @@ export default function Dashboard() {
       taken: true,
     };
     setDoses([...doses, newDose]);
+    setPendingDoseId(doseId);
 
     if (finalSite !== "oral") {
       const newHistoryEntry = { site: finalSite, date: format(parseISO(logDate), "MMM d") };
@@ -119,7 +145,32 @@ export default function Dashboard() {
     setShowDoseConfirm(true);
   };
 
+  const handleDoneDoseConfirm = () => {
+    if (selectedSideEffects.length > 0 && pendingDoseId) {
+      setDoses((prev) =>
+        prev.map((d) => d.id === pendingDoseId ? { ...d, sideEffects: selectedSideEffects } : d)
+      );
+    }
+    setSelectedSideEffects([]);
+    setPendingDoseId(null);
+    setShowLogForm(false);
+    setShowDoseConfirm(false);
+  };
+
+  const toggleSideEffect = (id: string) => {
+    if (id === "none") {
+      setSelectedSideEffects((prev) => prev.includes("none") ? [] : ["none"]);
+    } else {
+      setSelectedSideEffects((prev) => {
+        const without = prev.filter((e) => e !== "none");
+        return without.includes(id) ? without.filter((e) => e !== id) : [...without, id];
+      });
+    }
+  };
+
   const handleCloseLogForm = () => {
+    setSelectedSideEffects([]);
+    setPendingDoseId(null);
     setShowLogForm(false);
     setShowDoseConfirm(false);
   };
@@ -247,6 +298,61 @@ export default function Dashboard() {
           sub="in a row"
           icon={<Flame size={14} className="text-amber-500" />}
         />
+      </div>
+
+      {/* Today's Targets */}
+      <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
+        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Today's Targets</p>
+        <div className="grid grid-cols-3 gap-2">
+          {(
+            [
+              {
+                key: "water" as const,
+                icon: <Droplets size={16} className="text-blue-500" />,
+                label: "Water",
+                value: `${user.waterGoalCups ?? 8}`,
+                unit: "cups",
+              },
+              {
+                key: "protein" as const,
+                icon: <Activity size={16} className="text-red-400" />,
+                label: "Protein",
+                value: user.proteinGoalG
+                  ? `${user.proteinGoalG}g`
+                  : user.currentWeightLbs
+                  ? `${Math.round((user.currentWeightLbs / 2.20462) * 0.8)}g`
+                  : "—",
+                unit: "goal",
+              },
+              {
+                key: "steps" as const,
+                icon: <Target size={16} className="text-green-500" />,
+                label: "Steps",
+                value: (user.stepsGoal ?? (user.activityLevel ? STEPS_BY_ACTIVITY[user.activityLevel] : 7000) ?? 7000).toLocaleString(),
+                unit: "/day",
+              },
+            ] as const
+          ).map((item) => {
+            const done = checkin[item.key];
+            return (
+              <button
+                key={item.key}
+                onClick={() => toggle(item.key)}
+                className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all active:scale-95 ${
+                  done
+                    ? "border-secondary bg-secondary/10"
+                    : "border-border bg-background"
+                }`}
+              >
+                <div className={done ? "opacity-100" : "opacity-50"}>{item.icon}</div>
+                <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">{item.label}</p>
+                <p className={`text-sm font-bold ${done ? "text-secondary" : "text-foreground"}`}>{item.value}</p>
+                <p className="text-[9px] text-muted-foreground">{item.unit}</p>
+                {done && <CheckCircle2 size={12} className="text-secondary" />}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Pharmacy Tip */}
@@ -426,13 +532,36 @@ export default function Dashboard() {
                         View medication guide →
                       </button>
                     </div>
+
+                    {/* Side effect picker */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How are you feeling?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {SIDE_EFFECTS_LIST.map((effect) => {
+                          const active = selectedSideEffects.includes(effect.id);
+                          return (
+                            <button
+                              key={effect.id}
+                              onClick={() => toggleSideEffect(effect.id)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                                active
+                                  ? "border-secondary bg-secondary/10 text-secondary"
+                                  : "border-border bg-background text-muted-foreground"
+                              }`}
+                            >
+                              {effect.emoji} {effect.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Sticky confirm footer */}
-                  <div className="px-6 pt-3 pb-6 flex-shrink-0" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
+                  <div className="px-6 pt-3 pb-6 flex-shrink-0 border-t border-border/50" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
                     <Button
                       className="w-full h-12 rounded-2xl font-semibold"
-                      onClick={handleCloseLogForm}
+                      onClick={handleDoneDoseConfirm}
                       data-testid="done-dose-confirm"
                     >
                       Done
