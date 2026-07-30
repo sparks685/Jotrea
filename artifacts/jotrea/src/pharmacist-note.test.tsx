@@ -80,6 +80,15 @@ const MEDICATION_KEY = "jotrea_medication";
 const OZEMPIC = medications.find((m) => m.id === "semaglutide-ozempic")!;
 const OZEMPIC_NOTE = OZEMPIC.pharmacistNote;
 
+const WEGOVY = medications.find((m) => m.id === "semaglutide-wegovy")!;
+const WEGOVY_NOTE = WEGOVY.pharmacistNote;
+
+const MOUNJARO = medications.find((m) => m.id === "tirzepatide-mounjaro")!;
+const MOUNJARO_NOTE = MOUNJARO.pharmacistNote;
+
+const RYBELSUS = medications.find((m) => m.id === "semaglutide-rybelsus")!;
+const RYBELSUS_NOTE = RYBELSUS.pharmacistNote;
+
 const GENERIC_NOTE =
   "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
 
@@ -87,15 +96,21 @@ const GENERIC_NOTE =
 // Seed helpers
 // ---------------------------------------------------------------------------
 
-function seedMedication(id: string, brandName: string, dose: number) {
+function seedMedication(
+  id: string,
+  brandName: string,
+  dose: number,
+  genericName = "Semaglutide",
+  frequency = "weekly",
+) {
   localStorage.setItem(
     MEDICATION_KEY,
     JSON.stringify({
       id,
-      genericName: "Semaglutide",
+      genericName,
       brandName,
       dose,
-      frequency: "weekly",
+      frequency,
       startDate: "2024-01-01",
       active: true,
     }),
@@ -104,6 +119,18 @@ function seedMedication(id: string, brandName: string, dose: number) {
 
 function seedOzempic() {
   seedMedication("semaglutide-ozempic", "Ozempic", 0.5);
+}
+
+function seedWegovy() {
+  seedMedication("semaglutide-wegovy", "Wegovy", 0.25);
+}
+
+function seedMounjaro() {
+  seedMedication("tirzepatide-mounjaro", "Mounjaro", 2.5, "Tirzepatide");
+}
+
+function seedRybelsus() {
+  seedMedication("semaglutide-rybelsus", "Rybelsus", 3, "Semaglutide", "daily");
 }
 
 function seedCustomMedication() {
@@ -146,6 +173,42 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
     expect(noteEl).toBeInTheDocument();
     expect(noteEl.textContent).toBe(GENERIC_NOTE);
   });
+
+  it("shows the Wegovy-specific pharmacist note after logging a dose", () => {
+    seedWegovy();
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(WEGOVY_NOTE);
+  });
+
+  it("shows the Mounjaro-specific pharmacist note after logging a dose", () => {
+    seedMounjaro();
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(MOUNJARO_NOTE);
+  });
+
+  it("shows the Rybelsus-specific pharmacist note after logging a dose", () => {
+    seedRybelsus();
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(RYBELSUS_NOTE);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -182,5 +245,41 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
     expect(noteEl.textContent).toBe(GENERIC_NOTE);
+  });
+
+  it("shows the Wegovy-specific pharmacist note after logging a dose", () => {
+    seedWegovy();
+    render(<DoseLog />);
+
+    fireEvent.click(screen.getByTestId("add-dose-btn"));
+    fireEvent.click(screen.getByTestId("save-dose-btn"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(WEGOVY_NOTE);
+  });
+
+  it("shows the Mounjaro-specific pharmacist note after logging a dose", () => {
+    seedMounjaro();
+    render(<DoseLog />);
+
+    fireEvent.click(screen.getByTestId("add-dose-btn"));
+    fireEvent.click(screen.getByTestId("save-dose-btn"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(MOUNJARO_NOTE);
+  });
+
+  it("shows the Rybelsus-specific pharmacist note after logging a dose", () => {
+    seedRybelsus();
+    render(<DoseLog />);
+
+    fireEvent.click(screen.getByTestId("add-dose-btn"));
+    fireEvent.click(screen.getByTestId("save-dose-btn"));
+
+    const noteEl = screen.getByTestId("pharmacist-note-text");
+    expect(noteEl).toBeInTheDocument();
+    expect(noteEl.textContent).toBe(RYBELSUS_NOTE);
   });
 });
