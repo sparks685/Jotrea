@@ -5,7 +5,7 @@ import { format, parseISO, differenceInWeeks } from "date-fns";
 import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { PageContainer } from "@/components/PageContainer";
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountdownRing } from "@/components/CountdownRing";
@@ -465,6 +465,7 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={80}>
             <LineChart data={chartData}>
               <XAxis dataKey="date" hide />
+              <YAxis domain={["dataMin - 3", "dataMax + 3"]} hide />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
