@@ -120,3 +120,63 @@ id = "5HVi8N8ZN0t8N6RyoRzog"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S6.png"
 type = "image"
 title = "iPad App S6 – Personalised Plan"
+
+[[outputs]]
+id = "Mix3TRzptHzjqkEKdNGP4"
+uri = "file://marketing/screenshots/Jotrea-65-S1.png"
+type = "image"
+title = "6.5\" S1 – Onboarding"
+
+[[outputs]]
+id = "YwTiLHi_MjqnccVKiGamp"
+uri = "file://marketing/screenshots/Jotrea-65-S2.png"
+type = "image"
+title = "6.5\" S2 – Goal Weight"
+
+[[outputs]]
+id = "zBYxXVjvrhxUw6bW7VGjl"
+uri = "file://marketing/screenshots/Jotrea-65-S3.png"
+type = "image"
+title = "6.5\" S3 – Dashboard"
+
+[[outputs]]
+id = "0rvn6dnfJ7y2CyvuvrBYS"
+uri = "file://marketing/screenshots/Jotrea-65-S4.png"
+type = "image"
+title = "6.5\" S4 – Weight Tracker"
+
+[[outputs]]
+id = "BtcRudDDkKAZgjhRCaYXM"
+uri = "file://marketing/screenshots/Jotrea-65-App-S1.png"
+type = "image"
+title = "6.5\" App S1 – Dashboard Hero"
+
+[[outputs]]
+id = "8DNv1g2wra_k11OWdlPNm"
+uri = "file://marketing/screenshots/Jotrea-65-App-S2.png"
+type = "image"
+title = "6.5\" App S2 – Dose Tracking"
+
+[[outputs]]
+id = "yoPkgSvuEsBQZJqaqx9QA"
+uri = "file://marketing/screenshots/Jotrea-65-App-S3.png"
+type = "image"
+title = "6.5\" App S3 – Weight Progress"
+
+[[outputs]]
+id = "MHmfvdRn3lylpwwN47WMI"
+uri = "file://marketing/screenshots/Jotrea-65-App-S4.png"
+type = "image"
+title = "6.5\" App S4 – Med Info"
+
+[[outputs]]
+id = "Ke0CEZ_TxOJdTsKrkr0ln"
+uri = "file://marketing/screenshots/Jotrea-65-App-S5.png"
+type = "image"
+title = "6.5\" App S5 – Side Effects"
+
+[[outputs]]
+id = "RuSXEUCqaHA6PKvhf0E0z"
+uri = "file://marketing/screenshots/Jotrea-65-App-S6.png"
+type = "image"
+title = "6.5\" App S6 – Personalised Plan"

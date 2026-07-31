@@ -351,6 +351,17 @@ const ALL_JOBS = [
   { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',                out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
   { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',            out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
   { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
+  // ── iPhone 6.5" set at 1284×2778 (for App Store 6.5" Display slot) ────────
+  { id: 'b1', device: 'iphone65', html: 's1-onboarding.html',                out: 'Jotrea-65-S1.png',       w: 1284, h: 2778 },
+  { id: 'b2', device: 'iphone65', html: 's2-goal-weight.html',               out: 'Jotrea-65-S2.png',       w: 1284, h: 2778 },
+  { id: 'b3', device: 'iphone65', html: 's3-dashboard.html',                 out: 'Jotrea-65-S3.png',       w: 1284, h: 2778 },
+  { id: 'b4', device: 'iphone65', html: 's4-weight-tracker.html',            out: 'Jotrea-65-S4.png',       w: 1284, h: 2778 },
+  { id: 'c1', device: 'iphone65', html: 'app-s1-dashboard-hero.html',        out: 'Jotrea-65-App-S1.png',   w: 1284, h: 2778 },
+  { id: 'c2', device: 'iphone65', html: 'app-s2-dose-tracking.html',         out: 'Jotrea-65-App-S2.png',   w: 1284, h: 2778 },
+  { id: 'c3', device: 'iphone65', html: 'app-s3-weight-progress.html',       out: 'Jotrea-65-App-S3.png',   w: 1284, h: 2778 },
+  { id: 'c4', device: 'iphone65', html: 'app-s4-med-info.html',              out: 'Jotrea-65-App-S4.png',   w: 1284, h: 2778 },
+  { id: 'c5', device: 'iphone65', html: 'app-s5-side-effects.html',          out: 'Jotrea-65-App-S5.png',   w: 1284, h: 2778 },
+  { id: 'c6', device: 'iphone65', html: 'app-s6-personalized-plan.html',     out: 'Jotrea-65-App-S6.png',   w: 1284, h: 2778 },
   { id: 'ia1', device: 'ipad',  html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad-App-S1.png', w: 2064, h: 2752 },
   { id: 'ia2', device: 'ipad',  html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad-App-S2.png', w: 2064, h: 2752 },
   { id: 'ia3', device: 'ipad',  html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad-App-S3.png', w: 2064, h: 2752 },
@@ -375,6 +386,7 @@ Usage:
   node generate-screenshots.js iphone s1         Specific device + slide combo
   node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A6)
   node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S6)
+  node generate-screenshots.js --iphone65        iPhone 6.5" set at 1284×2778 (App Store 6.5" Display slot)
   node generate-screenshots.js --check-colors    Verify brand hex values in all 12 A-series HTML files
   node generate-screenshots.js --check-ruler     Verify ruler dark-mode contrast (opacity guard + snapshot)
   node generate-screenshots.js --help            Print this usage message
@@ -397,10 +409,15 @@ if (args.includes('--check-ruler')) {
 }
 
 function selectJobs(args) {
-  const marketing = args.includes('--marketing');
+  const marketing  = args.includes('--marketing');
+  const iphone65   = args.includes('--iphone65');
 
   // Strip flag tokens before further processing
   const positional = args.filter(a => !a.startsWith('--'));
+
+  if (iphone65) {
+    return ALL_JOBS.filter(job => job.device === 'iphone65');
+  }
 
   if (marketing) {
     const deviceFilters = positional.filter(a => a === 'iphone' || a === 'ipad');
