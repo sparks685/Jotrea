@@ -306,10 +306,12 @@ export default function Dashboard() {
             className={`w-full h-14 rounded-2xl text-base font-semibold shadow-lg${isDueToday ? " dose-pulse" : ""}`}
             onClick={() => {
               const history = user?.injectionSiteHistory;
-              const lastSite = history && history.length > 0
-                ? history[history.length - 1].site
+              const lastSite = history && history.length > 0 ? history[history.length - 1].site : null;
+              const lastIdx = lastSite ? INJECTION_SITES.indexOf(lastSite) : -1;
+              const nextSite = lastIdx >= 0
+                ? INJECTION_SITES[(lastIdx + 1) % INJECTION_SITES.length]
                 : INJECTION_SITES[0];
-              setLogSite(lastSite);
+              setLogSite(nextSite);
               setShowLogForm(true);
             }}
             data-testid="log-dose-btn"
@@ -704,9 +706,14 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {medInfo?.formulation === "injection" && (
+                    {(medInfo?.formulation === "injection" || medication.injectionSite !== undefined) && (
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                          {user.injectionSiteHistory && user.injectionSiteHistory.length > 0 && (
+                            <span className="text-[10px] text-secondary font-semibold">↺ Rotate suggested</span>
+                          )}
+                        </div>
                         <div className="grid grid-cols-2 gap-2">
                           {INJECTION_SITES.map((site) => (
                             <button

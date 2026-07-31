@@ -56,6 +56,7 @@ export default function DoseLog() {
   const [logDoseAmount, setLogDoseAmount] = useState<number>(medication?.dose ?? 0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [logSideEffects, setLogSideEffects] = useState<string[]>([]);
+  const [lastLoggedId, setLastLoggedId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   if (!medication) return null;
@@ -88,6 +89,7 @@ export default function DoseLog() {
       setShowAdd(false);
     } else {
       setDoses([...doses, newDose]);
+      setLastLoggedId(newDose.id);
       setShowDoseConfirm(true);
     }
     setLogNotes("");
@@ -96,12 +98,22 @@ export default function DoseLog() {
   const handleCloseAddForm = () => {
     setShowAdd(false);
     setShowDoseConfirm(false);
+    setLastLoggedId(null);
+    setLogSideEffects([]);
   };
 
   const openAdd = (dateStr?: string) => {
+    // Suggest the next injection site in the rotation cycle
+    const lastSiteUsed = [...doses]
+      .filter(d => d.site !== "oral")
+      .sort((a, b) => b.date.localeCompare(a.date))[0]?.site ?? null;
+    const lastIdx = lastSiteUsed ? INJECTION_SITES.indexOf(lastSiteUsed) : -1;
+    const nextSite = lastIdx >= 0
+      ? INJECTION_SITES[(lastIdx + 1) % INJECTION_SITES.length]
+      : INJECTION_SITES[0];
     setSelectedDate(dateStr ?? format(new Date(), "yyyy-MM-dd"));
     setLogTime(format(new Date(), "HH:mm"));
-    setLogSite(INJECTION_SITES[0]);
+    setLogSite(nextSite);
     setLogNotes("");
     setLogDoseAmount(medication.dose);
     setLogSideEffects([]);
@@ -350,9 +362,11 @@ export default function DoseLog() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
-              className="w-full max-w-md mx-auto bg-card rounded-t-3xl p-6 space-y-4"
+              className="w-full max-w-md mx-auto bg-card rounded-t-3xl flex flex-col"
+              style={{ maxHeight: "88dvh" }}
             >
-              <div className="flex items-center justify-between">
+              {/* Fixed header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
                 <h3 className="text-lg font-bold text-foreground">
                   {showDoseConfirm ? "Dose Logged" : editingId ? "Edit Dose" : "Log Dose"}
                 </h3>
@@ -366,163 +380,228 @@ export default function DoseLog() {
               </div>
 
               {showDoseConfirm ? (
-                <div className="space-y-4" data-testid="dose-confirm-screen">
-                  <div className="flex flex-col items-center gap-3 py-2">
-                    <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
-                      <CheckCircle2 size={28} className="text-secondary" />
+                <>
+                  {/* Scrollable confirmation body */}
+                  <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-2" data-testid="dose-confirm-screen">
+                    <div className="flex flex-col items-center gap-3 py-2">
+                      <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
+                        <CheckCircle2 size={28} className="text-secondary" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-semibold text-foreground">
+                          {logDoseAmount} {medInfo?.unit ?? "mg"} logged
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="font-semibold text-foreground">
-                        {medication.dose} {medInfo?.unit ?? "mg"} logged
+
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
+                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                      </div>
+                      <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                        {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
+                      <button
+                        data-testid="view-med-guide-link"
+                        className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                        onClick={() => { handleCloseAddForm(); navigate("/med-info"); }}
+                      >
+                        View medication guide →
+                      </button>
+                    </div>
+
+                    {/* Side effects picker on confirmation — same as Dashboard */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How are you feeling? (optional)</p>
+                      <div className="flex flex-wrap gap-2">
+                        {SIDE_EFFECTS_LIST.map((effect) => {
+                          const active = logSideEffects.includes(effect.id);
+                          return (
+                            <button
+                              key={effect.id}
+                              onClick={() => {
+                                if (effect.id === "none") {
+                                  setLogSideEffects(prev => prev.includes("none") ? [] : ["none"]);
+                                } else {
+                                  setLogSideEffects(prev => {
+                                    const without = prev.filter(e => e !== "none");
+                                    return without.includes(effect.id)
+                                      ? without.filter(e => e !== effect.id)
+                                      : [...without, effect.id];
+                                  });
+                                }
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
+                                active
+                                  ? "border-secondary bg-secondary/10 text-secondary"
+                                  : "border-border bg-background text-muted-foreground"
+                              }`}
+                            >
+                              {effect.emoji} {effect.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
-                    </div>
-                    <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
-                      {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
-                    </p>
-                    <button
-                      data-testid="view-med-guide-link"
-                      className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
-                      onClick={() => { handleCloseAddForm(); navigate("/med-info"); }}
-                    >
-                      View medication guide →
-                    </button>
-                  </div>
-
-                  <Button
-                    className="w-full h-12 rounded-2xl font-semibold"
-                    onClick={handleCloseAddForm}
-                    data-testid="done-dose-confirm"
+                  {/* Sticky Done footer */}
+                  <div
+                    className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
+                    style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
                   >
-                    Done
-                  </Button>
-                </div>
+                    <Button
+                      className="w-full h-12 rounded-2xl font-semibold"
+                      onClick={() => {
+                        if (logSideEffects.length > 0 && lastLoggedId) {
+                          setDoses(prev => prev.map(d =>
+                            d.id === lastLoggedId ? { ...d, sideEffects: logSideEffects } : d
+                          ));
+                        }
+                        handleCloseAddForm();
+                      }}
+                      data-testid="done-dose-confirm"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Date</label>
-                      <Input
-                        type="date"
-                        value={selectedDate ?? ""}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="rounded-xl"
-                        data-testid="dose-date-input"
-                      />
+                  {/* Scrollable form body */}
+                  <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Date</label>
+                        <Input
+                          type="date"
+                          value={selectedDate ?? ""}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          className="rounded-xl"
+                          data-testid="dose-date-input"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-muted-foreground">Time</label>
+                        <Input
+                          type="time"
+                          value={logTime}
+                          onChange={(e) => setLogTime(e.target.value)}
+                          className="rounded-xl"
+                          data-testid="dose-time-input"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Time</label>
-                      <Input
-                        type="time"
-                        value={logTime}
-                        onChange={(e) => setLogTime(e.target.value)}
-                        className="rounded-xl"
-                        data-testid="dose-time-input"
-                      />
-                    </div>
-                  </div>
 
-                  {medInfo && medInfo.doses.length > 1 && (() => {
-                    const currentIdx = medInfo.doses.indexOf(medication.dose);
-                    const selectedIdx = medInfo.doses.indexOf(logDoseAmount);
-                    const isAheadOfSchedule = selectedIdx > currentIdx && currentIdx !== -1;
-                    return (
+                    {medInfo && medInfo.doses.length > 1 && (() => {
+                      const currentIdx = medInfo.doses.indexOf(medication.dose);
+                      const selectedIdx = medInfo.doses.indexOf(logDoseAmount);
+                      const isAheadOfSchedule = selectedIdx > currentIdx && currentIdx !== -1;
+                      return (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold text-muted-foreground">Dose Amount</label>
+                            <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              Current step: {medication.dose} {medInfo.unit}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2" data-testid="dose-amount-picker">
+                            {medInfo.doses.map((d) => {
+                              const isCurrent = d === medication.dose;
+                              const isSelected = d === logDoseAmount;
+                              return (
+                                <button
+                                  key={d}
+                                  data-testid={`dose-amount-${d}`}
+                                  className={`relative rounded-2xl py-3 text-sm font-bold border-2 transition-all ${
+                                    isSelected
+                                      ? "border-secondary bg-secondary/10 text-secondary"
+                                      : "border-border bg-background text-foreground"
+                                  }`}
+                                  onClick={() => setLogDoseAmount(d)}
+                                >
+                                  {d} {medInfo.unit}
+                                  {isCurrent && (
+                                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-black bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
+                                      My step
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <AnimatePresence>
+                            {isAheadOfSchedule && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex items-start gap-2 rounded-2xl p-3 bg-amber-50 border border-amber-200"
+                                data-testid="escalation-skip-warning"
+                              >
+                                <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-amber-800 leading-relaxed">
+                                  {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Injection site — shown for injection meds and custom injection meds */}
+                    {(medInfo?.formulation === "injection" || medication.injectionSite !== undefined) && (
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-muted-foreground">Dose Amount</label>
-                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            Current step: {medication.dose} {medInfo.unit}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2" data-testid="dose-amount-picker">
-                          {medInfo.doses.map((d) => {
-                            const isCurrent = d === medication.dose;
-                            const isSelected = d === logDoseAmount;
-                            return (
-                              <button
-                                key={d}
-                                data-testid={`dose-amount-${d}`}
-                                className={`relative rounded-2xl py-3 text-sm font-bold border-2 transition-all ${
-                                  isSelected
-                                    ? "border-secondary bg-secondary/10 text-secondary"
-                                    : "border-border bg-background text-foreground"
-                                }`}
-                                onClick={() => setLogDoseAmount(d)}
-                              >
-                                {d} {medInfo.unit}
-                                {isCurrent && (
-                                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-black bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
-                                    My step
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <AnimatePresence>
-                          {isAheadOfSchedule && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -4 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -4 }}
-                              transition={{ duration: 0.2 }}
-                              className="flex items-start gap-2 rounded-2xl p-3 bg-amber-50 border border-amber-200"
-                              data-testid="escalation-skip-warning"
-                            >
-                              <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-amber-800 leading-relaxed">
-                                {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
-                              </p>
-                            </motion.div>
+                          <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
+                          {!editingId && doses.some(d => d.site !== "oral") && (
+                            <span className="text-[10px] text-secondary font-semibold">↺ Rotate suggested</span>
                           )}
-                        </AnimatePresence>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {INJECTION_SITES.map((site) => (
+                            <button
+                              key={site}
+                              data-testid={`site-select-${site.toLowerCase().replace(" ", "-")}`}
+                              className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
+                                logSite === site
+                                  ? "border-secondary bg-secondary/10 text-secondary"
+                                  : "border-border bg-background text-foreground"
+                              }`}
+                              onClick={() => setLogSite(site)}
+                            >
+                              {site}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    );
-                  })()}
+                    )}
 
-                  {medInfo?.formulation === "injection" && (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {INJECTION_SITES.map((site) => (
-                          <button
-                            key={site}
-                            data-testid={`site-select-${site.toLowerCase().replace(" ", "-")}`}
-                            className={`py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                              logSite === site
-                                ? "border-secondary bg-secondary/10 text-secondary"
-                                : "border-border bg-background text-foreground"
-                            }`}
-                            onClick={() => setLogSite(site)}
-                          >
-                            {site}
-                          </button>
-                        ))}
-                      </div>
+                      <label className="text-xs font-semibold text-muted-foreground">Notes</label>
+                      <Input
+                        placeholder="Side effects, feelings..."
+                        value={logNotes}
+                        onChange={(e) => setLogNotes(e.target.value)}
+                        className="rounded-xl"
+                        data-testid="dose-notes-input"
+                      />
                     </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-muted-foreground">Notes</label>
-                    <Input
-                      placeholder="Side effects, feelings..."
-                      value={logNotes}
-                      onChange={(e) => setLogNotes(e.target.value)}
-                      className="rounded-xl"
-                      data-testid="dose-notes-input"
-                    />
                   </div>
 
-                  <Button className="w-full h-12 rounded-2xl font-semibold" onClick={handleAddDose} data-testid="save-dose-btn">
-                    {editingId ? "Save Changes" : "Log Dose"}
-                  </Button>
+                  {/* Sticky submit footer — always visible above home indicator */}
+                  <div
+                    className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
+                    style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
+                  >
+                    <Button className="w-full h-12 rounded-2xl font-semibold" onClick={handleAddDose} data-testid="save-dose-btn">
+                      {editingId ? "Save Changes" : "Log Dose"}
+                    </Button>
+                  </div>
                 </>
               )}
             </motion.div>

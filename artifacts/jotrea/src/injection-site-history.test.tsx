@@ -135,7 +135,7 @@ describe("injection site pre-fill from history", () => {
     seedInjectionMed();
   });
 
-  it("pre-selects the last site in injectionSiteHistory when history is non-empty", () => {
+  it("pre-selects the next rotation site after the last used site (Upper Arm → Buttocks)", () => {
     seedUser([
       { site: "Abdomen", date: "Jun 1" },
       { site: "Thigh", date: "Jun 8" },
@@ -145,24 +145,26 @@ describe("injection site pre-fill from history", () => {
 
     fireEvent.click(screen.getByTestId("log-dose-btn"));
 
-    // "Upper Arm" was the last entry → should be active
-    expect(isSiteActive("log-site-upper-arm")).toBe(true);
+    // Last used = Upper Arm (idx 2) → rotate to Buttocks (idx 3)
+    expect(isSiteActive("log-site-buttocks")).toBe(true);
     // Others should not be active
+    expect(isSiteActive("log-site-upper-arm")).toBe(false);
     expect(isSiteActive("log-site-abdomen")).toBe(false);
     expect(isSiteActive("log-site-thigh")).toBe(false);
   });
 
-  it("pre-selects the single entry when history has exactly one item", () => {
+  it("wraps rotation back to Abdomen when last site was Buttocks", () => {
     seedUser([{ site: "Buttocks", date: "Jul 22" }]);
     render(<Dashboard />);
 
     fireEvent.click(screen.getByTestId("log-dose-btn"));
 
-    expect(isSiteActive("log-site-buttocks")).toBe(true);
-    expect(isSiteActive("log-site-abdomen")).toBe(false);
+    // Last used = Buttocks (idx 3) → rotate to Abdomen (idx 0, wraps)
+    expect(isSiteActive("log-site-abdomen")).toBe(true);
+    expect(isSiteActive("log-site-buttocks")).toBe(false);
   });
 
-  it("pre-selects the last (not the first) entry when multiple entries exist", () => {
+  it("uses the last entry (not the first) to determine the next rotation site", () => {
     seedUser([
       { site: "Thigh", date: "Jul 1" },
       { site: "Buttocks", date: "Jul 8" },
@@ -171,8 +173,9 @@ describe("injection site pre-fill from history", () => {
 
     fireEvent.click(screen.getByTestId("log-dose-btn"));
 
-    // "Buttocks" is last → active; "Thigh" is first → not active
-    expect(isSiteActive("log-site-buttocks")).toBe(true);
+    // Last used = Buttocks (idx 3) → rotate to Abdomen (idx 0); Thigh is NOT the next site
+    expect(isSiteActive("log-site-abdomen")).toBe(true);
+    expect(isSiteActive("log-site-buttocks")).toBe(false);
     expect(isSiteActive("log-site-thigh")).toBe(false);
   });
 });
@@ -250,7 +253,7 @@ describe("injection site write-back after dose log", () => {
     expect(history[1].site).toBe("Thigh");
   });
 
-  it("the written site matches the pre-filled (last-history) site when unchanged", () => {
+  it("the written site matches the rotation-suggested site when submitted without changing", () => {
     seedUser([
       { site: "Abdomen", date: "Jun 1" },
       { site: "Buttocks", date: "Jun 8" },
@@ -258,11 +261,11 @@ describe("injection site write-back after dose log", () => {
     render(<Dashboard />);
 
     fireEvent.click(screen.getByTestId("log-dose-btn"));
-    // Don't change the pre-filled site — submit as-is
+    // Last used = Buttocks (idx 3) → rotation pre-fills Abdomen (idx 0); submit without changing
     fireEvent.click(screen.getByTestId("submit-log-dose"));
 
     const history = getStoredHistory();
-    // New entry appended; it should match the last (pre-filled) site
-    expect(history[history.length - 1].site).toBe("Buttocks");
+    // New entry appended; it should match the rotation-suggested (pre-filled) site
+    expect(history[history.length - 1].site).toBe("Abdomen");
   });
 });
