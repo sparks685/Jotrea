@@ -307,8 +307,8 @@
    in over 180 ms. Cannot get stuck in a blank state.
    ─────────────────────────────────────────────────────────────────────────── */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .page-enter {
