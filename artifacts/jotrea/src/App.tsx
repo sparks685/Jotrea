@@ -4,7 +4,6 @@ import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wo
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AnimatePresence, motion } from "framer-motion";
 import { BottomNav } from "@/components/BottomNav";
 import { useMedication } from "@/hooks/useMedication";
 import { initGA, pageView } from "@/lib/analytics";
@@ -81,9 +80,6 @@ export class PageErrorBoundary extends Component<
 
 
 
-const pageTransition = { duration: 0.1 };
-
-
 function ResetAndRedirect() {
   const [, setLoc] = useLocation();
   useEffect(() => {
@@ -111,20 +107,15 @@ function AppRoutes() {
     <>
       <RouteTracker />
       <div
-        className={`flex-1 overflow-y-auto`}
+        className="flex-1 overflow-y-auto"
         style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={pageTransition}
-            className="min-h-full w-full"
-            style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
-          >
-            <PageErrorBoundary>
+        <div
+          key={location}
+          className="page-enter min-h-full w-full"
+          style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
+        >
+          <PageErrorBoundary key={location}>
               <Switch>
                 <Route path="/onboarding"><Onboarding /></Route>
                 <Route path="/">
@@ -146,8 +137,7 @@ function AppRoutes() {
                 <Route component={NotFound} />
               </Switch>
             </PageErrorBoundary>
-          </motion.div>
-        </AnimatePresence>
+          </div>
       </div>
       {!isOnboarding && medication && <BottomNav />}
     </>

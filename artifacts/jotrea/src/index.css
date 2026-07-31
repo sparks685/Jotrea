@@ -299,3 +299,22 @@
     inset: -1px;
   }
 }
+
+/* ── Tab page fade-in ───────────────────────────────────────────────────────
+   Pure CSS approach: no framer-motion AnimatePresence, no JS animation state.
+   When React unmounts the old keyed div and mounts the new one, the animation
+   restarts automatically. Old content disappears instantly; new content fades
+   in over 180 ms. Cannot get stuck in a blank state.
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.page-enter {
+  animation: page-enter 0.18s ease-out both;
+  /* Respect the OS reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
