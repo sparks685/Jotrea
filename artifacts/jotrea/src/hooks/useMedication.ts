@@ -23,7 +23,10 @@ export function useMedication() {
 
 export function useDoses() {
   const [doses, setDoses] = useLocalStorage<DoseEntry[]>("jotrea_doses", []);
-  return { doses, setDoses };
+  // Guard: if the stored value is corrupted (not an array), treat as empty so
+  // callers can safely call .some(), .map(), etc. without crashing.
+  const safeDoses = Array.isArray(doses) ? doses : [];
+  return { doses: safeDoses, setDoses };
 }
 
 export function useWeights() {
@@ -60,14 +63,27 @@ export function useOralDoseMigration() {
     const isOral =
       medInfo?.formulation !== "injection" && injectionSite === undefined;
     if (!isOral) return;
-    // Use functional update to avoid capturing a stale doses snapshot
-    setDoses((prev) => {
-      const hasDirty = prev.some((d) => d.site && d.site !== "oral");
-      if (!hasDirty) return prev; // idempotent: no change if already clean
-      return prev.map((d) =>
+    // Peek at the current doses via localStorage to avoid a stale state
+    // snapshot and to skip the write entirely when nothing needs migrating.
+    // Guard defensively: malformed JSON or a non-array value must not crash
+    // the app — treat both as "nothing to migrate" so the effect exits safely.
+    let current: DoseEntry[] = [];
+    try {
+      const raw = localStorage.getItem("jotrea_doses");
+      const parsed = raw ? JSON.parse(raw) : [];
+      current = Array.isArray(parsed) ? (parsed as DoseEntry[]) : [];
+    } catch {
+      // Malformed JSON — fall back to empty; no migration needed
+    }
+    const hasDirty = current.some((d) => d.site && d.site !== "oral");
+    if (!hasDirty) return; // idempotent: no write when already clean
+    // Only call setDoses (which triggers a localStorage write) when there are
+    // dirty entries to correct.
+    setDoses((prev) =>
+      prev.map((d) =>
         d.site && d.site !== "oral" ? { ...d, site: "oral" } : d
-      );
-    });
+      )
+    );
   }, [medicationId, injectionSite]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
