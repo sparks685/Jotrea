@@ -5,46 +5,118 @@ generated = []
 id = "El9U4mYEp1FAZtzUuw_LF"
 uri = "file://marketing/screenshots/Jotrea-S1.png"
 type = "image"
-title = "Screenshot S1: Welcome"
+title = "iPhone S1 – Onboarding"
 
 [[outputs]]
 id = "StmXVrDB1eeiuNnJ86Jlb"
 uri = "file://marketing/screenshots/Jotrea-S2.png"
 type = "image"
-title = "Screenshot S2: Goal Weight Ruler"
+title = "iPhone S2 – Goal Weight"
 
 [[outputs]]
 id = "thdPf_42KLHWNckAhFHsP"
 uri = "file://marketing/screenshots/Jotrea-S3.png"
 type = "image"
-title = "Screenshot S3: Dashboard"
+title = "iPhone S3 – Dashboard"
 
 [[outputs]]
 id = "YQtsIOJZaEh4PJXCdS-QT"
 uri = "file://marketing/screenshots/Jotrea-S4.png"
 type = "image"
-title = "Screenshot S4: Weight Tracker"
+title = "iPhone S4 – Dose Log"
 
 [[outputs]]
 id = "XqfI3DUu7gOgpXUTLLWdY"
 uri = "file://marketing/screenshots/Jotrea-iPad-S1.png"
 type = "image"
-title = "iPad S1 — Onboarding (2064×2752)"
+title = "iPad S1 – Onboarding"
 
 [[outputs]]
 id = "WNmuWsP3kOH68gr2QOp79"
 uri = "file://marketing/screenshots/Jotrea-iPad-S2.png"
 type = "image"
-title = "iPad S2 — Dashboard (2064×2752)"
+title = "iPad S2 – Goal Weight"
 
 [[outputs]]
 id = "-ga2q6FuW31-8X9F2p11c"
 uri = "file://marketing/screenshots/Jotrea-iPad-S3.png"
 type = "image"
-title = "iPad S3 — Weight Tracker (2064×2752)"
+title = "iPad S3 – Dashboard"
 
 [[outputs]]
 id = "9P3TKXiGpxUFQfL9wwDIk"
 uri = "file://marketing/screenshots/Jotrea-iPad-S4.png"
 type = "image"
-title = "iPad S4 — Med Info (2064×2752)"
+title = "iPad S4 – Dose Log"
+
+[[outputs]]
+id = "2V4dBO21zVU2cFMVCovdv"
+uri = "file://marketing/screenshots/Jotrea-App-S1.png"
+type = "image"
+title = "iPhone App S1 – Dashboard Hero"
+
+[[outputs]]
+id = "KQSlAkTSOtIEglduL-PKo"
+uri = "file://marketing/screenshots/Jotrea-App-S2.png"
+type = "image"
+title = "iPhone App S2 – Dose Tracking"
+
+[[outputs]]
+id = "1fJ2jbhvr0yKAV0K4quEY"
+uri = "file://marketing/screenshots/Jotrea-App-S3.png"
+type = "image"
+title = "iPhone App S3 – Weight Progress"
+
+[[outputs]]
+id = "MNovyZcRirm7YIXnsTMd6"
+uri = "file://marketing/screenshots/Jotrea-App-S4.png"
+type = "image"
+title = "iPhone App S4 – Med Info"
+
+[[outputs]]
+id = "GOzTXeD51Oqxrrfe6Pbat"
+uri = "file://marketing/screenshots/Jotrea-App-S5.png"
+type = "image"
+title = "iPhone App S5 – Side Effects"
+
+[[outputs]]
+id = "A9xXsBRTKlAMiEj3NBRRt"
+uri = "file://marketing/screenshots/Jotrea-App-S6.png"
+type = "image"
+title = "iPhone App S6 – Personalised Plan"
+
+[[outputs]]
+id = "vwTcL-tMzFXlhSL9tzU-p"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S1.png"
+type = "image"
+title = "iPad App S1 – Dashboard Hero"
+
+[[outputs]]
+id = "T5uhJ1qpeb4NQ2pdd20Lm"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S2.png"
+type = "image"
+title = "iPad App S2 – Dose Tracking"
+
+[[outputs]]
+id = "gKhOaB8S5vi6eN39KRYfX"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S3.png"
+type = "image"
+title = "iPad App S3 – Weight Progress"
+
+[[outputs]]
+id = "avHWcWW5IJ-_qKybs32la"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S4.png"
+type = "image"
+title = "iPad App S4 – Med Info"
+
+[[outputs]]
+id = "xzpNASJ54XT7iNUn1bO37"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S5.png"
+type = "image"
+title = "iPad App S5 – Side Effects"
+
+[[outputs]]
+id = "5HVi8N8ZN0t8N6RyoRzog"
+uri = "file://marketing/screenshots/Jotrea-iPad-App-S6.png"
+type = "image"
+title = "iPad App S6 – Personalised Plan"
