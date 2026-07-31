@@ -741,17 +741,17 @@ export default function Settings() {
           <div className="pt-2 border-t border-border flex gap-4 text-xs font-medium text-muted-foreground">
             <button
               className="hover:text-foreground transition-colors"
-              onClick={() => window.open("https://jotrea.carrd.co/privacy", "_blank")}
+              onClick={() => window.open("https://jotrea.carrd.co", "_blank", "noreferrer")}
             >Privacy Policy</button>
             <span>·</span>
             <button
               className="hover:text-foreground transition-colors"
-              onClick={() => window.open("https://jotrea.carrd.co/terms", "_blank")}
+              onClick={() => window.open("https://jotrea.carrd.co", "_blank", "noreferrer")}
             >Terms of Service</button>
             <span>·</span>
             <button
               className="hover:text-foreground transition-colors"
-              onClick={() => window.open("https://jotrea.carrd.co", "_blank")}
+              onClick={() => window.open("https://jotrea.carrd.co", "_blank", "noreferrer")}
             >Support</button>
           </div>
         </div>
