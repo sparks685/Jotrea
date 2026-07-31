@@ -216,37 +216,38 @@ describe("DoseLog Log Dose sheet backdrop — fixed positioning classes", () => 
   });
 
   it("backdrop element has the 'fixed' class when the sheet is open", () => {
-    const { container } = render(<DoseLog />);
+    render(<DoseLog />);
 
     // Open the Log Dose sheet
     fireEvent.click(screen.getByTestId("add-dose-btn"));
 
-    // The backdrop is a direct child of the sheet animation wrapper.
-    // It carries "fixed inset-0" as Tailwind classes.
-    const fixed = container.querySelector(".fixed");
+    // The sheet is portaled to document.body — query there, not the render container.
+    const fixed = document.body.querySelector(".fixed");
     expect(fixed).not.toBeNull();
     expect(fixed!.classList.contains("fixed")).toBe(true);
   });
 
   it("backdrop element has the 'inset-0' class when the sheet is open", () => {
-    const { container } = render(<DoseLog />);
+    render(<DoseLog />);
 
     fireEvent.click(screen.getByTestId("add-dose-btn"));
 
-    const fixed = container.querySelector(".fixed");
+    // Sheet portaled to document.body — query there.
+    const fixed = document.body.querySelector(".fixed");
     expect(fixed).not.toBeNull();
     // inset-0 means top:0 right:0 bottom:0 left:0 — full viewport cover.
     expect(fixed!.classList.contains("inset-0")).toBe(true);
   });
 
   it("backdrop z-index class is present (z-[60]) ensuring it sits above page content", () => {
-    const { container } = render(<DoseLog />);
+    render(<DoseLog />);
 
     fireEvent.click(screen.getByTestId("add-dose-btn"));
 
     // jsdom doesn't resolve custom Tailwind arbitrary values, but the class
     // string is still in the DOM and that's what we need to assert.
-    const fixed = container.querySelector(".fixed");
+    // Sheet portaled to document.body — query there.
+    const fixed = document.body.querySelector(".fixed");
     expect(fixed).not.toBeNull();
     expect(fixed!.className).toContain("z-[60]");
   });

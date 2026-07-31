@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, differenceInWeeks } from "date-fns";
@@ -579,8 +580,8 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Log Dose bottom sheet */}
-      <AnimatePresence>
+      {/* Log Dose bottom sheet — portaled to body to escape page-enter stacking context */}
+      {createPortal(<AnimatePresence>
         {showLogForm && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -762,10 +763,10 @@ export default function Dashboard() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
 
-      {/* Add Weight bottom sheet */}
-      <AnimatePresence>
+      {/* Add Weight bottom sheet — portaled to body to escape page-enter stacking context */}
+      {createPortal(<AnimatePresence>
         {showWeightForm && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -851,7 +852,7 @@ export default function Dashboard() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
     </PageContainer>
   );
 }

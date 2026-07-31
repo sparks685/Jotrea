@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -348,7 +349,8 @@ export default function DoseLog() {
         </div>
       )}
 
-      <AnimatePresence>
+      {/* Log Dose sheet — portaled to body to escape page-enter stacking context */}
+      {createPortal(<AnimatePresence>
         {showAdd && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -607,7 +609,7 @@ export default function DoseLog() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
     </PageContainer>
   );
 }
