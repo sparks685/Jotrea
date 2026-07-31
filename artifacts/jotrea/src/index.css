@@ -318,3 +318,21 @@
     animation: none;
   }
 }
+
+/* ── Log Dose button pulse ───────────────────────────────────────────────────
+   Pure CSS scale pulse applied directly on the Button element — no wrapper
+   div, no framer-motion, so the button never becomes a CSS containing block
+   that could trap a fixed-position sheet backdrop.
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes dose-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.dose-pulse {
+  animation: dose-pulse 1.8s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

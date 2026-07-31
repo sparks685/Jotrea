@@ -302,13 +302,8 @@ export default function Dashboard() {
         </p>
         <CountdownRing daysUntil={daysUntil} intervalDays={intervalDays} size={160} />
 
-        <motion.div
-          animate={isDueToday ? { scale: [1, 1.04, 1] } : {}}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full"
-        >
           <Button
-            className="w-full h-14 rounded-2xl text-base font-semibold shadow-lg"
+            className={`w-full h-14 rounded-2xl text-base font-semibold shadow-lg${isDueToday ? " dose-pulse" : ""}`}
             onClick={() => {
               const history = user?.injectionSiteHistory;
               const lastSite = history && history.length > 0
@@ -322,7 +317,6 @@ export default function Dashboard() {
             <Syringe size={18} className="mr-2" />
             Log Dose
           </Button>
-        </motion.div>
       </div>
 
       {/* Quick action row */}
