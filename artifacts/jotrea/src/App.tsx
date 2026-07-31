@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
-import { useMedication } from "@/hooks/useMedication";
+import { useMedication, useOralDoseMigration } from "@/hooks/useMedication";
 import { initGA, pageView } from "@/lib/analytics";
 import { registerNotificationSW } from "@/utils/notifications";
 import Onboarding from "@/pages/Onboarding";
@@ -100,6 +100,7 @@ function RouteTracker() {
 function AppRoutes() {
   const { medication } = useMedication();
   const [location] = useLocation();
+  useOralDoseMigration();
 
   const isOnboarding = location === "/onboarding";
 

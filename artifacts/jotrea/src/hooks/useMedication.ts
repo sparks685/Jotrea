@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { medications } from "@/data/medications";
 import type { MedicationData, DoseEntry, UserData, WeightEntry } from "@/types";
 
 interface DailyCheckin {
@@ -32,6 +34,41 @@ export function useWeights() {
 export function useUser() {
   const [user, setUser] = useLocalStorage<UserData>("jotrea_user", DEFAULT_USER);
   return { user, setUser };
+}
+
+/**
+ * One-time migration: for oral/pill medications, any dose stored with a
+ * non-"oral" site (e.g. "Abdomen" logged before the oral-guard fix) is
+ * corrected to "oral". Runs once on mount and is idempotent.
+ */
+/**
+ * One-time migration: for oral/pill medications, any dose stored with a
+ * non-"oral" site (e.g. "Abdomen" logged before the oral-guard fix) is
+ * corrected to "oral". Re-runs whenever the active medication changes so
+ * switching injection → oral during a session is also handled. Idempotent.
+ */
+export function useOralDoseMigration() {
+  const { medication } = useMedication();
+  const { setDoses } = useDoses();
+  const medicationId = medication?.id ?? null;
+  const injectionSite = medication?.injectionSite;
+
+  useEffect(() => {
+    if (!medicationId) return;
+    const medInfo = medications.find((m) => m.id === medicationId);
+    // Same guard used in Dashboard/DoseLog when writing the site field
+    const isOral =
+      medInfo?.formulation !== "injection" && injectionSite === undefined;
+    if (!isOral) return;
+    // Use functional update to avoid capturing a stale doses snapshot
+    setDoses((prev) => {
+      const hasDirty = prev.some((d) => d.site && d.site !== "oral");
+      if (!hasDirty) return prev; // idempotent: no change if already clean
+      return prev.map((d) =>
+        d.site && d.site !== "oral" ? { ...d, site: "oral" } : d
+      );
+    });
+  }, [medicationId, injectionSite]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useDailyCheckin() {
