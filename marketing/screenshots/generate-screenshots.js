@@ -351,6 +351,17 @@ const ALL_JOBS = [
   { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',                out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
   { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',            out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
   { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
+  // ── iPad 11" set at 1668×2388 (for App Store 11" Display slot) ─────────────
+  { id: 'ip11s1',  device: 'ipad11', html: 'ipad-s1-onboarding.html',             out: 'Jotrea-iPad11-S1.png',      w: 1668, h: 2388 },
+  { id: 'ip11s2',  device: 'ipad11', html: 'ipad-s2-goal-weight.html',            out: 'Jotrea-iPad11-S2.png',      w: 1668, h: 2388 },
+  { id: 'ip11s3',  device: 'ipad11', html: 'ipad-s3-dashboard.html',              out: 'Jotrea-iPad11-S3.png',      w: 1668, h: 2388 },
+  { id: 'ip11s4',  device: 'ipad11', html: 'ipad-s4-weight-tracker.html',         out: 'Jotrea-iPad11-S4.png',      w: 1668, h: 2388 },
+  { id: 'ip11a1',  device: 'ipad11', html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad11-App-S1.png',  w: 1668, h: 2388 },
+  { id: 'ip11a2',  device: 'ipad11', html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad11-App-S2.png',  w: 1668, h: 2388 },
+  { id: 'ip11a3',  device: 'ipad11', html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad11-App-S3.png',  w: 1668, h: 2388 },
+  { id: 'ip11a4',  device: 'ipad11', html: 'ipad-app-s4-med-info.html',           out: 'Jotrea-iPad11-App-S4.png',  w: 1668, h: 2388 },
+  { id: 'ip11a5',  device: 'ipad11', html: 'ipad-app-s5-side-effects.html',       out: 'Jotrea-iPad11-App-S5.png',  w: 1668, h: 2388 },
+  { id: 'ip11a6',  device: 'ipad11', html: 'ipad-app-s6-personalized-plan.html',  out: 'Jotrea-iPad11-App-S6.png',  w: 1668, h: 2388 },
   // ── iPhone 6.5" set at 1284×2778 (for App Store 6.5" Display slot) ────────
   { id: 'b1', device: 'iphone65', html: 's1-onboarding.html',                out: 'Jotrea-65-S1.png',       w: 1284, h: 2778 },
   { id: 'b2', device: 'iphone65', html: 's2-goal-weight.html',               out: 'Jotrea-65-S2.png',       w: 1284, h: 2778 },
@@ -417,6 +428,11 @@ function selectJobs(args) {
 
   if (iphone65) {
     return ALL_JOBS.filter(job => job.device === 'iphone65');
+  }
+
+  const ipad11 = args.includes('--ipad11');
+  if (ipad11) {
+    return ALL_JOBS.filter(job => job.device === 'ipad11');
   }
 
   if (marketing) {

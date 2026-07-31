@@ -180,3 +180,63 @@ id = "RuSXEUCqaHA6PKvhf0E0z"
 uri = "file://marketing/screenshots/Jotrea-65-App-S6.png"
 type = "image"
 title = "6.5\" App S6 – Personalised Plan"
+
+[[outputs]]
+id = "N1Jq_VLm-eMUKm6RBGhAx"
+uri = "file://marketing/screenshots/Jotrea-iPad11-S1.png"
+type = "image"
+title = "iPad 11\" S1 – Onboarding"
+
+[[outputs]]
+id = "m-Gd_ErgKkd7yL2tNmf4K"
+uri = "file://marketing/screenshots/Jotrea-iPad11-S2.png"
+type = "image"
+title = "iPad 11\" S2 – Goal Weight"
+
+[[outputs]]
+id = "6mW57_l4nr1OyHkFNsTJs"
+uri = "file://marketing/screenshots/Jotrea-iPad11-S3.png"
+type = "image"
+title = "iPad 11\" S3 – Dashboard"
+
+[[outputs]]
+id = "hcBUezjmLYATAYUZ9oIUB"
+uri = "file://marketing/screenshots/Jotrea-iPad11-S4.png"
+type = "image"
+title = "iPad 11\" S4 – Weight Tracker"
+
+[[outputs]]
+id = "Fdz-qigj0TLdgSX3YaiKa"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S1.png"
+type = "image"
+title = "iPad 11\" App S1 – Dashboard Hero"
+
+[[outputs]]
+id = "HbTBdzruy-0reSfXM0lL3"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S2.png"
+type = "image"
+title = "iPad 11\" App S2 – Dose Tracking"
+
+[[outputs]]
+id = "9NUjNqzBch0i6FE4YbL8U"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S3.png"
+type = "image"
+title = "iPad 11\" App S3 – Weight Progress"
+
+[[outputs]]
+id = "B9M_p9Sx-iIbmdQdA7Y0P"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S4.png"
+type = "image"
+title = "iPad 11\" App S4 – Med Info"
+
+[[outputs]]
+id = "-QQGnMKqWZzoMv849Ctup"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S5.png"
+type = "image"
+title = "iPad 11\" App S5 – Side Effects"
+
+[[outputs]]
+id = "LPL7ODdcJ6zDBNNuenHtc"
+uri = "file://marketing/screenshots/Jotrea-iPad11-App-S6.png"
+type = "image"
+title = "iPad 11\" App S6 – Personalised Plan"
