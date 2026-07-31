@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, differenceInWeeks } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target, AlertCircle } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { PageContainer } from "@/components/PageContainer";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -61,6 +61,7 @@ export default function Dashboard() {
   const [logTime, setLogTime] = useState(format(new Date(), "HH:mm"));
   const [logSite, setLogSite] = useState(INJECTION_SITES[0]);
   const [logNotes, setLogNotes] = useState("");
+  const [logDoseAmount, setLogDoseAmount] = useState<number>(0);
 
   const [showWeightForm, setShowWeightForm] = useState(false);
   const [weightValue, setWeightValue] = useState("");
@@ -204,7 +205,7 @@ export default function Dashboard() {
       id: doseId,
       date: logDate,
       time: logTime,
-      doseAmount: medication.dose,
+      doseAmount: logDoseAmount,
       site: finalSite,
       notes: logNotes,
       taken: true,
@@ -255,6 +256,7 @@ export default function Dashboard() {
     setPendingDoseId(null);
     setShowLogForm(false);
     setShowDoseConfirm(false);
+    setLogDoseAmount(medication?.dose ?? 0);
   };
 
   const handleAddWeight = () => {
@@ -317,6 +319,7 @@ export default function Dashboard() {
                   : INJECTION_SITES[0];
                 setLogSite(nextSite);
               }
+              setLogDoseAmount(medication.dose);
               setShowLogForm(true);
             }}
             data-testid="log-dose-btn"
@@ -626,7 +629,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-center">
                         <p className="font-semibold text-foreground">
-                          {medication.dose} {medInfo?.unit ?? "mg"} logged
+                          {logDoseAmount} {medInfo?.unit ?? "mg"} logged
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">{medication.brandName}</p>
                       </div>
@@ -710,6 +713,64 @@ export default function Dashboard() {
                         />
                       </div>
                     </div>
+
+                    {medInfo && medInfo.doses.length > 1 && (() => {
+                      const currentIdx = medInfo.doses.indexOf(medication.dose);
+                      const selectedIdx = medInfo.doses.indexOf(logDoseAmount);
+                      const isAheadOfSchedule = selectedIdx > currentIdx && currentIdx !== -1;
+                      return (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-semibold text-muted-foreground">Dose Amount</label>
+                            <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              Current step: {medication.dose} {medInfo.unit}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2" data-testid="dose-amount-picker">
+                            {medInfo.doses.map((d) => {
+                              const isCurrent = d === medication.dose;
+                              const isSelected = d === logDoseAmount;
+                              return (
+                                <button
+                                  key={d}
+                                  data-testid={`dose-amount-${d}`}
+                                  className={`relative rounded-2xl py-3 text-sm font-bold border-2 transition-all ${
+                                    isSelected
+                                      ? "border-secondary bg-secondary/10 text-secondary"
+                                      : "border-border bg-background text-foreground"
+                                  }`}
+                                  onClick={() => setLogDoseAmount(d)}
+                                >
+                                  {d} {medInfo.unit}
+                                  {isCurrent && (
+                                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-black bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wide whitespace-nowrap">
+                                      My step
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <AnimatePresence>
+                            {isAheadOfSchedule && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.2 }}
+                                className="flex items-start gap-2 rounded-2xl p-3 bg-amber-50 border border-amber-200"
+                                data-testid="escalation-skip-warning"
+                              >
+                                <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-amber-800 leading-relaxed">
+                                  {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
+                                </p>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })()}
 
                     {(medInfo?.formulation === "injection" || medication.injectionSite !== undefined) && (
                       <div className="space-y-1.5">
