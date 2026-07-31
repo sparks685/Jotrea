@@ -98,14 +98,17 @@ describe("isOralMedication — custom injection medication", () => {
     ).toBe(false);
   });
 
-  it("returns false when medication.injectionSite is set regardless of medInfo formulation", () => {
-    // injectionSite wins — the stored override signals an injection medication
+  it("returns true when catalogue medInfo formulation is 'pill', even if injectionSite is set (catalogue formulation is authoritative)", () => {
+    // When the catalogue entry carries an explicit formulation, that field
+    // is the authoritative signal. A "pill" catalogue entry is always oral
+    // regardless of whether injectionSite is somehow present. This guards
+    // against a stale injectionSite value after a formulation switch.
     expect(
       isOralMedication(
         { injectionSite: "Thigh" },
-        PILL_MED_INFO, // edge case: pill medInfo but user overrode with injectionSite
+        PILL_MED_INFO,
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("returns false for all four standard injection-site values", () => {
@@ -175,12 +178,16 @@ describe("isOralMedication — unexpected formulation values", () => {
     ).toBe(true);
   });
 
-  it("returns false for an unknown formulation string when injectionSite IS set", () => {
+  it("returns true for an unknown formulation string when injectionSite IS set (catalogue formulation is authoritative)", () => {
+    // When medInfo carries an explicit formulation, that value is the sole
+    // decider. Any formulation other than "injection" → oral, even if
+    // injectionSite is present. This prevents a stale injectionSite from
+    // causing misclassification after a formulation switch (e.g. to "other").
     expect(
       isOralMedication(
         { injectionSite: "Abdomen" },
         { formulation: "patch" },
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

@@ -640,7 +640,7 @@ function DoseCard({
           </p>
           <p className="text-xs text-muted-foreground truncate">
             {format(parseISO(dose.date), "MMM d")} · {dose.time}
-            {dose.site && dose.site !== "oral" ? ` · ${dose.site}` : ""}
+            {dose.site && dose.site !== "oral" && INJECTION_SITES.includes(dose.site) ? ` · ${dose.site}` : ""}
           </p>
           {dose.notes && (
             <p className="text-xs text-muted-foreground italic truncate mt-0.5">{dose.notes}</p>

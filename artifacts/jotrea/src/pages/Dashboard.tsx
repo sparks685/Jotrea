@@ -377,7 +377,7 @@ export default function Dashboard() {
         <StatCard
           label="Last Dose"
           value={lastDose ? format(parseISO(lastDose.date), "MMM d") : "—"}
-          sub={lastDose ? (lastDose.site && lastDose.site !== "oral" ? lastDose.site : lastDose.time) : "No doses yet"}
+          sub={lastDose ? (lastDose.site && lastDose.site !== "oral" && INJECTION_SITES.includes(lastDose.site) ? lastDose.site : lastDose.time) : "No doses yet"}
         />
         <StatCard
           label="Current Dose"
