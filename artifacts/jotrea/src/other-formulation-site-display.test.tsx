@@ -93,8 +93,24 @@ vi.mock("@/utils/featureGates", () => ({
   downloadCSV: vi.fn(),
 }));
 
+vi.mock("recharts", () => ({
+  ResponsiveContainer: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
+  LineChart: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+  Line: () => null,
+  Tooltip: () => null,
+  XAxis: () => null,
+  YAxis: () => null,
+}));
+
+vi.mock("@/components/CountdownRing", () => ({
+  CountdownRing: () => <div data-testid="countdown-ring" />,
+}));
+
 import { fireEvent } from "@testing-library/react";
 import DoseLog from "@/pages/DoseLog";
+import Dashboard from "@/pages/Dashboard";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -314,5 +330,95 @@ describe("DoseLog dose history — unrecognised site strings are not rendered", 
     expect(KNOWN_SITES).toContain("Thigh");
     expect(KNOWN_SITES).toContain("Upper Arm");
     expect(KNOWN_SITES).toContain("Buttocks");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3. Dashboard StatCard "Last Dose" — site display guard after med switch
+// ---------------------------------------------------------------------------
+
+describe("Dashboard Last Dose StatCard — site display guard", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem(
+      "jotrea_user",
+      JSON.stringify({ name: "Test", units: "lbs", subscription: "free" }),
+    );
+  });
+
+  it("shows dose time (not site) in the Last Dose sub-text for an oral medication even when the dose carries a known site value", () => {
+    // Rybelsus is a pill (formulation: "pill") — oral medication
+    localStorage.setItem(
+      "jotrea_medication",
+      JSON.stringify({
+        id: "semaglutide-rybelsus",
+        genericName: "Semaglutide",
+        brandName: "Rybelsus",
+        dose: 7,
+        frequency: "daily",
+        startDate: "2024-01-01",
+        active: true,
+      }),
+    );
+    // Dose has a known injection site — this simulates a stale value left
+    // from before the user switched to an oral formulation.
+    localStorage.setItem(
+      "jotrea_doses",
+      JSON.stringify([
+        {
+          id: "d-oral-stale",
+          date: "2024-03-01",
+          time: "09:30",
+          doseAmount: 7,
+          site: "Abdomen",
+          notes: "",
+          taken: true,
+        },
+      ]),
+    );
+
+    render(<Dashboard />);
+
+    const card = screen.getByTestId("last-dose-stat");
+    // The site guard (INJECTION_SITES.includes guard) must suppress the site
+    // label because the dose's medication is oral. The time must be shown.
+    expect(card.textContent).toContain("09:30");
+    expect(card.textContent).not.toContain("Abdomen");
+  });
+
+  it("shows the injection site in the Last Dose sub-text for a genuine injection medication", () => {
+    // Ozempic is formulation: "injection" — a real injection medication
+    localStorage.setItem(
+      "jotrea_medication",
+      JSON.stringify({
+        id: "semaglutide-ozempic",
+        genericName: "Semaglutide",
+        brandName: "Ozempic",
+        dose: 0.5,
+        frequency: "weekly",
+        startDate: "2024-01-01",
+        active: true,
+      }),
+    );
+    localStorage.setItem(
+      "jotrea_doses",
+      JSON.stringify([
+        {
+          id: "d-injection",
+          date: "2024-03-01",
+          time: "10:00",
+          doseAmount: 0.5,
+          site: "Abdomen",
+          notes: "",
+          taken: true,
+        },
+      ]),
+    );
+
+    render(<Dashboard />);
+
+    const card = screen.getByTestId("last-dose-stat");
+    // For an injection medication the known site IS shown in the sub-text
+    expect(card.textContent).toContain("Abdomen");
   });
 });

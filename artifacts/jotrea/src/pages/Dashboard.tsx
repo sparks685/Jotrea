@@ -377,7 +377,8 @@ export default function Dashboard() {
         <StatCard
           label="Last Dose"
           value={lastDose ? format(parseISO(lastDose.date), "MMM d") : "—"}
-          sub={lastDose ? (lastDose.site && lastDose.site !== "oral" && INJECTION_SITES.includes(lastDose.site) ? lastDose.site : lastDose.time) : "No doses yet"}
+          sub={lastDose ? (lastDose.site && lastDose.site !== "oral" && INJECTION_SITES.includes(lastDose.site) && !isOralMedication(medication, medInfo) ? lastDose.site : lastDose.time) : "No doses yet"}
+          data-testid="last-dose-stat"
         />
         <StatCard
           label="Current Dose"
@@ -928,14 +929,19 @@ function StatCard({
   value,
   sub,
   icon,
+  "data-testid": dataTestId,
 }: {
   label: string;
   value: string;
   sub: string;
   icon?: React.ReactNode;
+  "data-testid"?: string;
 }) {
   return (
-    <div className="bg-card rounded-2xl p-3.5 shadow-sm border border-border text-center space-y-0.5">
+    <div
+      className="bg-card rounded-2xl p-3.5 shadow-sm border border-border text-center space-y-0.5"
+      data-testid={dataTestId}
+    >
       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
       <div className="flex items-center justify-center gap-1">
         {icon}
