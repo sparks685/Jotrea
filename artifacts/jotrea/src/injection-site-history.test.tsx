@@ -211,6 +211,53 @@ describe("injection site fallback to Abdomen", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Helpers used by custom-formulation tests below
+// ---------------------------------------------------------------------------
+
+const DOSES_KEY = "jotrea_doses";
+
+/** Seeds a custom-injection medication (medication.id === "custom", injectionSite set). */
+function seedCustomInjectionMed() {
+  localStorage.setItem(
+    MEDICATION_KEY,
+    JSON.stringify({
+      id: "custom",
+      genericName: "Custom Drug",
+      brandName: "My Custom Injection",
+      dose: 1,
+      frequency: "weekly",
+      startDate: "2024-01-01",
+      active: true,
+      injectionSite: "Abdomen", // presence signals injection formulation
+    }),
+  );
+}
+
+/** Seeds a custom-oral medication (medication.id === "custom", no injectionSite). */
+function seedCustomOralMed() {
+  localStorage.setItem(
+    MEDICATION_KEY,
+    JSON.stringify({
+      id: "custom",
+      genericName: "Custom Drug",
+      brandName: "My Custom Oral",
+      dose: 1,
+      frequency: "weekly",
+      startDate: "2024-01-01",
+      active: true,
+      // no injectionSite → treated as oral
+    }),
+  );
+}
+
+/** Returns the stored dose array from localStorage. */
+function getStoredDoses(): Array<{ site?: string; [key: string]: unknown }> {
+  const raw = localStorage.getItem(DOSES_KEY);
+  if (!raw) return [];
+  return JSON.parse(raw) as Array<{ site?: string; [key: string]: unknown }>;
+}
+
+// ---------------------------------------------------------------------------
 // 3. Write-back: site is appended to injectionSiteHistory after confirming
 // ---------------------------------------------------------------------------
 
@@ -267,5 +314,111 @@ describe("injection site write-back after dose log", () => {
     const history = getStoredHistory();
     // New entry appended; it should match the rotation-suggested (pre-filled) site
     expect(history[history.length - 1].site).toBe("Abdomen");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. Custom injection medication — Dashboard site picker and history write-back
+// ---------------------------------------------------------------------------
+
+describe("custom injection medication — Dashboard", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    seedCustomInjectionMed();
+    seedUser([]);
+  });
+
+  it("shows the injection site picker in the log form", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+
+    // All four site buttons must be present
+    expect(screen.queryByTestId("log-site-abdomen")).not.toBeNull();
+    expect(screen.queryByTestId("log-site-thigh")).not.toBeNull();
+    expect(screen.queryByTestId("log-site-upper-arm")).not.toBeNull();
+    expect(screen.queryByTestId("log-site-buttocks")).not.toBeNull();
+  });
+
+  it("appends a site entry to injectionSiteHistory after logging", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    // Abdomen is pre-filled (empty history fallback); submit without changing
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const history = getStoredHistory();
+    expect(history.length).toBeGreaterThanOrEqual(1);
+    expect(history[history.length - 1].site).toBe("Abdomen");
+  });
+
+  it("saves a non-oral site to the dose entry", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("log-site-thigh")); // switch to Thigh
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const doses = getStoredDoses();
+    expect(doses.length).toBeGreaterThanOrEqual(1);
+    expect(doses[doses.length - 1].site).toBe("Thigh");
+  });
+
+  it("suggests the next rotation site from history when opening log form", () => {
+    // Seed history with Abdomen as last site → next should be Thigh
+    seedUser([{ site: "Abdomen", date: "Jul 1" }]);
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+
+    // Thigh (index 1) should be active; Abdomen should not
+    expect(isSiteActive("log-site-thigh")).toBe(true);
+    expect(isSiteActive("log-site-abdomen")).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. Custom oral medication — Dashboard site picker and history behaviour
+// ---------------------------------------------------------------------------
+
+describe("custom oral medication — Dashboard", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    seedCustomOralMed();
+    seedUser([]);
+  });
+
+  it("hides the injection site picker in the log form", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+
+    // No site buttons should appear
+    expect(screen.queryByTestId("log-site-abdomen")).toBeNull();
+    expect(screen.queryByTestId("log-site-thigh")).toBeNull();
+    expect(screen.queryByTestId("log-site-upper-arm")).toBeNull();
+    expect(screen.queryByTestId("log-site-buttocks")).toBeNull();
+  });
+
+  it("saves 'oral' as the site in the dose entry", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    const doses = getStoredDoses();
+    expect(doses.length).toBeGreaterThanOrEqual(1);
+    expect(doses[doses.length - 1].site).toBe("oral");
+  });
+
+  it("does NOT write a site entry to injectionSiteHistory", () => {
+    render(<Dashboard />);
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+
+    // History should remain empty — no injection sites should be recorded
+    const history = getStoredHistory();
+    expect(history).toHaveLength(0);
   });
 });
