@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
 import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
+import { isOralMedication } from "@/utils/medicationUtils";
 import { PageContainer } from "@/components/PageContainer";
 import { SideEffectTrendsChart } from "@/components/SideEffectTrendsChart";
 import type { DoseEntry } from "@/types";
@@ -80,7 +81,7 @@ export default function DoseLog() {
       time: logTime,
       doseAmount: logDoseAmount,
       // Include site for injection formulations; custom injection meds have injectionSite set
-      site: (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) ? logSite : "oral",
+      site: isOralMedication(medication, medInfo) ? "oral" : logSite,
       notes: logNotes,
       taken: true,
       sideEffects: logSideEffects.length > 0 ? logSideEffects : undefined,

@@ -25,6 +25,7 @@ import {
 import { trackEvent } from "@/lib/analytics";
 import { cancelNotificationTag, rescheduleAllNotifications } from "@/utils/notifications";
 import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
+import { isOralMedication } from "@/utils/medicationUtils";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -199,7 +200,7 @@ export default function Dashboard() {
 
   const handleLogDose = () => {
     // Guard: only use injection site for actual injection formulations (including custom injection)
-    const finalSite = (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) ? logSite : "oral";
+    const finalSite = isOralMedication(medication, medInfo) ? "oral" : logSite;
     const doseId = Date.now().toString();
     const newDose: DoseEntry = {
       id: doseId,
@@ -310,7 +311,7 @@ export default function Dashboard() {
             className={`w-full h-14 rounded-2xl text-base font-semibold shadow-lg${isDueToday ? " dose-pulse" : ""}`}
             onClick={() => {
               // Only compute injection-site rotation for actual injection formulations
-              if (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) {
+              if (!isOralMedication(medication, medInfo)) {
                 const history = user?.injectionSiteHistory;
                 const lastSite = history && history.length > 0 ? history[history.length - 1].site : null;
                 const lastIdx = lastSite ? INJECTION_SITES.indexOf(lastSite) : -1;

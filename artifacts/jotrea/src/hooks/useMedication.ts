@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { medications } from "@/data/medications";
+import { isOralMedication } from "@/utils/medicationUtils";
 import type { MedicationData, DoseEntry, UserData, WeightEntry } from "@/types";
 
 interface DailyCheckin {
@@ -59,9 +60,8 @@ export function useOralDoseMigration() {
   useEffect(() => {
     if (!medicationId) return;
     const medInfo = medications.find((m) => m.id === medicationId);
-    // Same guard used in Dashboard/DoseLog when writing the site field
-    const isOral =
-      medInfo?.formulation !== "injection" && injectionSite === undefined;
+    // Shared guard — same logic used in Dashboard/DoseLog when writing the site field
+    const isOral = isOralMedication({ injectionSite }, medInfo);
     if (!isOral) return;
     // Peek at the current doses via localStorage to avoid a stale state
     // snapshot and to skip the write entirely when nothing needs migrating.
