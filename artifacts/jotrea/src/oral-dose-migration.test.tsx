@@ -228,3 +228,111 @@ describe("useOralDoseMigration — injection medication is not migrated", () => 
     expect(doses[1].site).toBe("Thigh");
   });
 });
+
+// ---------------------------------------------------------------------------
+// 5. Oral → Injection migration (custom med with injectionSite)
+// ---------------------------------------------------------------------------
+
+const CUSTOM_INJECTION_MED = {
+  id: "custom",
+  genericName: "TestMed",
+  brandName: "TestMed",
+  dose: 2.5,
+  frequency: "weekly",
+  startDate: "2024-06-01",
+  injectionSite: "Thigh",
+  active: true,
+};
+
+describe("useOralDoseMigration — oral → injection migration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("updates 'oral' site values to the medication's injectionSite for current-period doses", () => {
+    seedMedication(CUSTOM_INJECTION_MED);
+    seedDoses([
+      { id: "1", date: "2024-06-05", time: "08:00", doseAmount: 2.5, site: "oral", notes: "", taken: true },
+      { id: "2", date: "2024-06-12", time: "08:00", doseAmount: 2.5, site: "oral", notes: "", taken: true },
+    ]);
+
+    render(<MigrationHarness />);
+
+    const doses = readDoses();
+    expect(doses[0].site).toBe("Thigh");
+    expect(doses[1].site).toBe("Thigh");
+  });
+
+  it("is idempotent — does not rewrite doses already set to the injectionSite", () => {
+    seedMedication(CUSTOM_INJECTION_MED);
+    seedDoses([
+      { id: "1", date: "2024-06-05", time: "08:00", doseAmount: 2.5, site: "Thigh", notes: "", taken: true },
+    ]);
+
+    const { unmount } = render(<MigrationHarness />);
+    unmount();
+
+    const afterFirst = readDoses();
+    expect(afterFirst[0].site).toBe("Thigh");
+
+    render(<MigrationHarness />);
+    const afterSecond = readDoses();
+    expect(afterSecond).toEqual(afterFirst);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. Start-date period boundary — pre-startDate doses are never touched
+// ---------------------------------------------------------------------------
+
+describe("useOralDoseMigration — period boundary (startDate scoping)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("does NOT migrate injection-site doses logged before medication.startDate when switching to oral", () => {
+    const oralMedLaterStart = {
+      ...ORAL_MED,
+      startDate: "2024-06-01",
+    };
+    seedMedication(oralMedLaterStart);
+    seedDoses([
+      // Before startDate — must stay untouched (belongs to a prior medication period)
+      { id: "1", date: "2024-05-01", time: "08:00", doseAmount: 0.5, site: "Abdomen", notes: "", taken: true },
+      // On/after startDate — must be corrected to "oral"
+      { id: "2", date: "2024-06-01", time: "08:00", doseAmount: 7,   site: "Thigh",   notes: "", taken: true },
+      { id: "3", date: "2024-06-08", time: "08:00", doseAmount: 7,   site: "Upper Arm", notes: "", taken: true },
+    ]);
+
+    render(<MigrationHarness />);
+
+    const doses = readDoses();
+    // Pre-period dose unchanged
+    expect(doses[0].site).toBe("Abdomen");
+    // Current-period doses migrated
+    expect(doses[1].site).toBe("oral");
+    expect(doses[2].site).toBe("oral");
+  });
+
+  it("does NOT migrate 'oral' doses logged before medication.startDate when switching to injection", () => {
+    const injectionMedLaterStart = {
+      ...CUSTOM_INJECTION_MED,
+      startDate: "2024-06-01",
+    };
+    seedMedication(injectionMedLaterStart);
+    seedDoses([
+      // Before startDate — must stay "oral" (prior oral medication period)
+      { id: "1", date: "2024-05-15", time: "08:00", doseAmount: 7, site: "oral", notes: "", taken: true },
+      // On/after startDate — must be updated to injectionSite
+      { id: "2", date: "2024-06-02", time: "08:00", doseAmount: 2.5, site: "oral", notes: "", taken: true },
+    ]);
+
+    render(<MigrationHarness />);
+
+    const doses = readDoses();
+    // Pre-period dose untouched
+    expect(doses[0].site).toBe("oral");
+    // Current-period dose migrated
+    expect(doses[1].site).toBe("Thigh");
+  });
+});

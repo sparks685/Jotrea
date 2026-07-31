@@ -421,3 +421,87 @@ describe("ChangeMedicationSheet – history inconsistency note", () => {
     expect(note).toHaveTextContent("5 past doses");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Formulation-change warning note
+// ---------------------------------------------------------------------------
+
+describe("ChangeMedicationSheet – formulation change note", () => {
+  // Ozempic: catalog-backed injection med — no injectionSite stored on the record.
+  // This exercises the catalog-aware isOralMedication path: the check must not
+  // rely solely on injectionSite !== undefined.
+  const injectionMedNoSite: MedicationData = {
+    id: "semaglutide-ozempic",
+    genericName: "Semaglutide",
+    brandName: "Ozempic",
+    dose: 0.5,
+    frequency: "weekly",
+    startDate: "2024-01-01",
+    active: true,
+    // injectionSite intentionally absent — catalog carries formulation:"injection"
+  };
+
+  const oralMed: MedicationData = {
+    id: "semaglutide-rybelsus",
+    genericName: "Semaglutide",
+    brandName: "Rybelsus",
+    dose: 7,
+    frequency: "daily",
+    startDate: "2024-01-01",
+    active: true,
+  };
+
+  it("shows the formulation-change note when switching from a catalog injection med (no injectionSite) to an oral med", () => {
+    renderSheet({ currentMedication: injectionMedNoSite, pastDoseCount: 3 });
+    // Rybelsus is a pill — navigating to its dose view should trigger the warning
+    fireEvent.click(screen.getByText("Rybelsus"));
+    fireEvent.click(screen.getByText("3 mg"));
+    expect(screen.getByTestId("formulation-change-note")).toBeInTheDocument();
+  });
+
+  it("shows the formulation-change note when switching from an oral med to an injection med", () => {
+    renderSheet({ currentMedication: oralMed, pastDoseCount: 3 });
+    fireEvent.click(screen.getByText("Ozempic"));
+    fireEvent.click(screen.getByText("0.5 mg"));
+    expect(screen.getByTestId("formulation-change-note")).toBeInTheDocument();
+  });
+
+  it("does NOT show the formulation-change note when formulation stays injection→injection", () => {
+    renderSheet({ currentMedication: injectionMedNoSite, pastDoseCount: 3 });
+    // Switching to a different injection med (Mounjaro is also an injection)
+    fireEvent.click(screen.getByText("Mounjaro"));
+    const doseButtons = screen.getAllByRole("button");
+    // Click the first available dose button after navigating to dose view
+    const firstDoseBtn = doseButtons.find(
+      (b) => b.getAttribute("data-testid") !== "confirm-med-change-btn" &&
+             /^\d/.test(b.textContent ?? ""),
+    );
+    if (firstDoseBtn) fireEvent.click(firstDoseBtn);
+    expect(screen.queryByTestId("formulation-change-note")).not.toBeInTheDocument();
+  });
+
+  it("does NOT show the formulation-change note when pastDoseCount is 0", () => {
+    renderSheet({ currentMedication: injectionMedNoSite, pastDoseCount: 0 });
+    fireEvent.click(screen.getByText("Rybelsus"));
+    fireEvent.click(screen.getByText("3 mg"));
+    expect(screen.queryByTestId("formulation-change-note")).not.toBeInTheDocument();
+  });
+
+  it("formulation-change note text mentions 'injection site' when going injection → oral", () => {
+    renderSheet({ currentMedication: injectionMedNoSite, pastDoseCount: 2 });
+    fireEvent.click(screen.getByText("Rybelsus"));
+    fireEvent.click(screen.getByText("3 mg"));
+    const note = screen.getByTestId("formulation-change-note");
+    expect(note).toHaveTextContent(/injection site/i);
+    expect(note).toHaveTextContent(/earlier history is unchanged/i);
+  });
+
+  it("formulation-change note text mentions 'injection site' when going oral → injection", () => {
+    renderSheet({ currentMedication: oralMed, pastDoseCount: 2 });
+    fireEvent.click(screen.getByText("Ozempic"));
+    fireEvent.click(screen.getByText("0.5 mg"));
+    const note = screen.getByTestId("formulation-change-note");
+    expect(note).toHaveTextContent(/injection site/i);
+    expect(note).toHaveTextContent(/earlier history is unchanged/i);
+  });
+});

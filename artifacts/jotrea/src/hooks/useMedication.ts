@@ -41,28 +41,33 @@ export function useUser() {
 }
 
 /**
- * One-time migration: for oral/pill medications, any dose stored with a
- * non-"oral" site (e.g. "Abdomen" logged before the oral-guard fix) is
- * corrected to "oral". Runs once on mount and is idempotent.
- */
-/**
- * One-time migration: for oral/pill medications, any dose stored with a
- * non-"oral" site (e.g. "Abdomen" logged before the oral-guard fix) is
- * corrected to "oral". Re-runs whenever the active medication changes so
- * switching injection → oral during a session is also handled. Idempotent.
+ * Bidirectional dose-site migration scoped to the CURRENT medication period.
+ *
+ * Only doses whose `date` falls on or after `medication.startDate` are touched;
+ * doses from earlier medication periods are left exactly as recorded, preserving
+ * historical accuracy when a user has previously switched between medications.
+ *
+ * - Injection → Oral: doses in the current period whose site is anything other
+ *   than "oral" are corrected to "oral".
+ * - Oral → Injection: doses in the current period whose site is "oral" are
+ *   updated to the medication's new `injectionSite` value.
+ *
+ * Re-runs whenever the active medication id, injectionSite, or startDate
+ * changes. Idempotent — no write is issued when nothing needs migrating.
  */
 export function useOralDoseMigration() {
   const { medication } = useMedication();
   const { setDoses } = useDoses();
   const medicationId = medication?.id ?? null;
   const injectionSite = medication?.injectionSite;
+  const startDate = medication?.startDate ?? null;
 
   useEffect(() => {
-    if (!medicationId) return;
+    if (!medicationId || !startDate) return;
     const medInfo = medications.find((m) => m.id === medicationId);
     // Shared guard — same logic used in Dashboard/DoseLog when writing the site field
     const isOral = isOralMedication({ injectionSite }, medInfo);
-    if (!isOral) return;
+
     // Peek at the current doses via localStorage to avoid a stale state
     // snapshot and to skip the write entirely when nothing needs migrating.
     // Guard defensively: malformed JSON or a non-array value must not crash
@@ -75,16 +80,38 @@ export function useOralDoseMigration() {
     } catch {
       // Malformed JSON — fall back to empty; no migration needed
     }
-    const hasDirty = current.some((d) => d.site && d.site !== "oral");
-    if (!hasDirty) return; // idempotent: no write when already clean
-    // Only call setDoses (which triggers a localStorage write) when there are
-    // dirty entries to correct.
-    setDoses((prev) =>
-      prev.map((d) =>
-        d.site && d.site !== "oral" ? { ...d, site: "oral" } : d
-      )
-    );
-  }, [medicationId, injectionSite]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Only consider doses that belong to the current medication period.
+    // Doses before startDate were logged under a different medication/formulation
+    // and must not be rewritten.
+    const inCurrentPeriod = (d: DoseEntry) => d.date >= startDate;
+
+    if (isOral) {
+      // Injection → Oral: correct non-"oral" site values to "oral" for the
+      // current period only.
+      const hasDirty = current.some((d) => inCurrentPeriod(d) && d.site && d.site !== "oral");
+      if (!hasDirty) return; // idempotent: no write when already clean
+      setDoses((prev) =>
+        prev.map((d) =>
+          inCurrentPeriod(d) && d.site && d.site !== "oral"
+            ? { ...d, site: "oral" }
+            : d
+        )
+      );
+    } else if (injectionSite) {
+      // Oral → Injection: correct "oral" site values to the new injection site
+      // for the current period only.
+      const hasDirty = current.some((d) => inCurrentPeriod(d) && d.site === "oral");
+      if (!hasDirty) return; // idempotent: no write when already clean
+      setDoses((prev) =>
+        prev.map((d) =>
+          inCurrentPeriod(d) && d.site === "oral"
+            ? { ...d, site: injectionSite }
+            : d
+        )
+      );
+    }
+  }, [medicationId, injectionSite, startDate]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useDailyCheckin() {

@@ -11,6 +11,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { medications } from "@/data/medications";
+import { isOralMedication } from "@/utils/medicationUtils";
 import { format } from "date-fns";
 import { trackEvent } from "@/lib/analytics";
 import type { MedicationData } from "@/types";
@@ -170,6 +171,35 @@ export function ChangeMedicationSheet({
     const oldLabel = `${currentMedication.dose} mg ${currentMedication.brandName}`;
     const doseWord = pastDoseCount === 1 ? "dose" : "doses";
     return `Your ${pastDoseCount} past ${doseWord} will still show as ${oldLabel}. History is never deleted when you switch.`;
+  })();
+
+  // Warn when the user is switching between injection and oral formulations
+  // so they know existing dose site records will be migrated automatically.
+  // Use the same catalog-aware isOralMedication guard that the migration hook
+  // uses — checking only injectionSite would miss catalog-backed injectables
+  // whose stored MedicationData has no injectionSite saved.
+  const currentMedInfo = currentMedication
+    ? medications.find((m) => m.id === currentMedication.id) ?? null
+    : null;
+  const currentIsOral = currentMedication
+    ? isOralMedication(currentMedication, currentMedInfo)
+    : true;
+
+  const formulationWillChange = (() => {
+    if (!currentMedication || pastDoseCount === 0) return false;
+    const newIsOral = !showInjectionSite;
+    return currentIsOral !== newIsOral;
+  })();
+
+  const formulationChangeText = (() => {
+    if (!formulationWillChange) return "";
+    if (!currentIsOral) {
+      // injection → oral
+      return `Doses logged since you started this medication will have their injection site updated to "oral" to match the new formulation. Earlier history is unchanged.`;
+    } else {
+      // oral → injection
+      return `Doses logged since you started this medication will have their site updated to your selected injection site. Earlier history is unchanged.`;
+    }
   })();
 
   return (
@@ -645,6 +675,31 @@ export function ChangeMedicationSheet({
               {/* Confirm button */}
               <div className="px-4 pb-6 pt-2 flex-shrink-0 space-y-3">
                 <AnimatePresence>
+                  {formulationWillChange && (
+                    <motion.div
+                      key="formulation-change-note"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-start gap-2.5 rounded-2xl px-4 py-3"
+                      style={{ backgroundColor: "#3b82f618" }}
+                      data-testid="formulation-change-note"
+                    >
+                      <span
+                        className="text-base leading-none mt-0.5 flex-shrink-0"
+                        aria-hidden="true"
+                      >
+                        🔄
+                      </span>
+                      <p
+                        className="text-xs font-medium leading-relaxed"
+                        style={{ color: "#3b82f6" }}
+                      >
+                        {formulationChangeText}
+                      </p>
+                    </motion.div>
+                  )}
                   {historyWillLookInconsistent && (
                     <motion.div
                       key="history-note"
