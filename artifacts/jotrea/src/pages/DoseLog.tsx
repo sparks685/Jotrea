@@ -79,7 +79,8 @@ export default function DoseLog() {
       date: selectedDate,
       time: logTime,
       doseAmount: logDoseAmount,
-      site: medInfo?.formulation === "injection" ? logSite : "oral",
+      // Include site for injection formulations; custom injection meds have injectionSite set
+      site: (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) ? logSite : "oral",
       notes: logNotes,
       taken: true,
       sideEffects: logSideEffects.length > 0 ? logSideEffects : undefined,

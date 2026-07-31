@@ -197,7 +197,8 @@ export default function Dashboard() {
   }
 
   const handleLogDose = () => {
-    const finalSite = medication.id.includes("rybelsus") ? "oral" : logSite;
+    // Guard: only use injection site for actual injection formulations (including custom injection)
+    const finalSite = (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) ? logSite : "oral";
     const doseId = Date.now().toString();
     const newDose: DoseEntry = {
       id: doseId,
@@ -306,13 +307,16 @@ export default function Dashboard() {
           <Button
             className={`w-full h-14 rounded-2xl text-base font-semibold shadow-lg${isDueToday ? " dose-pulse" : ""}`}
             onClick={() => {
-              const history = user?.injectionSiteHistory;
-              const lastSite = history && history.length > 0 ? history[history.length - 1].site : null;
-              const lastIdx = lastSite ? INJECTION_SITES.indexOf(lastSite) : -1;
-              const nextSite = lastIdx >= 0
-                ? INJECTION_SITES[(lastIdx + 1) % INJECTION_SITES.length]
-                : INJECTION_SITES[0];
-              setLogSite(nextSite);
+              // Only compute injection-site rotation for actual injection formulations
+              if (medInfo?.formulation === "injection" || medication.injectionSite !== undefined) {
+                const history = user?.injectionSiteHistory;
+                const lastSite = history && history.length > 0 ? history[history.length - 1].site : null;
+                const lastIdx = lastSite ? INJECTION_SITES.indexOf(lastSite) : -1;
+                const nextSite = lastIdx >= 0
+                  ? INJECTION_SITES[(lastIdx + 1) % INJECTION_SITES.length]
+                  : INJECTION_SITES[0];
+                setLogSite(nextSite);
+              }
               setShowLogForm(true);
             }}
             data-testid="log-dose-btn"
@@ -369,7 +373,7 @@ export default function Dashboard() {
         <StatCard
           label="Last Dose"
           value={lastDose ? format(parseISO(lastDose.date), "MMM d") : "—"}
-          sub={lastDose ? lastDose.site : "No doses yet"}
+          sub={lastDose ? (lastDose.site && lastDose.site !== "oral" ? lastDose.site : lastDose.time) : "No doses yet"}
         />
         <StatCard
           label="Current Dose"

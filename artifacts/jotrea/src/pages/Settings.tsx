@@ -426,17 +426,19 @@ export default function Settings() {
           </SettingsRow>
         </div>
 
-        <div className="pt-2 pb-1 border-t border-border mt-2 space-y-2">
-          <p className="text-sm font-semibold text-foreground">Injection History</p>
-          {doses.length > 0 ? (
+        {/* Only show injection history when the user has injection doses — hidden for oral-only users */}
+        {doses.some(d => d.site && d.site !== "oral") && (
+          <div className="pt-2 pb-1 border-t border-border mt-2 space-y-2">
+            <p className="text-sm font-semibold text-foreground">Injection History</p>
             <div className="space-y-1.5">
               {[...doses]
+                .filter(d => d.site && d.site !== "oral")
                 .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
                 .slice(0, 5)
                 .map((d) => (
                   <div key={d.id} className="flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
-                      {d.site !== "oral" ? d.site : "Oral"} · {format(parseISO(d.date), "MMM d")}
+                      {d.site} · {format(parseISO(d.date), "MMM d")}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {d.doseAmount} · {d.time}
@@ -444,10 +446,8 @@ export default function Settings() {
                   </div>
                 ))}
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">No injection history yet.</p>
-          )}
-        </div>
+          </div>
+        )}
       </SettingsSection>
 
       {/* Medication */}
