@@ -164,18 +164,39 @@ export function useOralDoseMigration() {
   }, [medicationId, injectionSite, startDate]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
+/**
+ * Structural validation of a stored daily check-in record.
+ *
+ * A malformed `jotrea_daily_checkin` (partial write, tampering, iOS storage
+ * eviction) would otherwise crash the Daily Targets card on the home screen
+ * when `raw.date` is accessed on a non-object value. Rejecting invalid shapes
+ * here makes that crash impossible: callers see the safe default instead.
+ */
+export function isValidDailyCheckin(value: unknown): value is DailyCheckin {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.date === "string" &&
+    v.date.length > 0 &&
+    typeof v.water === "boolean" &&
+    typeof v.protein === "boolean" &&
+    typeof v.steps === "boolean"
+  );
+}
+
 export function useDailyCheckin() {
   const today = new Date().toISOString().slice(0, 10);
-  const [raw, setRaw] = useLocalStorage<DailyCheckin>("jotrea_daily_checkin", {
-    date: today,
-    water: false,
-    protein: false,
-    steps: false,
-  });
+  const defaultCheckin: DailyCheckin = { date: today, water: false, protein: false, steps: false };
+  const [raw, setRaw] = useLocalStorage<DailyCheckin>("jotrea_daily_checkin", defaultCheckin);
+
+  // Defensive read: a structurally invalid record (non-object, partial write,
+  // iOS eviction) falls back to today's default so the Daily Targets card
+  // never crashes on property access.
+  const safeRaw: DailyCheckin = isValidDailyCheckin(raw) ? raw : defaultCheckin;
 
   // Auto-reset when a new day starts
   const checkin: DailyCheckin =
-    raw.date === today ? raw : { date: today, water: false, protein: false, steps: false };
+    safeRaw.date === today ? safeRaw : { date: today, water: false, protein: false, steps: false };
 
   const toggle = (key: "water" | "protein" | "steps") => {
     setRaw({ ...checkin, [key]: !checkin[key] });
