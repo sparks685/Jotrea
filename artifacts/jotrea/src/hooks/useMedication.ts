@@ -17,9 +17,35 @@ const DEFAULT_USER: UserData = {
   subscription: "free",
 };
 
+/**
+ * Structural validation of a stored medication record.
+ *
+ * localStorage can hold a malformed `jotrea_medication` (partial write,
+ * manual tampering, iOS storage eviction). If we hand a broken record to the
+ * UI, Dashboard renders in a crashed/blank state with no way out. Rejecting
+ * invalid shapes here makes that state impossible: callers see `null` and
+ * App.tsx redirects to onboarding, giving the user a clean recovery path.
+ */
+export function isValidMedication(value: unknown): value is MedicationData {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const m = value as Record<string, unknown>;
+  return (
+    typeof m.id === "string" &&
+    m.id.length > 0 &&
+    typeof m.dose === "number" &&
+    Number.isFinite(m.dose) &&
+    typeof m.startDate === "string" &&
+    typeof m.frequency === "string"
+  );
+}
+
 export function useMedication() {
   const [medication, setMedication] = useLocalStorage<MedicationData | null>("jotrea_medication", null);
-  return { medication, setMedication };
+  // Defensive read: a structurally invalid record is treated as "no
+  // medication", which routes the user back to onboarding instead of
+  // trapping them on a broken Dashboard.
+  const safeMedication = medication !== null && isValidMedication(medication) ? medication : null;
+  return { medication: safeMedication, setMedication };
 }
 
 export function useDoses() {
