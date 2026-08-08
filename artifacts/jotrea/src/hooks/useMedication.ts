@@ -58,12 +58,36 @@ export function useDoses() {
 
 export function useWeights() {
   const [weights, setWeights] = useLocalStorage<WeightEntry[]>("jotrea_weights", []);
-  return { weights, setWeights };
+  // Guard: if the stored value is corrupted (not an array), treat as empty so
+  // WeightTracker and the chart can safely call .map(), .sort(), etc.
+  const safeWeights = Array.isArray(weights) ? weights : [];
+  return { weights: safeWeights, setWeights };
+}
+
+/**
+ * Structural validation of a stored user record.
+ *
+ * A malformed `jotrea_user` (partial write, tampering, iOS storage eviction)
+ * would otherwise flow straight into Settings and crash on property access.
+ * Invalid shapes fall back to DEFAULT_USER so the UI always gets a
+ * structurally sound object.
+ */
+export function isValidUser(value: unknown): value is UserData {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const u = value as Record<string, unknown>;
+  return (
+    typeof u.name === "string" &&
+    (u.units === "lbs" || u.units === "kg") &&
+    (u.subscription === "free" || u.subscription === "premium")
+  );
 }
 
 export function useUser() {
   const [user, setUser] = useLocalStorage<UserData>("jotrea_user", DEFAULT_USER);
-  return { user, setUser };
+  // Defensive read: a structurally invalid record falls back to DEFAULT_USER
+  // instead of crashing Settings.
+  const safeUser = isValidUser(user) ? user : DEFAULT_USER;
+  return { user: safeUser, setUser };
 }
 
 /**
