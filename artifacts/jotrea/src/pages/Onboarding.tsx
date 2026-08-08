@@ -147,25 +147,81 @@ export default function Onboarding() {
     }, {}
   );
 
+  // ── Onboarding completion ───────────────────────────────────────────────
+  // completedRef makes handleComplete idempotent (rapid taps / timer + button
+  // both calling it must not double-seed weights or double-fire analytics).
+  const completedRef = useRef(false);
+
+  // Prevents concurrent finalization from rapid taps on the final buttons.
+  const finishingRef = useRef(false);
+
+  /** True only when a structurally valid medication record is persisted. */
+  const verifyMedicationSaved = () => {
+    try {
+      const raw = localStorage.getItem("jotrea_medication");
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return (
+        typeof parsed === "object" && parsed !== null &&
+        typeof parsed.id === "string" && parsed.id.length > 0 &&
+        typeof parsed.dose === "number"
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  /** Builds the medication record from current onboarding state (null if invalid). */
+  const buildMedication = () => {
+    if (isCustomMed) {
+      const freq = (customFrequency === "other" ? (customFreqOther || "custom") : customFrequency) as "weekly" | "daily" | "twice-daily";
+      const dose = parseFloat(customDoseAmt) || 0;
+      return { id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true };
+    }
+    if (!selectedMed || !selectedDose) return null;
+    return { id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true };
+  };
+
   const handleComplete = () => {
+    if (completedRef.current) return;
     const cw = parseFloat(currentWeight), sw = parseFloat(startWeight) || cw, gw = parseFloat(goalWeight);
     const weightKg = heightUnit === "imperial" ? cw / 2.20462 : cw;
     const proteinGoalG = Math.round(weightKg * 0.8);
     const stepsGoal = STEPS_BY_ACTIVITY[activity] ?? 7000;
+    const med = buildMedication();
+    if (!med) return;
+    setMedication(med);
     if (isCustomMed) {
-      const freq = (customFrequency === "other" ? (customFreqOther || "custom") : customFrequency) as "weekly" | "daily" | "twice-daily";
-      const dose = parseFloat(customDoseAmt) || 0;
-      setMedication({ id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true });
       setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: customBrand || "custom" });
+      completedRef.current = true;
     } else {
-      if (!selectedMed || !selectedDose) return;
-      setMedication({ id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true });
       setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete", { medication: selectedMed.genericName });
+      completedRef.current = true;
     }
+  };
+
+  /**
+   * Called by the final-screen buttons. Guarantees the medication record is
+   * persisted BEFORE navigating to "/", otherwise the root route's
+   * `!medication → /onboarding` redirect loops the user back to the start.
+   * Returns true when it is safe to navigate.
+   */
+  const finishOnboarding = (): boolean => {
+    // Ensure completion ran (the step-12 timer normally does this, but iOS
+    // can suspend timers if the app is backgrounded mid-animation).
+    handleComplete();
+    if (verifyMedicationSaved()) return true;
+    // Retry ONLY the medication write — one-time side effects (weight seeding,
+    // analytics) must not re-fire on retry.
+    const med = buildMedication();
+    if (med) setMedication(med);
+    if (verifyMedicationSaved()) return true;
+    alert("We couldn't save your setup. Please check your device storage and tap the button again.");
+    return false;
   };
 
   // ── Goal Weight Ruler — state-driven drag (no scroll position math) ────────
@@ -1433,18 +1489,32 @@ export default function Onboarding() {
               <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
                 style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
                 onClick={async () => {
+                  if (finishingRef.current) return;
+                  finishingRef.current = true;
                   haptic([10,20,10]);
-                  const result = await requestNotificationPermission();
-                  if (result === "granted" && medication) {
-                    setUser({ ...user, notificationsEnabled: true });
-                    await scheduleAllNotifications(medication, [], user);
+                  if (!finishOnboarding()) { finishingRef.current = false; return; }
+                  try {
+                    const result = await requestNotificationPermission();
+                    if (result === "granted" && medication) {
+                      setUser({ ...user, notificationsEnabled: true });
+                      await scheduleAllNotifications(medication, [], user);
+                    }
+                  } catch (e) {
+                    // Permission/scheduling failures must never block entry to the app.
+                    console.error("Notification setup failed:", e);
                   }
                   setLocation("/", { replace:true });
                 }}>
                 Allow Notifications
               </Button>
               <Button variant="outline" className="w-full h-12 rounded-2xl text-sm font-semibold text-muted-foreground border-2 hover:bg-muted"
-                onClick={() => { haptic(); setLocation("/", { replace:true }); }}>
+                onClick={() => {
+                  if (finishingRef.current) return;
+                  finishingRef.current = true;
+                  haptic();
+                  if (!finishOnboarding()) { finishingRef.current = false; return; }
+                  setLocation("/", { replace:true });
+                }}>
                 Maybe later
               </Button>
             </div>
