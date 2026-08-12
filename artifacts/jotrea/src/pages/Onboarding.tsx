@@ -19,6 +19,15 @@ import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 const BRAND = "#D4A574";
 
+// FDA Prescribing Information (DailyMed) links, keyed by medication id.
+const FDA_LABEL_URLS: Record<string, string> = {
+  "semaglutide-ozempic": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=35902e95-e00c-47ae-8f4e-ba17d41881ce",
+  "semaglutide-wegovy": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f5e548d0-cc79-4c34-a3f5-e20a5b8b6564",
+  "semaglutide-wegovy-pill": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=f5e548d0-cc79-4c34-a3f5-e20a5b8b6564",
+  "tirzepatide-mounjaro": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d2d7da5d-ad07-4228-955f-cf7e355c8cc0",
+  "tirzepatide-zepbound": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=487cd7e7-434c-4925-99fa-aa80b1cc776b",
+};
+
 const haptic = (pattern: number | number[] = 10) => {
   if ("vibrate" in navigator) navigator.vibrate(pattern);
 };
@@ -1339,6 +1348,16 @@ export default function Onboarding() {
                         ? "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist."
                         : selectedMed?.pharmacistNote}
                     </p>
+                    {!isCustomMed && selectedMed && FDA_LABEL_URLS[selectedMed.id] && (
+                      <button
+                        className="text-[10px] underline underline-offset-2 mt-1.5 opacity-80"
+                        style={{ color:BRAND }}
+                        data-testid="pharmacist-note-source-link"
+                        onClick={() => window.open(FDA_LABEL_URLS[selectedMed.id], "_blank", "noreferrer")}
+                      >
+                        Source: FDA Prescribing Information
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -1517,6 +1536,10 @@ export default function Onboarding() {
                 }}>
                 Maybe later
               </Button>
+              <p className="text-[10px] text-muted-foreground leading-relaxed pt-2">
+                This app is for educational and tracking purposes only. It does not provide medical
+                advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+              </p>
             </div>
           </motion.div>
         )}

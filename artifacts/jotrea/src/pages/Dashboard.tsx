@@ -457,6 +457,13 @@ export default function Dashboard() {
           <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Personalized For You</p>
         </div>
         <p className="text-sm text-amber-900 leading-relaxed">{tip}</p>
+        <button
+          className="text-[10px] text-amber-700 underline underline-offset-2"
+          onClick={() => navigate("/sources")}
+          data-testid="tip-source-link"
+        >
+          View Sources
+        </button>
       </div>
 
       {/* Mini weight chart */}

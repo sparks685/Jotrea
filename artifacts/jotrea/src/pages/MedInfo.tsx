@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Syringe, Pill, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
 import { useMedication, useUser } from "@/hooks/useMedication";
@@ -97,6 +98,7 @@ export default function MedInfo() {
   const { medication } = useMedication();
   const { user } = useUser();
   const [openSection, setOpenSection] = useState<string | null>("dosing");
+  const [, setLocation] = useLocation();
 
   if (!medication) return null;
 
@@ -321,6 +323,15 @@ export default function MedInfo() {
           </div>
         ))}
       </div>
+
+      <button
+        className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-primary underline underline-offset-2"
+        onClick={() => setLocation("/sources")}
+        data-testid="view-sources-link"
+      >
+        <BookOpen size={13} />
+        View Sources
+      </button>
     </PageContainer>
   );
 }

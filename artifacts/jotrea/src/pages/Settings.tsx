@@ -13,6 +13,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  BookOpen,
 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -726,8 +727,19 @@ export default function Settings() {
             Backed by pharmacy expertise for your GLP-1 journey.
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Jotrea is for informational and tracking purposes only. It does not provide medical advice, diagnose conditions, or replace your healthcare provider. Always consult your doctor or pharmacist before making changes to your medication regimen.
+            This app is for educational and tracking purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
           </p>
+          <button
+            className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+            onClick={() => setLocation("/sources")}
+            data-testid="sources-references-row"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <BookOpen size={14} className="text-muted-foreground" />
+              Sources &amp; References
+            </span>
+            <span className="text-xs text-muted-foreground">›</span>
+          </button>
           <div className="space-y-1">
             <div className="flex items-center justify-between py-1">
               <span className="text-sm text-muted-foreground">App Name</span>

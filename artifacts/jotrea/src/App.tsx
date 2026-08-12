@@ -14,6 +14,7 @@ import DoseLog from "@/pages/DoseLog";
 import WeightTracker from "@/pages/WeightTracker";
 import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
+import Sources from "@/pages/Sources";
 import NotFound from "@/pages/not-found";
 
 export class PageErrorBoundary extends Component<
@@ -134,6 +135,7 @@ function AppRoutes() {
                 <Route path="/settings">
                   {!medication ? <Redirect to="/onboarding" /> : <Settings />}
                 </Route>
+                <Route path="/sources"><Sources /></Route>
                 <Route path="/reset"><ResetAndRedirect /></Route>
                 <Route component={NotFound} />
               </Switch>
