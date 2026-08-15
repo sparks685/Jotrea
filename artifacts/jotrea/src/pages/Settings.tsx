@@ -35,12 +35,13 @@ import { medications } from "@/data/medications";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
-import { buildDoseCSV, buildWeightCSV, downloadCSV } from "@/utils/featureGates";
+import { buildDoseCSV, buildWeightCSV, exportCSVFiles } from "@/utils/featureGates";
 import {
   scheduleAllNotifications,
   cancelAllNotifications,
   rescheduleAllNotifications,
   getNextScheduledTime,
+  isNotificationSupported,
 } from "@/utils/notifications";
 import { useNotifications } from "@/hooks/useNotifications";
 import { trackEvent } from "@/lib/analytics";
@@ -113,6 +114,7 @@ export default function Settings() {
   const { weights, setWeights } = useWeights();
   const [, setLocation] = useLocation();
   const { permission, requestPermission } = useNotifications();
+  const notificationsSupported = isNotificationSupported();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
   const [editingField, setEditingField] = useState<"motivations" | "side-effects" | "daily-targets" | null>(null);
   const { theme, setTheme } = useTheme();
@@ -172,11 +174,13 @@ export default function Settings() {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const doseCsv = buildDoseCSV(doses);
     const weightCsv = buildWeightCSV(weights, user.units);
-    downloadCSV("jotrea-doses.csv", doseCsv);
-    setTimeout(() => downloadCSV("jotrea-weights.csv", weightCsv), 300);
+    await exportCSVFiles([
+      { filename: "jotrea-doses.csv", content: doseCsv },
+      { filename: "jotrea-weights.csv", content: weightCsv },
+    ]);
     trackEvent("data_exported");
   };
 
@@ -637,6 +641,12 @@ export default function Settings() {
 
       {/* Notifications */}
       <SettingsSection title="Notifications" icon={<Bell size={14} className="text-muted-foreground" />}>
+        {!notificationsSupported ? (
+          <p className="text-xs text-muted-foreground leading-relaxed" data-testid="notifications-unsupported">
+            Reminders aren't available in this version of the app. You can still log doses and
+            weigh-ins anytime from the Home and Weight tabs.
+          </p>
+        ) : (
         <div className="space-y-3">
           {/* Denied-state banner */}
           {permission === "denied" && (
@@ -699,6 +709,7 @@ export default function Settings() {
             </>
           )}
         </div>
+        )}
       </SettingsSection>
 
       {/* Data Export */}

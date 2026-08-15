@@ -73,6 +73,7 @@ vi.mock("@/lib/analytics", () => ({
 }));
 
 vi.mock("@/utils/notifications", () => ({
+  isNotificationSupported: () => true,
   cancelNotificationTag: vi.fn(),
   rescheduleAllNotifications: vi.fn(),
   scheduleAllNotifications: vi.fn(),

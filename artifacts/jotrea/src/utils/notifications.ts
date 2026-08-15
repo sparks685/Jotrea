@@ -33,6 +33,18 @@ async function getActiveSW(): Promise<ServiceWorker | null> {
   }
 }
 
+// ─── Capability detection ─────────────────────────────────────────────────────
+
+/**
+ * Whether this environment can actually deliver web notifications.
+ * iOS WKWebView (Capacitor wrapper) exposes neither the Notification API nor
+ * a usable service-worker notification pipeline — in that case notification
+ * UI should be hidden entirely rather than presenting dead controls.
+ */
+export function isNotificationSupported(): boolean {
+  return "Notification" in window && "serviceWorker" in navigator;
+}
+
 // ─── Permission ───────────────────────────────────────────────────────────────
 
 export async function requestNotificationPermission(): Promise<NotificationPermission> {

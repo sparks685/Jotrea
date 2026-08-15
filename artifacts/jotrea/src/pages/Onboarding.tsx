@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { medications } from "@/data/medications";
 import { useMedication, useWeights, useUser } from "@/hooks/useMedication";
 import { useTheme } from "@/hooks/useTheme";
-import { requestNotificationPermission, scheduleAllNotifications } from "@/utils/notifications";
+import { requestNotificationPermission, scheduleAllNotifications, isNotificationSupported } from "@/utils/notifications";
 import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 
@@ -1505,37 +1505,54 @@ export default function Onboarding() {
             </div>
 
             <div className="w-full max-w-xs space-y-3">
-              <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
-                style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
-                onClick={async () => {
-                  if (finishingRef.current) return;
-                  finishingRef.current = true;
-                  haptic([10,20,10]);
-                  if (!finishOnboarding()) { finishingRef.current = false; return; }
-                  try {
-                    const result = await requestNotificationPermission();
-                    if (result === "granted" && medication) {
-                      setUser({ ...user, notificationsEnabled: true });
-                      await scheduleAllNotifications(medication, [], user);
-                    }
-                  } catch (e) {
-                    // Permission/scheduling failures must never block entry to the app.
-                    console.error("Notification setup failed:", e);
-                  }
-                  setLocation("/", { replace:true });
-                }}>
-                Allow Notifications
-              </Button>
-              <Button variant="outline" className="w-full h-12 rounded-2xl text-sm font-semibold text-muted-foreground border-2 hover:bg-muted"
-                onClick={() => {
-                  if (finishingRef.current) return;
-                  finishingRef.current = true;
-                  haptic();
-                  if (!finishOnboarding()) { finishingRef.current = false; return; }
-                  setLocation("/", { replace:true });
-                }}>
-                Maybe later
-              </Button>
+              {isNotificationSupported() ? (
+                <>
+                  <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
+                    style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
+                    onClick={async () => {
+                      if (finishingRef.current) return;
+                      finishingRef.current = true;
+                      haptic([10,20,10]);
+                      if (!finishOnboarding()) { finishingRef.current = false; return; }
+                      try {
+                        const result = await requestNotificationPermission();
+                        if (result === "granted" && medication) {
+                          setUser({ ...user, notificationsEnabled: true });
+                          await scheduleAllNotifications(medication, [], user);
+                        }
+                      } catch (e) {
+                        // Permission/scheduling failures must never block entry to the app.
+                        console.error("Notification setup failed:", e);
+                      }
+                      setLocation("/", { replace:true });
+                    }}>
+                    Allow Notifications
+                  </Button>
+                  <Button variant="outline" className="w-full h-12 rounded-2xl text-sm font-semibold text-muted-foreground border-2 hover:bg-muted"
+                    onClick={() => {
+                      if (finishingRef.current) return;
+                      finishingRef.current = true;
+                      haptic();
+                      if (!finishOnboarding()) { finishingRef.current = false; return; }
+                      setLocation("/", { replace:true });
+                    }}>
+                    Maybe later
+                  </Button>
+                </>
+              ) : (
+                <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
+                  style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
+                  data-testid="onboarding-continue-btn"
+                  onClick={() => {
+                    if (finishingRef.current) return;
+                    finishingRef.current = true;
+                    haptic([10,20,10]);
+                    if (!finishOnboarding()) { finishingRef.current = false; return; }
+                    setLocation("/", { replace:true });
+                  }}>
+                  Continue
+                </Button>
+              )}
               <p className="text-[10px] text-muted-foreground leading-relaxed pt-2">
                 This app is for educational and tracking purposes only. It does not provide medical
                 advice, diagnosis, or treatment. Always consult a qualified healthcare provider.

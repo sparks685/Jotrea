@@ -92,6 +92,7 @@ vi.mock("@/components/ChangeMedicationSheet", () => ({
 }));
 
 vi.mock("@/utils/notifications", () => ({
+  isNotificationSupported: () => true,
   scheduleAllNotifications: vi.fn(),
   cancelAllNotifications: vi.fn(),
   rescheduleAllNotifications: vi.fn(),

@@ -74,3 +74,36 @@ export function downloadCSV(filename: string, content: string): void {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Export CSV files. On devices that support the Web Share API with files
+ * (e.g. iOS webviews, where anchor-download is a silent no-op), open the
+ * native share sheet. Otherwise fall back to regular browser downloads.
+ * Returns true if the export was handed to the user (shared or downloaded).
+ */
+export async function exportCSVFiles(
+  files: { filename: string; content: string }[]
+): Promise<boolean> {
+  const shareFiles = files.map(
+    (f) => new File([f.content], f.filename, { type: "text/csv" })
+  );
+  const nav = navigator as Navigator & {
+    canShare?: (data?: ShareData) => boolean;
+    share?: (data?: ShareData) => Promise<void>;
+  };
+  if (typeof nav.share === "function" && nav.canShare?.({ files: shareFiles })) {
+    try {
+      await nav.share({ files: shareFiles, title: "Jotrea Data Export" });
+      return true;
+    } catch (err) {
+      // AbortError = user closed the share sheet; treat as handled.
+      if (err instanceof DOMException && err.name === "AbortError") return true;
+      // Otherwise fall through to download fallback.
+    }
+  }
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    setTimeout(() => downloadCSV(f.filename, f.content), i * 300);
+  }
+  return true;
+}
+

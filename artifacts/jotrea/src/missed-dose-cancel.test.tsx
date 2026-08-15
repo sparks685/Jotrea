@@ -21,6 +21,7 @@ import React from "react";
 // ─── Module mocks (must be declared before the imports they shadow) ──────────
 
 vi.mock("@/utils/notifications", () => ({
+  isNotificationSupported: () => true,
   cancelNotificationTag: vi.fn().mockResolvedValue(undefined),
   rescheduleAllNotifications: vi.fn().mockResolvedValue(undefined),
   registerNotificationSW: vi.fn().mockResolvedValue(null),
