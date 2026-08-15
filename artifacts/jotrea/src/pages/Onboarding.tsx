@@ -1396,7 +1396,6 @@ export default function Onboarding() {
                 { label:"Building your dose schedule", icon:<Calendar size={12}/> },
                 { label:"Calculating your weight timeline", icon:<TrendingDown size={12}/> },
                 { label:"Preparing side effect tips", icon:<Heart size={12}/> },
-                { label:"Setting reminder preferences", icon:<Bell size={12}/> },
               ].map((item,i) => {
                 const done = loadingTicks > i;
                 return (
