@@ -107,7 +107,16 @@ function AppRoutes() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    // Don't let the browser restore the previous scroll position on refresh.
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+  useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    // The document itself can also be the scroller (root uses min-height),
+    // so reset the window scroll as well.
+    window.scrollTo(0, 0);
   }, [location]);
 
   return (
