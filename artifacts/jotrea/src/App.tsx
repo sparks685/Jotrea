@@ -1,4 +1,4 @@
-import { useEffect, Component } from "react";
+import { useEffect, useRef, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -105,10 +105,16 @@ function AppRoutes() {
 
   const isOnboarding = location === "/onboarding";
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [location]);
+
   return (
     <>
       <RouteTracker />
       <div
+        ref={scrollRef}
         className="flex-1 overflow-y-auto"
         style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
