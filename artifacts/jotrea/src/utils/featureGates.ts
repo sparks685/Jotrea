@@ -92,7 +92,7 @@ export async function exportCSVFiles(
   };
   if (typeof nav.share === "function" && nav.canShare?.({ files: shareFiles })) {
     try {
-      await nav.share({ files: shareFiles, title: "Jotrea Data Export" });
+      await nav.share({ files: shareFiles });
       return true;
     } catch (err) {
       // AbortError = user closed the share sheet; treat as handled.
