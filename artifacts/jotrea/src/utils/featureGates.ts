@@ -155,7 +155,9 @@ async function shareViaCapacitor(
       const { uri } = await fs.writeFile({
         path: f.filename,
         data: f.content,
-        directory: "CACHE",
+        // Documents, not Cache: iOS blocks share-sheet access to
+        // Library/Caches ("error fetching item for URL").
+        directory: "DOCUMENTS",
         encoding: "utf8",
       });
       uris.push(uri);
