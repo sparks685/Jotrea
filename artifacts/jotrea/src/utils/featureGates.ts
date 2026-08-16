@@ -75,14 +75,75 @@ export function downloadCSV(filename: string, content: string): void {
 }
 
 /**
- * Export CSV files. On devices that support the Web Share API with files
- * (e.g. iOS webviews, where anchor-download is a silent no-op), open the
- * native share sheet. Otherwise fall back to regular browser downloads.
+ * Native (Capacitor) share path. WKWebView's Web Share API strips filenames
+ * and MIME types, so shared CSVs show up as a "Plain Text" blob. When the app
+ * runs inside a Capacitor shell with the Share + Filesystem plugins installed,
+ * write each CSV to a real temp file and hand the file URLs to the native
+ * share sheet (UIActivityViewController) so filenames and .csv icons survive.
+ * Returns true if the native share handled it, false to fall through.
+ */
+async function shareViaCapacitor(
+  files: { filename: string; content: string }[]
+): Promise<boolean> {
+  const cap = (window as unknown as {
+    Capacitor?: {
+      isNativePlatform?: () => boolean;
+      Plugins?: {
+        Filesystem?: {
+          writeFile: (opts: {
+            path: string;
+            data: string;
+            directory: string;
+            encoding: string;
+          }) => Promise<{ uri: string }>;
+        };
+        Share?: {
+          share: (opts: { files: string[] }) => Promise<unknown>;
+        };
+      };
+    };
+  }).Capacitor;
+
+  const fs = cap?.Plugins?.Filesystem;
+  const share = cap?.Plugins?.Share;
+  if (!cap?.isNativePlatform?.() || !fs || !share) return false;
+
+  try {
+    const uris: string[] = [];
+    for (const f of files) {
+      const { uri } = await fs.writeFile({
+        path: f.filename,
+        data: f.content,
+        directory: "CACHE",
+        encoding: "utf8",
+      });
+      uris.push(uri);
+    }
+    await share.share({ files: uris });
+    return true;
+  } catch (err) {
+    // User cancelled the native share sheet — still handled.
+    if (
+      err instanceof Error &&
+      /cancel/i.test(err.message)
+    ) {
+      return true;
+    }
+    // Plugin missing/failed — fall through to the web share path.
+    return false;
+  }
+}
+
+/**
+ * Export CSV files. Prefers the native Capacitor share sheet (proper file
+ * names + .csv icons), then the Web Share API with files, then regular
+ * browser downloads.
  * Returns true if the export was handed to the user (shared or downloaded).
  */
 export async function exportCSVFiles(
   files: { filename: string; content: string }[]
 ): Promise<boolean> {
+  if (await shareViaCapacitor(files)) return true;
   const shareFiles = files.map(
     (f) => new File([f.content], f.filename, { type: "text/csv" })
   );
