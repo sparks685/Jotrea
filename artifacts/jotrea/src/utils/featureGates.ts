@@ -82,31 +82,60 @@ export function downloadCSV(filename: string, content: string): void {
  * share sheet (UIActivityViewController) so filenames and .csv icons survive.
  * Returns true if the native share handled it, false to fall through.
  */
+type CapFilesystem = {
+  writeFile: (opts: {
+    path: string;
+    data: string;
+    directory: string;
+    encoding: string;
+  }) => Promise<{ uri: string }>;
+};
+type CapShare = {
+  share: (opts: { files: string[] }) => Promise<unknown>;
+};
+type CapGlobal = {
+  isNativePlatform?: () => boolean;
+  isPluginAvailable?: (name: string) => boolean;
+  // Capacitor v3+: native plugins are obtained via registerPlugin(), which
+  // the native bridge injects. The old Plugins registry no longer lists
+  // native-only plugins.
+  registerPlugin?: (name: string) => unknown;
+  Plugins?: { Filesystem?: CapFilesystem; Share?: CapShare };
+};
+
+// Cache registerPlugin proxies — registering the same plugin twice warns.
+let capPluginCache: { fs: CapFilesystem; share: CapShare } | null = null;
+
+function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } | null {
+  if (capPluginCache) return capPluginCache;
+  const cap = (window as unknown as { Capacitor?: CapGlobal }).Capacitor;
+  if (!cap?.isNativePlatform?.()) return null;
+
+  let fs: CapFilesystem | undefined;
+  let share: CapShare | undefined;
+  if (typeof cap.registerPlugin === "function") {
+    if (cap.isPluginAvailable?.("Filesystem") !== false) {
+      fs = cap.registerPlugin("Filesystem") as CapFilesystem;
+    }
+    if (cap.isPluginAvailable?.("Share") !== false) {
+      share = cap.registerPlugin("Share") as CapShare;
+    }
+  }
+  // Legacy (Capacitor 2) fallback.
+  fs = fs ?? cap.Plugins?.Filesystem;
+  share = share ?? cap.Plugins?.Share;
+
+  if (!fs || !share) return null;
+  capPluginCache = { fs, share };
+  return capPluginCache;
+}
+
 async function shareViaCapacitor(
   files: { filename: string; content: string }[]
 ): Promise<boolean> {
-  const cap = (window as unknown as {
-    Capacitor?: {
-      isNativePlatform?: () => boolean;
-      Plugins?: {
-        Filesystem?: {
-          writeFile: (opts: {
-            path: string;
-            data: string;
-            directory: string;
-            encoding: string;
-          }) => Promise<{ uri: string }>;
-        };
-        Share?: {
-          share: (opts: { files: string[] }) => Promise<unknown>;
-        };
-      };
-    };
-  }).Capacitor;
-
-  const fs = cap?.Plugins?.Filesystem;
-  const share = cap?.Plugins?.Share;
-  if (!cap?.isNativePlatform?.() || !fs || !share) return false;
+  const plugins = getCapacitorPlugins();
+  if (!plugins) return false;
+  const { fs, share } = plugins;
 
   try {
     const uris: string[] = [];
