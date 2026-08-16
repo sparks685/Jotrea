@@ -91,7 +91,7 @@ type CapFilesystem = {
   }) => Promise<{ uri: string }>;
 };
 type CapShare = {
-  share: (opts: { files: string[] }) => Promise<unknown>;
+  share: (opts: { files?: string[]; url?: string }) => Promise<unknown>;
 };
 type CapGlobal = {
   isNativePlatform?: () => boolean;
@@ -148,6 +148,9 @@ function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
 async function shareViaCapacitor(
   files: { filename: string; content: string }[]
 ): Promise<void> {
+  const isCancel = (err: unknown) =>
+    /cancel/i.test(err instanceof Error ? err.message : String(err));
+
   try {
     const { fs, share } = getCapacitorPlugins();
     const uris: string[] = [];
@@ -162,11 +165,25 @@ async function shareViaCapacitor(
       });
       uris.push(uri);
     }
-    await share.share({ files: uris });
+    try {
+      // Preferred: one share sheet with all files.
+      await share.share({ files: uris });
+    } catch (multiErr) {
+      if (isCancel(multiErr)) return;
+      // Some iOS versions/extensions reject multi-file shares — retry one
+      // file at a time using the single-file `url` form.
+      for (const uri of uris) {
+        try {
+          await share.share({ url: uri });
+        } catch (singleErr) {
+          if (isCancel(singleErr)) return;
+          throw singleErr;
+        }
+      }
+    }
   } catch (err) {
+    if (isCancel(err)) return;
     const message = err instanceof Error ? err.message : String(err);
-    // User closed the share sheet — not an error.
-    if (/cancel/i.test(message)) return;
     alert(`Export failed: ${message}`);
   }
 }
