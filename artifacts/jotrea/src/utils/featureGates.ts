@@ -103,41 +103,53 @@ type CapGlobal = {
   Plugins?: { Filesystem?: CapFilesystem; Share?: CapShare };
 };
 
+function getCapacitor(): CapGlobal | undefined {
+  return (window as unknown as { Capacitor?: CapGlobal }).Capacitor;
+}
+
+/** True when running inside the native Capacitor shell (iOS/Android app). */
+function isNativeApp(): boolean {
+  return getCapacitor()?.isNativePlatform?.() === true;
+}
+
 // Cache registerPlugin proxies — registering the same plugin twice warns.
 let capPluginCache: { fs: CapFilesystem; share: CapShare } | null = null;
 
-function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } | null {
+function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
   if (capPluginCache) return capPluginCache;
-  const cap = (window as unknown as { Capacitor?: CapGlobal }).Capacitor;
-  if (!cap?.isNativePlatform?.()) return null;
+  const cap = getCapacitor();
+  if (!cap) throw new Error("Capacitor global not found");
 
-  let fs: CapFilesystem | undefined;
-  let share: CapShare | undefined;
-  if (typeof cap.registerPlugin === "function") {
-    if (cap.isPluginAvailable?.("Filesystem") !== false) {
-      fs = cap.registerPlugin("Filesystem") as CapFilesystem;
-    }
-    if (cap.isPluginAvailable?.("Share") !== false) {
-      share = cap.registerPlugin("Share") as CapShare;
-    }
+  // Capacitor v3+: obtain native plugins via registerPlugin (the bridge
+  // injects it). Legacy Plugins registry as a last resort.
+  const fs =
+    typeof cap.registerPlugin === "function"
+      ? (cap.registerPlugin("Filesystem") as CapFilesystem)
+      : cap.Plugins?.Filesystem;
+  const share =
+    typeof cap.registerPlugin === "function"
+      ? (cap.registerPlugin("Share") as CapShare)
+      : cap.Plugins?.Share;
+  if (!fs || !share) {
+    throw new Error(
+      "Share/Filesystem plugins not found (registerPlugin unavailable)"
+    );
   }
-  // Legacy (Capacitor 2) fallback.
-  fs = fs ?? cap.Plugins?.Filesystem;
-  share = share ?? cap.Plugins?.Share;
-
-  if (!fs || !share) return null;
   capPluginCache = { fs, share };
   return capPluginCache;
 }
 
+/**
+ * Native share. Called ONLY when running inside the Capacitor app; never
+ * falls back to the web share path — a failure surfaces its real error so
+ * it can be diagnosed on-device instead of silently degrading to a
+ * filename-less "Plain Text" web share.
+ */
 async function shareViaCapacitor(
   files: { filename: string; content: string }[]
-): Promise<boolean> {
-  const plugins = getCapacitorPlugins();
-  if (!plugins) return false;
-  const { fs, share } = plugins;
-
+): Promise<void> {
   try {
+    const { fs, share } = getCapacitorPlugins();
     const uris: string[] = [];
     for (const f of files) {
       const { uri } = await fs.writeFile({
@@ -149,30 +161,28 @@ async function shareViaCapacitor(
       uris.push(uri);
     }
     await share.share({ files: uris });
-    return true;
   } catch (err) {
-    // User cancelled the native share sheet — still handled.
-    if (
-      err instanceof Error &&
-      /cancel/i.test(err.message)
-    ) {
-      return true;
-    }
-    // Plugin missing/failed — fall through to the web share path.
-    return false;
+    const message = err instanceof Error ? err.message : String(err);
+    // User closed the share sheet — not an error.
+    if (/cancel/i.test(message)) return;
+    alert(`Export failed: ${message}`);
   }
 }
 
 /**
- * Export CSV files. Prefers the native Capacitor share sheet (proper file
- * names + .csv icons), then the Web Share API with files, then regular
- * browser downloads.
+ * Export CSV files. Inside the native app, ALWAYS use the Capacitor share
+ * sheet (proper file names + .csv icons) — never the web share, which strips
+ * filenames in WKWebView. In browsers, use the Web Share API with files when
+ * available, otherwise regular downloads.
  * Returns true if the export was handed to the user (shared or downloaded).
  */
 export async function exportCSVFiles(
   files: { filename: string; content: string }[]
 ): Promise<boolean> {
-  if (await shareViaCapacitor(files)) return true;
+  if (isNativeApp()) {
+    await shareViaCapacitor(files);
+    return true;
+  }
   const shareFiles = files.map(
     (f) => new File([f.content], f.filename, { type: "text/csv" })
   );
