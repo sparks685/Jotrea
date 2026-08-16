@@ -800,13 +800,12 @@ export default function Settings() {
               <AlertDialogAction 
                 className="w-full h-12 rounded-xl text-base font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg" 
                 onClick={() => {
-                  localStorage.removeItem("jotrea_medication");
-                  localStorage.removeItem("jotrea_doses");
-                  localStorage.removeItem("jotrea_weights");
-                  localStorage.removeItem("jotrea_user");
-                  localStorage.removeItem("jotrea_onboarding");
-                  localStorage.removeItem("jotrea_theme");
-                  setLocation("/onboarding", { replace: true });
+                  // Wipe ALL persisted state (doses, weights, user, daily
+                  // check-ins, dismissed cards, theme, onboarding flag, and
+                  // any future keys) and hard-reload so every in-memory hook
+                  // resets — a true fresh-install state.
+                  localStorage.clear();
+                  window.location.replace(import.meta.env.BASE_URL);
                 }}
               >
                 Delete All Data
