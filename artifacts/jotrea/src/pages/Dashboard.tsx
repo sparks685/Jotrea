@@ -24,7 +24,7 @@ import {
 } from "@/utils/calculations";
 import { trackEvent } from "@/lib/analytics";
 import { cancelNotificationTag, rescheduleAllNotifications } from "@/utils/notifications";
-import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
+import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
 import type { DoseEntry, WeightEntry } from "@/types";
 
@@ -125,54 +125,40 @@ export default function Dashboard() {
   }));
 
   const SIDE_EFFECT_TIPS: Record<string, string> = {
-    nausea: "Tip: Taking your dose with a light meal may help ease nausea.",
-    fatigue: "Tip: Try dosing in the evening if fatigue is affecting your day.",
-    constipation: "Tip: Increase water intake and fiber on dose days.",
-    bloating: "Tip: Smaller, more frequent meals can help with bloating.",
-    "sulfur burps": "Tip: Avoid carbonated drinks around your dose time.",
-    heartburn: "Tip: Stay upright for 30 minutes after dosing to reduce reflux.",
-    "hair loss": "Tip: Ensure adequate protein intake — aim for your daily goal.",
-    "food noise": "Tip: High-protein snacks can help quiet food noise between meals.",
+    nausea: "Track when nausea occurs and share the pattern with your healthcare provider.",
+    fatigue: "Note when fatigue occurs so you can discuss the pattern with your healthcare provider.",
+    constipation: "Record constipation and related habits so you can discuss changes with your healthcare provider.",
+    bloating: "Track when bloating occurs and any patterns you notice.",
+    "sulfur burps": "Record when sulfur burps occur and share persistent symptoms with your healthcare provider.",
+    heartburn: "Track when heartburn occurs and share persistent symptoms with your healthcare provider.",
+    "hair loss": "Record changes in hair loss and discuss them with your healthcare provider.",
+    "food noise": "Track changes in food-related thoughts so you can discuss patterns with your healthcare provider.",
   };
 
-  // Build a pool of medication-specific tips from the stored medication's pharmacistNote
-  // plus formulation/frequency-aware extras. Falls back to generic tips if no med is found.
+  // Build a pool of neutral tracking reminders. Medication-use directions
+  // belong to the user's prescription/provider, not to Jotrea.
   const buildMedTipPool = (): string[] => {
-    if (!medInfo) {
-      return [
-        "Rotate injection sites each dose to reduce scar tissue buildup.",
-        "Stay hydrated — at least 8 glasses of water daily reduces nausea.",
-        "Eating slowly and stopping at 80% full helps maximize GLP-1 effects.",
-        "Protein at every meal preserves muscle while losing fat on GLP-1s.",
-        "Log your dose within 2 hours for the most accurate streak tracking.",
-        "Always store pen injectors in the refrigerator until opened.",
-      ];
-    }
-
-    // Split the medication's pharmacistNote into individual tip sentences
-    const noteSentences = medInfo.pharmacistNote
-      .split(/(?<=[.!?])\s+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
-    // Formulation-specific supplemental tips
-    const extra: string[] = [];
+    const extra: string[] = [
+      "Log only the medication and dose prescribed by your healthcare provider.",
+      "Record any symptoms you notice so you can discuss patterns with your healthcare provider.",
+      "Use your history to remember when and where you took each tracked dose.",
+      "Jotrea never calculates or recommends medication doses.",
+      "Log your dose close to the time you took it for accurate tracking.",
+    ];
+    if (!medInfo) return extra;
     if (medInfo.formulation === "pill") {
-      extra.push("Take at the same time each day to build a consistent habit.");
-      extra.push("Stay hydrated — at least 8 glasses of water daily can help with GLP-1 side effects.");
+      extra.push("Use your history to track the date and time of each pill you record.");
     }
     if (medInfo.formulation === "injection") {
-      extra.push("Eating slowly and stopping when 80% full helps maximize the effects of your medication.");
-      extra.push("Protein at every meal helps preserve muscle while losing fat on GLP-1s.");
+      extra.push("Use the injection-site history to track where you took each dose.");
     }
     if (medInfo.frequency === "weekly") {
-      extra.push("Log your dose within 2 hours of taking it for the most accurate streak tracking.");
+      extra.push("The countdown reflects the prescribed frequency you entered.");
     }
     if (medInfo.frequency === "daily" || medInfo.frequency === "twice-daily") {
-      extra.push("Setting a recurring alarm for dose time can help you stay on schedule.");
+      extra.push("The daily schedule reflects the prescribed frequency you entered.");
     }
-
-    return [...noteSentences, ...extra];
+    return extra;
   };
 
   const medTipPool = buildMedTipPool();
@@ -303,7 +289,7 @@ export default function Dashboard() {
       {/* Countdown ring + primary CTA */}
       <div className="bg-card rounded-3xl p-5 shadow-md border border-border flex flex-col items-center gap-4">
         <p className="text-sm font-medium text-muted-foreground">
-          {isDueToday ? "Your dose is due today" : "Next dose in"}
+          {isDueToday ? "Your tracked dose is due today" : "Next tracked dose in"}
         </p>
         <CountdownRing daysUntil={daysUntil} intervalDays={intervalDays} size={160} />
 
@@ -326,7 +312,7 @@ export default function Dashboard() {
             data-testid="log-dose-btn"
           >
             <Syringe size={18} className="mr-2" />
-            Log Dose
+            Log My Dose
           </Button>
       </div>
 
@@ -448,13 +434,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Pharmacy Tip */}
+      {/* Medication reminder */}
       <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] space-y-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
             <FlaskConical size={16} className="text-amber-600" />
           </div>
-          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Personalized For You</p>
+          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Medication Reminder</p>
         </div>
         <p className="text-sm text-amber-900 leading-relaxed">{tip}</p>
         <button
@@ -617,7 +603,7 @@ export default function Dashboard() {
               {/* Fixed header */}
               <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
                 <h3 className="text-lg font-bold text-foreground">
-                  {showDoseConfirm ? "Dose Logged" : "Log Dose"}
+                  {showDoseConfirm ? "Dose Logged" : "Log My Dose"}
                 </h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
@@ -647,17 +633,18 @@ export default function Dashboard() {
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Check Your Prescription</p>
                       </div>
                       <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
-                        {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
+                        Confirm that this medication and dose match your prescription. Jotrea records
+                        your entry; it does not recommend or change dosages.
                       </p>
                       <button
                         data-testid="view-med-guide-link"
                         className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
                         onClick={() => { handleCloseLogForm(); navigate("/med-info"); }}
                       >
-                        View medication guide →
+                        View medication information →
                       </button>
                     </div>
 
@@ -772,7 +759,9 @@ export default function Dashboard() {
                               >
                                 <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
                                 <p className="text-xs text-amber-800 leading-relaxed">
-                                  {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
+                                  This differs from the {medication.dose} {medInfo.unit} dose you currently track.
+                                  Jotrea cannot recommend a dosage change. Only log a different dose if your
+                                  healthcare provider prescribed it.
                                 </p>
                               </motion.div>
                             )}
@@ -786,7 +775,7 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
                           {user.injectionSiteHistory && user.injectionSiteHistory.length > 0 && (
-                            <span className="text-[10px] text-secondary font-semibold">↺ Rotate suggested</span>
+                            <span className="text-[10px] text-secondary font-semibold">↺ Next site in your tracking rotation</span>
                           )}
                         </div>
                         <div className="grid grid-cols-2 gap-2">

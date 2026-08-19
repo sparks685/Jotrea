@@ -1,9 +1,8 @@
 /**
- * Pharmacist note regression tests
+ * Prescription-check regression tests
  *
- * Asserts that the dose confirmation screen shows the correct pharmacist note
- * for a known medication (Ozempic) and the generic fallback for a custom
- * medication not found in the medications catalogue.
+ * Asserts that dose confirmation screens show neutral tracking language for
+ * every medication instead of medication-use or dosage guidance.
  *
  * Covers both the Dashboard (Home) log flow and the DoseLog (Calendar) log flow.
  */
@@ -69,7 +68,6 @@ vi.mock("@/lib/analytics", () => ({
 
 import Dashboard from "@/pages/Dashboard";
 import DoseLog from "@/pages/DoseLog";
-import { medications } from "@/data/medications";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -77,20 +75,8 @@ import { medications } from "@/data/medications";
 
 const MEDICATION_KEY = "jotrea_medication";
 
-const OZEMPIC = medications.find((m) => m.id === "semaglutide-ozempic")!;
-const OZEMPIC_NOTE = OZEMPIC.pharmacistNote;
-
-const WEGOVY = medications.find((m) => m.id === "semaglutide-wegovy")!;
-const WEGOVY_NOTE = WEGOVY.pharmacistNote;
-
-const MOUNJARO = medications.find((m) => m.id === "tirzepatide-mounjaro")!;
-const MOUNJARO_NOTE = MOUNJARO.pharmacistNote;
-
-const RYBELSUS = medications.find((m) => m.id === "semaglutide-rybelsus")!;
-const RYBELSUS_NOTE = RYBELSUS.pharmacistNote;
-
-const GENERIC_NOTE =
-  "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist.";
+const PRESCRIPTION_CHECK =
+  "Confirm that this medication and dose match your prescription. Jotrea records your entry; it does not recommend or change dosages.";
 
 // ---------------------------------------------------------------------------
 // Seed helpers
@@ -141,12 +127,12 @@ function seedCustomMedication() {
 // Dashboard – log flow
 // ---------------------------------------------------------------------------
 
-describe("Dashboard – pharmacist note after logging a dose", () => {
+describe("Dashboard – prescription check after logging a dose", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("shows the Ozempic-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Ozempic", () => {
     seedOzempic();
     render(<Dashboard />);
 
@@ -156,13 +142,13 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
     // Submit the dose
     fireEvent.click(screen.getByTestId("submit-log-dose"));
 
-    // Confirmation screen should appear with the correct note
+    // Confirmation screen should appear with neutral tracker-only language.
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(OZEMPIC_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the generic fallback note for a custom medication after logging a dose", () => {
+  it("shows the neutral prescription check for a custom medication", () => {
     seedCustomMedication();
     render(<Dashboard />);
 
@@ -171,10 +157,10 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(GENERIC_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Wegovy-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Wegovy", () => {
     seedWegovy();
     render(<Dashboard />);
 
@@ -183,10 +169,10 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(WEGOVY_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Mounjaro-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Mounjaro", () => {
     seedMounjaro();
     render(<Dashboard />);
 
@@ -195,10 +181,10 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(MOUNJARO_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Rybelsus-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Rybelsus", () => {
     seedRybelsus();
     render(<Dashboard />);
 
@@ -207,7 +193,7 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(RYBELSUS_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 });
 
@@ -215,12 +201,12 @@ describe("Dashboard – pharmacist note after logging a dose", () => {
 // DoseLog – log flow
 // ---------------------------------------------------------------------------
 
-describe("DoseLog – pharmacist note after logging a dose", () => {
+describe("DoseLog – prescription check after logging a dose", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("shows the Ozempic-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Ozempic", () => {
     seedOzempic();
     render(<DoseLog />);
 
@@ -232,10 +218,10 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(OZEMPIC_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the generic fallback note for a custom medication after logging a dose", () => {
+  it("shows the neutral prescription check for a custom medication", () => {
     seedCustomMedication();
     render(<DoseLog />);
 
@@ -244,10 +230,10 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(GENERIC_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Wegovy-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Wegovy", () => {
     seedWegovy();
     render(<DoseLog />);
 
@@ -256,10 +242,10 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(WEGOVY_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Mounjaro-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Mounjaro", () => {
     seedMounjaro();
     render(<DoseLog />);
 
@@ -268,10 +254,10 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(MOUNJARO_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 
-  it("shows the Rybelsus-specific pharmacist note after logging a dose", () => {
+  it("shows the neutral prescription check for Rybelsus", () => {
     seedRybelsus();
     render(<DoseLog />);
 
@@ -280,6 +266,6 @@ describe("DoseLog – pharmacist note after logging a dose", () => {
 
     const noteEl = screen.getByTestId("pharmacist-note-text");
     expect(noteEl).toBeInTheDocument();
-    expect(noteEl.textContent).toBe(RYBELSUS_NOTE);
+    expect(noteEl.textContent).toBe(PRESCRIPTION_CHECK);
   });
 });

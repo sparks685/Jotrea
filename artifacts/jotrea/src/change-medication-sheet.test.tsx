@@ -98,9 +98,9 @@ describe("ChangeMedicationSheet – render", () => {
     expect(() => renderSheet()).not.toThrow();
   });
 
-  it("shows the 'Change Medication' title when open", () => {
+  it("shows the 'Change Tracked Medication' title when open", () => {
     renderSheet();
-    expect(screen.getByText("Change Medication")).toBeInTheDocument();
+    expect(screen.getByText("Change Tracked Medication")).toBeInTheDocument();
   });
 
   it("shows a search input in the medication list view", () => {
@@ -133,10 +133,10 @@ describe("ChangeMedicationSheet – standard medication path", () => {
     }).not.toThrow();
   });
 
-  it("shows 'Set Dose & Details' heading after selecting a medication", () => {
+  it("shows 'Enter Prescribed Dose' heading after selecting a medication", () => {
     renderSheet();
     fireEvent.click(screen.getByText("Ozempic"));
-    expect(screen.getByText("Set Dose & Details")).toBeInTheDocument();
+    expect(screen.getByText("Enter Prescribed Dose")).toBeInTheDocument();
   });
 
   it("renders dose option buttons for the selected medication", () => {
@@ -194,7 +194,7 @@ describe("ChangeMedicationSheet – standard medication path", () => {
     const allButtons = screen.getAllByRole("button");
     // The back button is the first button in the dose view header
     fireEvent.click(allButtons[0]);
-    expect(screen.getByText("Change Medication")).toBeInTheDocument();
+    expect(screen.getByText("Change Tracked Medication")).toBeInTheDocument();
   });
 
   it("does not throw when confirming a pill medication (Rybelsus)", () => {
@@ -253,7 +253,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     const brandInput = screen.getByPlaceholderText(/ozempic, wegovy, mounjaro/i);
     fireEvent.change(brandInput, { target: { value: "TestMed" } });
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
-    expect(screen.getByText("Set Dose & Details")).toBeInTheDocument();
+    expect(screen.getByText("Enter Prescribed Dose")).toBeInTheDocument();
   });
 
   it("confirm button is disabled until dose amount is entered", () => {
@@ -268,7 +268,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     expect(confirmBtn).toBeDisabled();
   });
 
-  it("confirm button is enabled after entering a dose amount", () => {
+  it("confirm button is enabled after entering a dose amount and prescribed frequency", () => {
     renderSheet();
     fireEvent.click(screen.getByText("Other medication"));
     fireEvent.change(
@@ -279,6 +279,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     fireEvent.change(screen.getByPlaceholderText("e.g. 2.5"), {
       target: { value: "2.5" },
     });
+    fireEvent.click(screen.getByText("Weekly"));
     const confirmBtn = screen.getByTestId("confirm-med-change-btn");
     expect(confirmBtn).not.toBeDisabled();
   });
@@ -294,6 +295,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     fireEvent.change(screen.getByPlaceholderText("e.g. 2.5"), {
       target: { value: "2.5" },
     });
+    fireEvent.click(screen.getByText("Weekly"));
 
     expect(() =>
       fireEvent.click(screen.getByTestId("confirm-med-change-btn")),
@@ -320,6 +322,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     fireEvent.change(screen.getByPlaceholderText("e.g. 2.5"), {
       target: { value: "10" },
     });
+    fireEvent.click(screen.getByText("Weekly"));
     fireEvent.click(screen.getByTestId("confirm-med-change-btn"));
 
     const arg = onConfirm.mock.calls[0][0] as MedicationData;
@@ -330,7 +333,7 @@ describe("ChangeMedicationSheet – custom medication path", () => {
     renderSheet();
     fireEvent.click(screen.getByText("Other medication"));
     fireEvent.click(screen.getByText(/back to list/i));
-    expect(screen.getByText("Change Medication")).toBeInTheDocument();
+    expect(screen.getByText("Change Tracked Medication")).toBeInTheDocument();
     expect(
       screen.getByPlaceholderText(/search medications/i),
     ).toBeInTheDocument();
@@ -354,7 +357,7 @@ describe("ChangeMedicationSheet – close", () => {
     const { onOpenChange } = renderSheet();
     // Navigate to dose view
     fireEvent.click(screen.getByText("Ozempic"));
-    expect(screen.getByText("Set Dose & Details")).toBeInTheDocument();
+    expect(screen.getByText("Enter Prescribed Dose")).toBeInTheDocument();
 
     // Close
     fireEvent.click(screen.getByLabelText("Close"));

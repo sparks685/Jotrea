@@ -120,6 +120,8 @@ const CUSTOM_DOSE  = "2.5";
 function advanceToFinalScreenCustom() {
   // Step 0 → 1
   fireEvent.click(screen.getByText("Start Your Journey"));
+  // Tracker-only notice
+  fireEvent.click(screen.getByText("I Understand"));
   // Step 1: gender
   fireEvent.click(screen.getByText("Female"));
   fireEvent.click(screen.getByText("Continue"));
@@ -150,14 +152,13 @@ function advanceToFinalScreenCustom() {
   // "Continue →" is the custom-form advance button (distinct from "Continue")
   fireEvent.click(screen.getByText("Continue →"));
 
-  // Step 11: custom dose + frequency screen.
-  // Fill in dose amount (required to enable "Craft My Plan →").
+  // Step 11: custom dose + prescribed frequency screen.
+  // Fill in dose amount and explicitly choose the frequency from the prescription.
   const doseInput = screen.getByPlaceholderText(/e\.g\. 2\.5/i);
   fireEvent.change(doseInput, { target: { value: CUSTOM_DOSE } });
-
-  // "Weekly" is selected by default — no extra click needed.
+  fireEvent.click(screen.getByText("Weekly"));
   // Advance to loading.
-  fireEvent.click(screen.getByText("Craft My Plan →"));
+  fireEvent.click(screen.getByText("Set Up My Tracker →"));
 
   // Step 12: loading — 3.1 s timer calls handleComplete() then shows step 13.
   act(() => {

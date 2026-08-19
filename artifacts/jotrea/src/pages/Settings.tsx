@@ -277,6 +277,14 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
       </div>
 
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <p className="text-xs leading-relaxed text-amber-900">
+          <strong>Jotrea is a tracking and reminder tool only.</strong> It does not provide medical
+          advice, calculate dosages, or replace your healthcare provider. Always follow your
+          doctor's prescribed instructions.
+        </p>
+      </div>
+
       {/* Profile */}
       <SettingsSection title="Profile" icon={<User size={14} className="text-muted-foreground" />}>
         <SettingsRow label="Name">
@@ -604,7 +612,7 @@ export default function Settings() {
                 />
               </SettingsRow>
               <p className="text-[11px] text-muted-foreground px-0.5">
-                Leave blank to use the smart default based on your profile.
+                Leave blank to use the general tracking default based on your profile.
               </p>
             </div>
           ) : (
@@ -716,7 +724,7 @@ export default function Settings() {
       <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Export your full dose and weight history as CSV files for your healthcare provider.
+            Export your personal tracking history as CSV files to share with your healthcare provider.
           </p>
           <Button
             variant="outline"
@@ -738,7 +746,10 @@ export default function Settings() {
             Backed by pharmacy expertise for your GLP-1 journey.
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This app is for educational and tracking purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+            This app is for educational and tracking purposes only. It does not provide medical
+            advice, diagnosis, treatment, or dosage recommendations. All medication information is
+            sourced from publicly available FDA prescribing information. Always consult a qualified
+            healthcare provider before making any medical decisions.
           </p>
           <button
             className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"

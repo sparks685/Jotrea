@@ -52,7 +52,7 @@ export function ChangeMedicationSheet({
   const [customStrength, setCustomStrength] = useState("");
   const [customFormulation, setCustomFormulation] = useState<"injection" | "pill" | "other">("injection");
   const [customDoseAmt, setCustomDoseAmt] = useState("");
-  const [customFrequency, setCustomFrequency] = useState("weekly");
+  const [customFrequency, setCustomFrequency] = useState("");
   const [customFreqOther, setCustomFreqOther] = useState("");
 
   // Shared dose-step fields
@@ -77,7 +77,7 @@ export function ChangeMedicationSheet({
     setCustomStrength("");
     setCustomFormulation("injection");
     setCustomDoseAmt("");
-    setCustomFrequency("weekly");
+    setCustomFrequency("");
     setCustomFreqOther("");
     setStartDate(format(new Date(), "yyyy-MM-dd"));
     setInjectionSite(lastUsedSite);
@@ -108,7 +108,10 @@ export function ChangeMedicationSheet({
   );
 
   const canConfirmDose = isCustomMed
-    ? customBrand.trim() !== "" && customDoseAmt.trim() !== ""
+    ? customBrand.trim() !== "" &&
+      customDoseAmt.trim() !== "" &&
+      customFrequency !== "" &&
+      (customFrequency !== "other" || customFreqOther.trim() !== "")
     : selectedDose !== null;
 
   const handleConfirm = () => {
@@ -225,11 +228,11 @@ export function ChangeMedicationSheet({
             )}
             <div className="flex-1">
               <SheetTitle className="text-left text-lg font-bold">
-                {view === "select" ? "Change Medication" : "Set Dose & Details"}
+                {view === "select" ? "Change Tracked Medication" : "Enter Prescribed Dose"}
               </SheetTitle>
               <SheetDescription className="text-left text-xs mt-0.5">
                 {view === "select"
-                  ? "Your dose history will be kept."
+                  ? "Your tracking history will be kept. Enter only what your provider prescribed."
                   : isCustomMed
                   ? customBrand || "Custom medication"
                   : selectedMed?.brandNames[0]}
@@ -566,8 +569,11 @@ export function ChangeMedicationSheet({
 
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        Dosing Frequency
+                        Prescribed Frequency *
                       </label>
+                      <p className="text-xs text-muted-foreground">
+                        Select only the frequency written on your prescription.
+                      </p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { val: "weekly", label: "Weekly" },

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Syringe, Pill, AlertTriangle, Phone, Thermometer, BookOpen } from "lucide-react";
-import { useMedication, useUser } from "@/hooks/useMedication";
+import { ChevronDown, Syringe, Pill, AlertTriangle, BookOpen } from "lucide-react";
+import { useMedication } from "@/hooks/useMedication";
 import { medications } from "@/data/medications";
 import { PageContainer } from "@/components/PageContainer";
 
@@ -17,69 +17,6 @@ const SIDE_EFFECTS: Record<string, string[]> = {
   ],
 };
 
-const DOSING_TIPS: Record<string, string[]> = {
-  weekly: [
-    "Take on the same day each week",
-    "Rotate injection sites each dose",
-    "You can take with or without food",
-    "If you miss a dose, take within 5 days",
-  ],
-  daily: [
-    "Take at the same time each day",
-    "Consistency is key for effectiveness",
-    "If you miss a dose, take as soon as you remember",
-    "Do not double dose",
-  ],
-  "twice-daily": [
-    "Take within 60 minutes before morning and evening meals",
-    "Space doses at least 6 hours apart",
-    "Rotate injection sites",
-  ],
-};
-
-const WHEN_TO_CALL: string[] = [
-  "Severe and persistent nausea or vomiting",
-  "Severe abdominal pain that doesn't go away",
-  "Signs of pancreatitis: intense stomach pain, nausea, vomiting",
-  "Signs of kidney problems: little or no urination, swelling",
-  "Severe allergic reaction: rash, itching, difficulty breathing",
-  "Vision changes",
-];
-
-const DRUG_INTERACTIONS = [
-  {
-    name: "Insulin & Sulfonylureas",
-    detail: "Increased risk of low blood sugar (hypoglycemia). Your doctor may adjust your insulin dose.",
-    severity: "high",
-  },
-  {
-    name: "Oral Medications",
-    detail: "GLP-1 drugs slow digestion, which can delay absorption of other oral medications. Take time-sensitive pills at consistent times.",
-    severity: "moderate",
-  },
-  {
-    name: "Warfarin (blood thinners)",
-    detail: "Monitor INR more frequently when starting or changing dose — GLP-1 drugs can affect warfarin levels.",
-    severity: "moderate",
-  },
-  {
-    name: "Cyclosporine",
-    detail: "Slower gastric emptying may reduce cyclosporine absorption. Take cyclosporine consistently with meals.",
-    severity: "moderate",
-  },
-  {
-    name: "Alcohol",
-    detail: "Alcohol can worsen GI side effects (nausea, vomiting) and may affect blood sugar levels unpredictably.",
-    severity: "low",
-  },
-];
-
-const severityColor: Record<string, string> = {
-  high: "bg-destructive",
-  moderate: "bg-amber-400",
-  low: "bg-secondary",
-};
-
 interface Section {
   id: string;
   title: string;
@@ -87,51 +24,29 @@ interface Section {
   content: React.ReactNode;
 }
 
-const ACTIVITY_TIPS: Record<string, string> = {
-  sedentary: "Light movement after dosing can help with digestion.",
-  lightly_active: "Your activity level supports healthy weight loss. Keep it up.",
-  active: "Regular exercise pairs well with GLP-1 therapy. Stay consistent.",
-  very_active: "High activity levels may increase hydration needs. Prioritize water.",
-};
-
 export default function MedInfo() {
   const { medication } = useMedication();
-  const { user } = useUser();
   const [openSection, setOpenSection] = useState<string | null>("dosing");
   const [, setLocation] = useLocation();
 
   if (!medication) return null;
 
   const medInfo = medications.find((m) => m.id === medication.id);
-  const frequency = medication.frequency as keyof typeof DOSING_TIPS;
-  const dosingTips = DOSING_TIPS[frequency] ?? DOSING_TIPS.daily;
-
   const sections: Section[] = [
     {
       id: "dosing",
-      title: "Dosing Tips",
-      icon: Syringe,
+      title: "Your Tracking Details",
+      icon: BookOpen,
       content: (
-        <ul className="space-y-2">
-          {dosingTips.map((tip) => (
-            <li key={tip} className="flex items-start gap-2.5 text-sm text-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-              {tip}
-            </li>
-          ))}
-          {user.activityLevel && ACTIVITY_TIPS[user.activityLevel] && (
-            <li className="flex items-start gap-2.5 text-sm text-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-              {ACTIVITY_TIPS[user.activityLevel]}
-            </li>
-          )}
-          {medInfo?.pharmacistNote && (
-            <li className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
-              <p className="text-xs font-semibold text-amber-800 mb-1">Pharmacist Note</p>
-              <p className="text-xs text-amber-700">{medInfo.pharmacistNote}</p>
-            </li>
-          )}
-        </ul>
+        <div className="space-y-3 text-sm text-foreground">
+          <p>
+            This page reflects the medication, dose, and frequency you entered into Jotrea.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Check these details against your prescription. Jotrea does not verify, calculate,
+            recommend, or modify medication dosages or schedules.
+          </p>
+        </div>
       ),
     },
     {
@@ -140,24 +55,6 @@ export default function MedInfo() {
       icon: AlertTriangle,
       content: (
         <ul className="space-y-2">
-          {user.troublesomeSideEffects && user.troublesomeSideEffects.length > 0 && (
-            <li className="mb-3 p-3 bg-primary/8 rounded-xl border border-primary/20">
-              <p className="text-xs font-semibold text-primary mb-2">You flagged these during setup</p>
-              <div className="flex flex-wrap gap-1.5">
-                {user.troublesomeSideEffects.map((se) => (
-                  <span
-                    key={se}
-                    className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-primary/15 text-primary"
-                  >
-                    {se}
-                  </span>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                These are common — they typically improve after the first few weeks.
-              </p>
-            </li>
-          )}
           {SIDE_EFFECTS.default.map((se) => (
             <li key={se} className="flex items-start gap-2.5 text-sm text-foreground">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-1.5" />
@@ -165,73 +62,48 @@ export default function MedInfo() {
             </li>
           ))}
           <li className="mt-2 text-xs text-muted-foreground italic">
-            Most side effects improve after the first few weeks as your body adjusts.
+            These are examples listed in public prescribing information. Track what you
+            experience and discuss symptoms or concerns with your healthcare provider.
           </li>
         </ul>
       ),
     },
     {
-      id: "interactions",
-      title: "Drug Interactions",
-      icon: BookOpen,
+      id: "safety",
+      title: "Questions & Safety",
+      icon: AlertTriangle,
       content: (
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">
-            Always tell your doctor and pharmacist about all medications you take. Key interactions to know:
+        <div className="space-y-3 text-sm text-foreground">
+          <p>
+            Jotrea does not evaluate symptoms, drug interactions, missed doses, or medication safety.
           </p>
-          <ul className="space-y-2.5">
-            {DRUG_INTERACTIONS.map((item) => (
-              <li key={item.name} className="flex items-start gap-2.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${severityColor[item.severity]} flex-shrink-0 mt-1.5`} />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="text-[11px] text-muted-foreground italic pt-1">
-            This is for informational purposes only. Always consult your healthcare provider.
+          <p className="text-xs text-muted-foreground">
+            Contact your healthcare provider or pharmacist with medication questions. Seek
+            immediate professional help for urgent or severe symptoms.
           </p>
         </div>
       ),
     },
     {
-      id: "call-doctor",
-      title: "When to Call Your Doctor",
-      icon: Phone,
+      id: "official-info",
+      title: "Official Medication Information",
+      icon: BookOpen,
       content: (
-        <ul className="space-y-2">
-          {WHEN_TO_CALL.map((item) => (
-            <li key={item} className="flex items-start gap-2.5 text-sm text-foreground">
-              <div className="w-1.5 h-1.5 rounded-full bg-destructive flex-shrink-0 mt-1.5" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
-      id: "storage",
-      title: "Storage Instructions",
-      icon: Thermometer,
-      content: (
-        <div className="space-y-2 text-sm text-foreground">
-          <p>Store your medication properly to maintain effectiveness:</p>
-          <ul className="space-y-2 mt-2">
-            {[
-              "Keep refrigerated (36-46°F / 2-8°C) before first use",
-              "After first use, can be stored at room temperature (up to 77°F / 25°C)",
-              "Do not freeze — discard if frozen",
-              "Keep away from heat and light",
-              "Check expiration date before each use",
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0 mt-1.5" />
-                {item}
-              </li>
-            ))}
-          </ul>
+        <div className="space-y-3 text-sm text-foreground">
+          <p>
+            Administration, missed-dose, interaction, and storage instructions vary by
+            medication and product.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Use the official prescribing information supplied with your medication and follow
+            your healthcare provider's instructions.
+          </p>
+          <button
+            className="text-xs font-semibold text-primary underline underline-offset-2"
+            onClick={() => setLocation("/sources")}
+          >
+            View Sources &amp; References
+          </button>
         </div>
       ),
     },

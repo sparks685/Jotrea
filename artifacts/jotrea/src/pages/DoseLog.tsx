@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMedication, useDoses } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
-import { medications, GENERIC_PHARMACIST_NOTE } from "@/data/medications";
+import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
 import { PageContainer } from "@/components/PageContainer";
 import { SideEffectTrendsChart } from "@/components/SideEffectTrendsChart";
@@ -372,7 +372,7 @@ export default function DoseLog() {
               {/* Fixed header */}
               <div className="flex items-center justify-between px-6 pt-6 pb-4 flex-shrink-0">
                 <h3 className="text-lg font-bold text-foreground">
-                  {showDoseConfirm ? "Dose Logged" : editingId ? "Edit Dose" : "Log Dose"}
+                  {showDoseConfirm ? "Dose Logged" : editingId ? "Edit Dose" : "Log My Dose"}
                 </h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
@@ -402,17 +402,18 @@ export default function DoseLog() {
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
                       <div className="flex items-center gap-2">
                         <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pharmacist Note</p>
+                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Check Your Prescription</p>
                       </div>
                       <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
-                        {medInfo?.pharmacistNote ?? GENERIC_PHARMACIST_NOTE}
+                        Confirm that this medication and dose match your prescription. Jotrea records
+                        your entry; it does not recommend or change dosages.
                       </p>
                       <button
                         data-testid="view-med-guide-link"
                         className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
                         onClick={() => { handleCloseAddForm(); navigate("/med-info"); }}
                       >
-                        View medication guide →
+                        View medication information →
                       </button>
                     </div>
 
@@ -548,7 +549,9 @@ export default function DoseLog() {
                               >
                                 <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
                                 <p className="text-xs text-amber-800 leading-relaxed">
-                                  {logDoseAmount} {medInfo.unit} is ahead of your current {medication.dose} {medInfo.unit} step. This may not match your prescriber's escalation plan — check with them before skipping a step.
+                                  This differs from the {medication.dose} {medInfo.unit} dose you currently track.
+                                  Jotrea cannot recommend a dosage change. Only log a different dose if your
+                                  healthcare provider prescribed it.
                                 </p>
                               </motion.div>
                             )}
@@ -563,7 +566,7 @@ export default function DoseLog() {
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
                           {!editingId && doses.some(d => d.site !== "oral") && (
-                            <span className="text-[10px] text-secondary font-semibold">↺ Rotate suggested</span>
+                            <span className="text-[10px] text-secondary font-semibold">↺ Next site in your tracking rotation</span>
                           )}
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -603,7 +606,7 @@ export default function DoseLog() {
                     style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
                   >
                     <Button className="w-full h-12 rounded-2xl font-semibold" onClick={handleAddDose} data-testid="save-dose-btn">
-                      {editingId ? "Save Changes" : "Log Dose"}
+                      {editingId ? "Save Changes" : "Log My Dose"}
                     </Button>
                   </div>
                 </>

@@ -7,3 +7,4 @@
 - [localStorage screenshot seeding](ls-screenshot-seeding.md) — seed localStorage then call window.location.replace(path) in a useEffect; the full-page reload forces all hooks to re-initialize with the seeded data before the screenshot is captured.
 - [Ruler suppressScrollRef fix](ruler-suppress-scroll.md) — programmatic scrollLeft is overridden by a pending snap timer; suppress onScroll events for 200ms around every programmatic set.
 - [Bottom sheet portal pattern](sheet-portal-pattern.md) — all fixed-backdrop sheets must use createPortal(…, document.body) or BottomNav (z-50 in root stacking context) renders on top of them.
+- [App Review medical positioning](app-review-medical-positioning.md) — Jotrea is strictly a prescribed-information tracker/reminder; never present dose or medication-use guidance.

@@ -113,6 +113,8 @@ function renderApp() {
 function advanceToFinalScreen() {
   // Step 0 → 1
   fireEvent.click(screen.getByText("Start Your Journey"));
+  // Tracker-only notice
+  fireEvent.click(screen.getByText("I Understand"));
   // Step 1: gender
   fireEvent.click(screen.getByText("Female"));
   fireEvent.click(screen.getByText("Continue"));
@@ -136,7 +138,7 @@ function advanceToFinalScreen() {
   fireEvent.click(screen.getByText("Ozempic"));
   // Step 11: dose
   fireEvent.click(screen.getByText("0.5 mg"));
-  fireEvent.click(screen.getByText("Craft My Plan →"));
+  fireEvent.click(screen.getByText("Set Up My Tracker →"));
   // Step 12: loading — the 3.1s timer calls handleComplete() then shows step 13
   act(() => {
     vi.advanceTimersByTime(3200);

@@ -93,6 +93,7 @@ export default function Onboarding() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [showTrackerNotice, setShowTrackerNotice] = useState(false);
 
   const [gender, setGender] = useState("");
   const [bMonth, setBMonth] = useState("1");
@@ -129,7 +130,7 @@ export default function Onboarding() {
   const [customStrength, setCustomStrength] = useState("");
   const [customFormulation, setCustomFormulation] = useState<"injection"|"pill"|"other">("injection");
   const [customDoseAmt, setCustomDoseAmt] = useState("");
-  const [customFrequency, setCustomFrequency] = useState("weekly");
+  const [customFrequency, setCustomFrequency] = useState("");
   const [customFreqOther, setCustomFreqOther] = useState("");
 
   const { medication, setMedication } = useMedication();
@@ -183,6 +184,7 @@ export default function Onboarding() {
   /** Builds the medication record from current onboarding state (null if invalid). */
   const buildMedication = () => {
     if (isCustomMed) {
+      if (!customFrequency) return null;
       const freq = (customFrequency === "other" ? (customFreqOther || "custom") : customFrequency) as "weekly" | "daily" | "twice-daily";
       const dose = parseFloat(customDoseAmt) || 0;
       return { id: "custom", genericName: customGeneric || customBrand, brandName: customBrand, dose, frequency: freq, startDate, injectionSite: customFormulation === "injection" ? injectionSite : undefined, active: true };
@@ -313,7 +315,7 @@ export default function Onboarding() {
       <AnimatePresence mode="wait" initial={false} custom={direction}>
 
         {/* ─── Step 0: Welcome ─────────────────────────────────────── */}
-        {step === 0 && (
+        {step === 0 && !showTrackerNotice && (
           <motion.div key="s0" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
             className="flex-1 flex flex-col items-center justify-center px-7 text-center gap-7">
 
@@ -348,9 +350,35 @@ export default function Onboarding() {
             <div className="w-full max-w-xs">
               <Button className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-xl"
                 style={{ backgroundColor:BRAND, boxShadow:`0 8px 32px ${BRAND}45` }}
-                onClick={() => nav(1)}>
+                onClick={() => { haptic(); setDirection(1); setShowTrackerNotice(true); }}>
                 Start Your Journey
               </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── Tracker-only notice (before personal setup) ─────────── */}
+        {step === 0 && showTrackerNotice && (
+          <motion.div key="tracker-notice" custom={direction} variants={stepVariants} initial="enter" animate="center" exit="exit" transition={{ duration:0.28, ease }}
+            className="flex-1 flex flex-col px-7 pt-8 pb-6 justify-center">
+            <div className="mb-6">
+              <BackBtn onBack={() => { haptic(); setDirection(-1); setShowTrackerNotice(false); }} />
+            </div>
+            <div className="w-full max-w-sm mx-auto">
+              <StepBadge icon={<Info size={20}/>} />
+              <h2 className="text-[28px] font-black text-foreground mb-3 leading-tight">
+                Track what your provider prescribed
+              </h2>
+              <div className="bg-card rounded-3xl border border-border/60 p-5 space-y-4 shadow-sm">
+                <p className="text-sm text-foreground leading-relaxed">
+                  Jotrea is a personal tracking tool, not a medical advisor.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Enter your medication and dose exactly as prescribed by your healthcare provider.
+                  Jotrea does not calculate, recommend, or modify any dosages.
+                </p>
+              </div>
+              <ContinueBtn onClick={() => nav(1)}>I Understand</ContinueBtn>
             </div>
           </motion.div>
         )}
@@ -362,7 +390,7 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Heart size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">How do you identify?</h2>
-            <p className="text-muted-foreground mb-8 text-sm">Helps us personalise your health plan.</p>
+            <p className="text-muted-foreground mb-8 text-sm">Helps personalise your tracking experience.</p>
 
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -395,7 +423,7 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Calendar size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">When's your birthday?</h2>
-            <p className="text-muted-foreground mb-7 text-sm">Used to personalise dosing recommendations.</p>
+            <p className="text-muted-foreground mb-7 text-sm">Used only to personalise your tracking view.</p>
 
             <div className="flex gap-3 bg-card p-6 rounded-3xl border border-border/60 mb-4" style={{ boxShadow:"0 4px 20px rgba(0,0,0,0.05)" }}>
               {[
@@ -426,7 +454,7 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Activity size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your measurements</h2>
-            <p className="text-muted-foreground mb-6 text-sm">Used to calculate BMI and personalise your plan.</p>
+            <p className="text-muted-foreground mb-6 text-sm">Used to show BMI and personalise your tracking insights.</p>
 
             <div className="flex bg-muted/60 p-1 rounded-xl w-fit mx-auto mb-6">
               {(["imperial","metric"] as const).map(u => (
@@ -496,7 +524,7 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<TrendingDown size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Where did you start?</h2>
-            <p className="text-muted-foreground mb-7 text-sm">Helps us calculate your total progress so far.</p>
+            <p className="text-muted-foreground mb-7 text-sm">Used to show the weight progress you have recorded so far.</p>
 
             <div className="space-y-5">
               <div className="space-y-2">
@@ -538,8 +566,8 @@ export default function Onboarding() {
             className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Target size={20}/>} />
-            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your dream weight</h2>
-            <p className="text-muted-foreground mb-5 text-sm">Drag the ruler or tap +/− to set your goal.</p>
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your tracking goal</h2>
+            <p className="text-muted-foreground mb-5 text-sm">Enter a personal goal you have already chosen with your healthcare provider.</p>
 
             {/* Large number display */}
             {(() => {
@@ -548,7 +576,7 @@ export default function Onboarding() {
               const diff = sw - gw;
               return (
                 <div className="text-center mb-4">
-                  <span style={{ fontSize:'12px', fontWeight:800, color:BRAND, letterSpacing:'0.1em', textTransform:'uppercase' }}>Dream weight</span>
+                  <span style={{ fontSize:'12px', fontWeight:800, color:BRAND, letterSpacing:'0.1em', textTransform:'uppercase' }}>Tracking goal</span>
                   <div className="mt-1 flex items-baseline justify-center gap-2">
                     <motion.span key={goalWeight} initial={{ opacity:0.7, y:-6 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.1 }}
                       className="text-7xl font-black text-foreground tracking-tight">{gw}</motion.span>
@@ -719,7 +747,7 @@ export default function Onboarding() {
                 <div className="text-center mt-4">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ background:`${BRAND}14`, color:BRAND }}>
                     <Target size={13}/>
-                    At this pace, you'll reach this by {format(addWeeks(new Date(), weeks), "MMMM yyyy")}
+                    Tracking estimate: {format(addWeeks(new Date(), weeks), "MMMM yyyy")}
                   </div>
                 </div>
               );
@@ -735,15 +763,15 @@ export default function Onboarding() {
             className="flex-1 flex flex-col px-6 pt-3 pb-6 justify-center">
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Zap size={20}/>} />
-            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Set your pace</h2>
-            <p className="text-muted-foreground mb-6 text-sm">How quickly do you want to reach your goal?</p>
+            <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Choose a tracking pace</h2>
+            <p className="text-muted-foreground mb-6 text-sm">Select the pace you want Jotrea to use for your date estimate.</p>
 
             <div className="space-y-3 mb-6">
               {[
-                { value:0.5, emoji:"🚶", label:"Steady", desc:`0.5 ${heightUnit==="imperial"?"lbs":"kg"}/week — gentle, sustainable` },
-                { value:1.0, emoji:"🚗", label:"Moderate", desc:`1.0 ${heightUnit==="imperial"?"lbs":"kg"}/week — balanced & effective`, recommended:true },
-                { value:1.5, emoji:"⚡", label:"Accelerated", desc:`1.5 ${heightUnit==="imperial"?"lbs":"kg"}/week — faster results` },
-                { value:2.0, emoji:"🚀", label:"Aggressive", desc:`2.0 ${heightUnit==="imperial"?"lbs":"kg"}/week — clinical supervision advised` },
+                { value:0.5, emoji:"🚶", label:"0.5 per week", desc:`Track an estimate using 0.5 ${heightUnit==="imperial"?"lbs":"kg"} per week` },
+                { value:1.0, emoji:"🚗", label:"1.0 per week", desc:`Track an estimate using 1.0 ${heightUnit==="imperial"?"lbs":"kg"} per week` },
+                { value:1.5, emoji:"⚡", label:"1.5 per week", desc:`Track an estimate using 1.5 ${heightUnit==="imperial"?"lbs":"kg"} per week` },
+                { value:2.0, emoji:"🚀", label:"2.0 per week", desc:`Track an estimate using 2.0 ${heightUnit==="imperial"?"lbs":"kg"} per week` },
               ].map(opt => {
                 const sel = goalPace === opt.value;
                 return (
@@ -755,7 +783,6 @@ export default function Onboarding() {
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-foreground text-sm">{opt.label}</span>
-                        {opt.recommended && <span className="text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background:`${BRAND}20`, color:BRAND }}>RECOMMENDED</span>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
                     </div>
@@ -776,7 +803,7 @@ export default function Onboarding() {
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white shadow-md"
                     style={{ backgroundColor:BRAND, boxShadow:`0 4px 16px ${BRAND}45` }}>
                     <Star size={13}/>
-                    Goal date: {format(addWeeks(new Date(),weeks),"MMMM yyyy")}
+                    Estimated date: {format(addWeeks(new Date(),weeks),"MMMM yyyy")}
                   </div>
                 </div>
               );
@@ -793,7 +820,7 @@ export default function Onboarding() {
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Flame size={20}/>} />
             <h2 className="text-[28px] font-black text-foreground mb-1 leading-tight">Your daily activity</h2>
-            <p className="text-muted-foreground mb-7 text-sm">Be honest — it helps calibrate your plan.</p>
+            <p className="text-muted-foreground mb-7 text-sm">Used to personalise your daily tracking targets.</p>
 
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -1005,9 +1032,10 @@ export default function Onboarding() {
             className="flex-1 flex flex-col px-6 pt-10 pb-6 overflow-y-auto">
             <div className="mb-6"><BackBtn onBack={back} /></div>
             <StepBadge icon={<Pill size={20}/>} />
-            <h2 className="text-[28px] font-black text-foreground mb-0.5 leading-tight">Set your dose</h2>
+            <h2 className="text-[28px] font-black text-foreground mb-0.5 leading-tight">Enter your prescribed dose</h2>
             <p className="text-muted-foreground text-sm mb-7">
-              {isCustomMed ? customBrand || "Custom medication" : selectedMed?.brandNames[0]}
+              Select only the dose your healthcare provider prescribed for{" "}
+              {isCustomMed ? customBrand || "your medication" : selectedMed?.brandNames[0]}.
             </p>
 
             <div className="space-y-7">
@@ -1015,7 +1043,7 @@ export default function Onboarding() {
               {/* ── Standard med: pre-defined dose buttons ── */}
               {!isCustomMed && selectedMed && (
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Starting Dose</label>
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Your Prescribed Dose</label>
                   <div className="grid grid-cols-3 gap-2 mt-3">
                     {selectedMed.doses.map((d: number, i: number) => {
                       const isStart = i === 0;
@@ -1035,13 +1063,6 @@ export default function Onboarding() {
                             onClick={() => { setSelectedDose(d); haptic(); }}>
                             {d} {selectedMed.unit}
                           </motion.button>
-                          {isStart && (
-                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide whitespace-nowrap"
-                              style={{ backgroundColor: `${BRAND}18`, color: BRAND, border: `1px solid ${BRAND}40` }}>
-                              <Star size={7} strokeWidth={3} fill="currentColor" />
-                              Start here
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -1052,7 +1073,8 @@ export default function Onboarding() {
                     style={{ background:`${BRAND}0d`, border:`1px solid ${BRAND}28` }}>
                     <Info size={14} className="flex-shrink-0 mt-0.5" style={{ color:BRAND }}/>
                     <p className="text-xs font-medium leading-relaxed" style={{ color:BRAND }}>
-                      Most patients start at the lowest dose and increase gradually on their prescriber's schedule. If unsure, start here.
+                      Jotrea does not recommend a dose. Choose the dose shown on your prescription.
+                      If you are unsure, confirm it with your healthcare provider.
                     </p>
                   </div>
                 </div>
@@ -1075,7 +1097,10 @@ export default function Onboarding() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dosing Frequency</label>
+                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Prescribed Frequency *</label>
+                    <p className="text-xs text-muted-foreground">
+                      Select only the frequency written on your prescription.
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
                       {[
                         { val:"weekly", label:"Weekly" },
@@ -1336,37 +1361,34 @@ export default function Onboarding() {
                 </button>
               </div>
 
-              {/* Pharmacist note */}
-              {((!isCustomMed && selectedMed?.pharmacistNote) || isCustomMed) && (
-                <div className="flex items-start gap-3 px-4 py-3.5 rounded-2xl"
-                  style={{ background:`${BRAND}12`, border:`1px solid ${BRAND}30` }}>
-                  <Info size={15} style={{ color:BRAND }} className="flex-shrink-0 mt-0.5"/>
-                  <div>
-                    <p className="text-xs font-bold mb-1" style={{ color:BRAND }}>Pharmacist Note</p>
-                    <p className="text-xs leading-relaxed" style={{ color:BRAND }}>
-                      {isCustomMed
-                        ? "Take your medication exactly as prescribed. Always rotate injection sites, store as directed on the label, and never double dose if you miss one. When in doubt, ask your pharmacist."
-                        : selectedMed?.pharmacistNote}
-                    </p>
-                    {!isCustomMed && selectedMed && FDA_LABEL_URLS[selectedMed.id] && (
-                      <button
-                        className="text-[10px] underline underline-offset-2 mt-1.5 opacity-80"
-                        style={{ color:BRAND }}
-                        data-testid="pharmacist-note-source-link"
-                        onClick={() => window.open(FDA_LABEL_URLS[selectedMed.id], "_blank", "noreferrer")}
-                      >
-                        Source: FDA Prescribing Information
-                      </button>
-                    )}
-                  </div>
+              {/* Prescription confirmation */}
+              <div className="flex items-start gap-3 px-4 py-3.5 rounded-2xl"
+                style={{ background:`${BRAND}12`, border:`1px solid ${BRAND}30` }}>
+                <Info size={15} style={{ color:BRAND }} className="flex-shrink-0 mt-0.5"/>
+                <div>
+                  <p className="text-xs font-bold mb-1" style={{ color:BRAND }}>Check Your Prescription</p>
+                  <p className="text-xs leading-relaxed" style={{ color:BRAND }}>
+                    Confirm that the medication, dose, and frequency above match your prescription.
+                    Jotrea records your entries; it does not recommend or change dosages.
+                  </p>
+                  {!isCustomMed && selectedMed && FDA_LABEL_URLS[selectedMed.id] && (
+                    <button
+                      className="text-[10px] underline underline-offset-2 mt-1.5 opacity-80"
+                      style={{ color:BRAND }}
+                      data-testid="pharmacist-note-source-link"
+                      onClick={() => window.open(FDA_LABEL_URLS[selectedMed.id], "_blank", "noreferrer")}
+                    >
+                      Source: FDA Prescribing Information
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             <ContinueBtn
-              disabled={isCustomMed ? (!customDoseAmt.trim() || (customFrequency==="other" && !customFreqOther.trim())) : !selectedDose}
+              disabled={isCustomMed ? (!customDoseAmt.trim() || !customFrequency || (customFrequency==="other" && !customFreqOther.trim())) : !selectedDose}
               onClick={() => nav(12)}>
-              Craft My Plan →
+              Set Up My Tracker →
             </ContinueBtn>
           </motion.div>
         )}
@@ -1389,13 +1411,13 @@ export default function Onboarding() {
                 </motion.div>
               </div>
             </div>
-            <h2 className="text-2xl font-black text-foreground mb-2">Building your plan…</h2>
-            <p className="text-sm text-muted-foreground mb-10">Personalised just for you</p>
+            <h2 className="text-2xl font-black text-foreground mb-2">Setting up your tracker…</h2>
+            <p className="text-sm text-muted-foreground mb-10">Personalised tracking for you</p>
             <div className="space-y-4 w-full max-w-xs text-left">
               {[
-                { label:"Building your dose schedule", icon:<Calendar size={12}/> },
-                { label:"Calculating your weight timeline", icon:<TrendingDown size={12}/> },
-                { label:"Preparing side effect tips", icon:<Heart size={12}/> },
+                { label:"Confirming your prescribed dose", icon:<Calendar size={12}/> },
+                { label:"Setting your weight goals", icon:<TrendingDown size={12}/> },
+                { label:"Preparing your tracking tips", icon:<Heart size={12}/> },
               ].map((item,i) => {
                 const done = loadingTicks > i;
                 return (
@@ -1422,12 +1444,12 @@ export default function Onboarding() {
                 style={{ background:`radial-gradient(circle, ${BRAND}30, ${BRAND}0e)`, border:`2px solid ${BRAND}40` }}>
                 <CheckCircle2 size={36} style={{ color:BRAND }}/>
               </motion.div>
-              <h2 className="text-[28px] font-black text-foreground mb-2">Your plan is ready! 🎉</h2>
-              <p className="text-muted-foreground text-sm">A personalised GLP-1 plan built just for you.</p>
+              <h2 className="text-[28px] font-black text-foreground mb-2">Your tracker is ready! 🎉</h2>
+              <p className="text-muted-foreground text-sm">A personalised GLP-1 tracker for your prescribed medication.</p>
             </div>
 
             <div className="bg-card rounded-3xl p-5 border border-border/60 mb-5" style={{ boxShadow:"0 4px 20px rgba(0,0,0,0.05)" }}>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Your Timeline</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Your Tracking Summary</p>
               <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-1.5">
                 <span>Today</span><span>Goal</span>
               </div>
@@ -1553,8 +1575,9 @@ export default function Onboarding() {
                 </Button>
               )}
               <p className="text-[10px] text-muted-foreground leading-relaxed pt-2">
-                This app is for educational and tracking purposes only. It does not provide medical
-                advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+                Jotrea is a tracking and reminder tool only. It does not provide medical advice,
+                diagnosis, treatment, or dosage recommendations. Enter and follow only the
+                instructions prescribed by your qualified healthcare provider.
               </p>
             </div>
           </motion.div>
