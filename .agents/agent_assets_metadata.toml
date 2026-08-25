@@ -240,3 +240,10 @@ id = "LPL7ODdcJ6zDBNNuenHtc"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S6.png"
 type = "image"
 title = "iPad 11\" App S6 – Personalised Plan"
+
+[[outputs]]
+id = "PL9aRYOBtDmR1blizgYa-"
+uri = "file://marketing/app-store-review/Jotrea-Plus-IAP-Review-1290x2796.png"
+type = "image"
+title = "Jotrea Plus Review Screenshot"
+description = "Apple-compatible 1290 × 2796 RGB PNG for the Monthly and Annual subscription Review Information fields."
