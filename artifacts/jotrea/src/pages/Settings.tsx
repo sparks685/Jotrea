@@ -616,14 +616,27 @@ export default function Settings() {
                   : "Your essential tracking features stay free."}
               </p>
             </div>
-            <Button
-              size="sm"
-              className="rounded-xl"
-              onClick={() => setLocation("/plus")}
-              data-testid="button-manage-subscription"
-            >
-              {user.subscription === "premium" ? "Manage" : "Explore"}
-            </Button>
+            {user.subscription === "premium" ? (
+              <Button asChild size="sm" className="rounded-xl">
+                <a
+                  href="https://apps.apple.com/account/subscriptions"
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="button-manage-subscription"
+                >
+                  Manage
+                </a>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="rounded-xl"
+                onClick={() => setLocation("/plus")}
+                data-testid="button-manage-subscription"
+              >
+                Explore
+              </Button>
+            )}
           </div>
         </div>
         <div className="divide-y divide-border">
