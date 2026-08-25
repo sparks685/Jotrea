@@ -8,3 +8,4 @@
 - [Ruler suppressScrollRef fix](ruler-suppress-scroll.md) — programmatic scrollLeft is overridden by a pending snap timer; suppress onScroll events for 200ms around every programmatic set.
 - [Bottom sheet portal pattern](sheet-portal-pattern.md) — all fixed-backdrop sheets must use createPortal(…, document.body) or BottomNav (z-50 in root stacking context) renders on top of them.
 - [App Review medical positioning](app-review-medical-positioning.md) — Jotrea is strictly a prescribed-information tracker/reminder; never present dose or medication-use guidance.
+- [Jotrea Plus model](jotrea-plus-model.md) — keep core tracking free; monetize multiple medications, HealthKit, advanced trends, and provider summaries.
