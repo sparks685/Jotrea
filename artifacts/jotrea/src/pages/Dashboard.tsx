@@ -26,6 +26,7 @@ import { trackEvent } from "@/lib/analytics";
 import { cancelNotificationTag, rescheduleAllNotifications } from "@/utils/notifications";
 import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
+import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -74,6 +75,9 @@ export default function Dashboard() {
 
   const { checkin, toggle } = useDailyCheckin();
   const [whyDismissed, setWhyDismissed] = useLocalStorage<boolean>("jotrea_why_dismissed", false);
+  const currentDoses = medication
+    ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
+    : [];
 
   // Close all bottom sheets immediately when navigating away — prevents the
   // fixed backdrop from blocking the incoming page during the exit animation.
@@ -86,7 +90,7 @@ export default function Dashboard() {
   // Reschedule all notifications on every Dashboard mount (i.e. each app open)
   useEffect(() => {
     if (medication && user.notificationsEnabled) {
-      rescheduleAllNotifications(medication, doses, user);
+      rescheduleAllNotifications(medication, currentDoses, user, { allDoses: doses });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -104,13 +108,13 @@ export default function Dashboard() {
     user.motivations.length > 0;
 
   const medInfo = medications.find((m) => m.id === medication.id);
-  const nextDoseDate = getNextDoseDate(medication.startDate, medication.frequency, doses);
+  const nextDoseDate = getNextDoseDate(medication.startDate, medication.frequency, currentDoses);
   const daysUntil = getDaysUntilDose(nextDoseDate);
   const isDueToday = daysUntil === 0;
-  const streak = calculateStreak(doses, medication.startDate, medication.frequency);
-  const lastDose = getLastDose(doses);
+  const streak = calculateStreak(currentDoses, medication.startDate, medication.frequency);
+  const lastDose = getLastDose(currentDoses);
   const weightEntries = getLast7WeightEntries(weights);
-  const nextThree = getNextThreeDoses(medication.startDate, medication.frequency, doses);
+  const nextThree = getNextThreeDoses(medication.startDate, medication.frequency, currentDoses);
   const latestWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
   const prevWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[1] ?? null;
   const weightDelta =
@@ -196,11 +200,21 @@ export default function Dashboard() {
       site: finalSite,
       notes: logNotes,
       taken: true,
+      medicationId: getMedicationTrackingId(medication),
     };
-    setDoses([...doses, newDose]);
+    const nextDoses = [...doses, newDose];
+    setDoses(nextDoses);
     setPendingDoseId(doseId);
     // Cancel the missed-dose notification for this specific dose day
     cancelNotificationTag(`jotrea-missed-dose-${logDate}`);
+    if (user.notificationsEnabled) {
+      rescheduleAllNotifications(
+        medication,
+        dosesForMedication(nextDoses, medication, user.legacyDoseMedicationId),
+        user,
+        { allDoses: nextDoses }
+      );
+    }
 
     if (finalSite !== "oral") {
       const newHistoryEntry = { site: finalSite, date: format(parseISO(logDate), "MMM d") };

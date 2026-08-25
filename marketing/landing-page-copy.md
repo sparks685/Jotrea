@@ -70,16 +70,16 @@ GLP-1 Medication Tracker
 **Icon:** Open book / accordion (navy)
 
 **Headline:**
-> Know your medication, inside and out.
+> Keep your prescribed details close.
 
 **Body:**
-> Built-in dosing tips, side effect guide, and storage instructions for every major GLP-1 drug. Always available offline. Written in plain English, not prescribing information.
+> Keep the medication name, dosage, and frequency from your prescription close at hand. Jotrea records what you enter and helps you stay organized; it never calculates or recommends a dosage.
 
 **Detail bullets:**
 - 11 medications: Ozempic, Mounjaro, Wegovy, Zepbound + more
-- Dosing tips, side effects, when to call your doctor
+- Prescribed medication details in one place
 - Fully offline — no internet required
-- Drug interaction checker (Premium)
+- Sources and references for further reading
 
 ---
 
@@ -90,7 +90,7 @@ GLP-1 Medication Tracker
 **Steps:**
 
 **Step 1 — Pick your medication**
-> Choose from 11 GLP-1 medications. Set your dose and start date. Done.
+> Choose from 11 GLP-1 medications. Enter the dosage and start date from your prescription. Done.
 
 **Step 2 — Log each dose**
 > One tap on dose day. Jotrea tracks your site, notes, and streak automatically.
@@ -102,26 +102,24 @@ GLP-1 Medication Tracker
 
 ## SECTION 3 — PREMIUM
 
-**Eyebrow:** Jotrea Premium
+**Eyebrow:** Jotrea Plus
 
 **Headline:**
-> Go further. Go Premium.
+> Go further. Go Plus.
 
 **Body:**
-> The free version of Jotrea is genuinely useful. Premium is for people who want the full picture.
+> Essential medication tracking, history, weight and symptom logging, basic reminders, and basic export stay free. Plus adds organization, integrations, and deeper reporting.
 
 **Feature list:**
-- ✦ Track multiple medications simultaneously
-- ✦ Drug interaction checker
-- ✦ Side effect & symptom journal
-- ✦ Progress photos (before/after)
+- ✦ Track multiple medications
+- ✦ Medication Cabinet with additional reminders
 - ✦ Apple Health sync
-- ✦ PDF export for doctor appointments
-- ✦ Food & meal logging
+- ✦ Advanced trends
+- ✦ Provider visit summaries
 
 **Pricing:**
-> **$4.99/month** or **$29.99/year** (save 50%)
-> Start with a free 7-day trial. Cancel anytime.
+> **$4.99/month** or **$39.99/year**
+> Start with a free 14-day trial. Cancel anytime.
 
 **CTA:** `Start Free Trial`
 
@@ -139,7 +137,7 @@ A: Yes. Jotrea stores everything locally on your device using your iPhone's secu
 A: Completely. Jotrea never requires internet access. Log doses, track weight, and read medication info anywhere — no Wi-Fi, no cellular needed.
 
 **Q: Is Jotrea a medical app?**
-A: No. Jotrea is a personal tracking tool, not a medical device or clinical application. It doesn't provide medical advice, diagnoses, or treatment recommendations. Always follow your healthcare provider's instructions.
+A: No. Jotrea is a personal tracker and reminder, not a medical device or clinical application. It doesn't calculate or recommend dosages or provide medical advice, diagnoses, or treatment recommendations. Enter only the medication information from your prescription and always follow your healthcare provider's instructions.
 
 **Q: Can I use Jotrea for daily medications like Rybelsus?**
 A: Yes. Jotrea supports weekly, daily, and twice-daily dosing schedules. The countdown ring and calendar adjust automatically to your medication's frequency.

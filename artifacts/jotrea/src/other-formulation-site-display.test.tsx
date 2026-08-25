@@ -82,6 +82,7 @@ vi.mock("@/utils/dates", () => ({
 
 vi.mock("@/utils/notifications", () => ({
   isNotificationSupported: () => true,
+  getNotificationPermission: vi.fn().mockResolvedValue("default"),
   rescheduleAllNotifications: vi.fn(),
   cancelNotificationTag: vi.fn(),
   scheduleAllNotifications: vi.fn(),

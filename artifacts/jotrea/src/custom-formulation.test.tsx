@@ -93,6 +93,7 @@ vi.mock("@/components/ChangeMedicationSheet", () => ({
 
 vi.mock("@/utils/notifications", () => ({
   isNotificationSupported: () => true,
+  getNotificationPermission: vi.fn().mockResolvedValue("default"),
   scheduleAllNotifications: vi.fn(),
   cancelAllNotifications: vi.fn(),
   rescheduleAllNotifications: vi.fn(),

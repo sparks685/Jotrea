@@ -64,6 +64,7 @@ vi.mock("@/lib/analytics", () => ({
 vi.mock("@/utils/notifications", () => ({
   isNotificationSupported: () => true,
   requestNotificationPermission: vi.fn().mockResolvedValue("denied"),
+  getNotificationPermission: vi.fn().mockResolvedValue("default"),
   scheduleAllNotifications: vi.fn().mockResolvedValue(undefined),
   registerNotificationSW: vi.fn(),
 }));

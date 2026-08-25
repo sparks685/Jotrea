@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jotrea Plus — Medication Cabinet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');
+  *{box-sizing:border-box}body{margin:0;width:100vw;height:100vh;overflow:hidden;background:#FFFDF7;color:#1A1D3D;font-family:Inter,-apple-system,sans-serif}
+  .page{height:100%;padding:4.5vh 7vw 0}.status{display:flex;justify-content:space-between;font-size:1.75vw;font-weight:700}.title{margin-top:4vh;font-size:6.4vw;font-weight:900;letter-spacing:-.3vw}.sub{font-size:2.8vw;color:#6E7585;margin-top:1vh}
+  .cabinet{margin-top:4vh;display:grid;grid-template-columns:repeat(2,1fr);gap:2.4vw}.card{background:#fff;border-radius:4vw;padding:3.6vw;box-shadow:0 1.2vw 4vw rgba(26,29,61,.07);border:.18vw solid #F7F2EA}.active{border-color:#D4A574}
+  .row{display:flex;align-items:center;justify-content:space-between}.icon{width:6vw;height:6vw;border-radius:1.8vw;background:linear-gradient(135deg,#C4956A,#D4A574);display:grid;place-items:center;color:white;font-size:3vw}.badge{padding:1vw 1.6vw;border-radius:2vw;background:#F4E8DB;color:#8A5D31;font-size:1.6vw;font-weight:800}
+  h2{font-size:3.6vw;margin:2.2vw 0 .8vw}.detail{font-size:2.15vw;color:#6E7585;line-height:1.5}.reminder{margin-top:2.4vw;padding:2vw;border-radius:2vw;background:#FFF8F0;font-size:1.9vw;font-weight:700}.add{margin-top:2.5vh;border:.2vw dashed #D4A574;border-radius:3vw;padding:2.6vw;text-align:center;color:#9A6A3E;font-size:2.3vw;font-weight:800}
+  .caption{position:absolute;left:0;right:0;bottom:0;background:#1A1D3D;border-radius:5.5vw 5.5vw 0 0;padding:4.5vh 7.5vw 5.5vh;color:white}.caption h1{font-size:7vw;line-height:1.04;margin:0;font-weight:900;letter-spacing:-.35vw}.caption p{font-size:3vw;line-height:1.4;margin:1.6vh 0 0;color:rgba(255,255,255,.74)}
+  .plus{display:inline-block;background:linear-gradient(135deg,#C4956A,#D4A574);padding:.8vw 1.6vw;border-radius:1.6vw;font-size:1.7vw;vertical-align:middle}
+  @media (min-aspect-ratio: .6){.page{padding-left:7%;padding-right:7%}.title{font-size:5vw}.sub{font-size:2vw}.cabinet{gap:2vw}.card{padding:2.5vw;border-radius:2.8vw}.icon{width:4.5vw;height:4.5vw}.caption{padding-top:3.5vh;padding-bottom:4vh}.caption h1{font-size:5.6vw}.caption p{font-size:2.25vw}}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="status"><span>9:41</span><span>● ●● ▰</span></div>
+  <div class="title">Medication Cabinet <span class="plus">PLUS</span></div>
+  <div class="sub">Keep prescribed medications and reminders organized.</div>
+  <section class="cabinet">
+    <article class="card active">
+      <div class="row"><div class="icon">✦</div><span class="badge">ACTIVE</span></div>
+      <h2>Wegovy</h2><div class="detail">0.5 mg · Weekly<br>As prescribed · Fridays</div>
+      <div class="reminder">Reminder · 8:00 AM</div>
+    </article>
+    <article class="card">
+      <div class="row"><div class="icon">✓</div><span class="badge">PAUSED</span></div>
+      <h2>Vitamin D</h2><div class="detail">1 capsule · Daily<br>As prescribed</div>
+      <div class="reminder">Reminder · 9:00 AM</div>
+    </article>
+  </section>
+  <div class="add">Add medication from your prescription</div>
+</main>
+<footer class="caption"><h1>Everything in One Cabinet</h1><p>Organize multiple medications and their reminders with Jotrea Plus.</p></footer>
+</body>
+</html>

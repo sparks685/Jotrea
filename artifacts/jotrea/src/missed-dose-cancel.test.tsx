@@ -22,6 +22,7 @@ import React from "react";
 
 vi.mock("@/utils/notifications", () => ({
   isNotificationSupported: () => true,
+  getNotificationPermission: vi.fn().mockResolvedValue("default"),
   cancelNotificationTag: vi.fn().mockResolvedValue(undefined),
   rescheduleAllNotifications: vi.fn().mockResolvedValue(undefined),
   registerNotificationSW: vi.fn().mockResolvedValue(null),

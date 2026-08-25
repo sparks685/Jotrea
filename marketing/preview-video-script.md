@@ -27,7 +27,7 @@
 ---
 
 ### 0:08–0:12 — Medication selection
-**Action:** Hand scrolls through medication list. Finger taps "Ozempic." Dose selector spins to "0.5 mg." Checkmark animates in.
+**Action:** Hand scrolls through medication list. Finger taps "Ozempic," then manually enters the prescribed dosage and frequency. Checkmark animates in.
 
 **On-screen text (bottom, pill label):**
 > 11 GLP-1 medications supported
@@ -52,13 +52,13 @@
 
 ---
 
-### 0:23–0:27 — Med info + premium blur
-**Action:** Swipe to Med Info tab. Dosing Tips accordion opens with a smooth expand. Drug Interactions section appears blurred with gold lock overlay.
+### 0:23–0:27 — Medication Cabinet + Plus
+**Action:** Swipe to the Medication Cabinet. Two prescribed medications and their reminders appear, followed by the Jotrea Plus paywall.
 
 **On-screen text (pill label on blur overlay):**
-> ♛ Premium unlocks everything
+> ✦ Keep every medication organized
 
-*Premium modal slides up from the bottom. Gold gradient. "Start Free Trial" button glows.*
+*Plus modal slides up from the bottom. “14-day free trial,” “$4.99 monthly,” and “$39.99 annually” are clearly visible.*
 
 ---
 

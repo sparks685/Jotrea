@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
+import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import type { MedicationData, DoseEntry, UserData, WeightEntry } from "@/types";
 
 interface DailyCheckin {
@@ -93,9 +94,9 @@ export function useUser() {
 /**
  * Bidirectional dose-site migration scoped to the CURRENT medication period.
  *
- * Only doses whose `date` falls on or after `medication.startDate` are touched;
- * doses from earlier medication periods are left exactly as recorded, preserving
- * historical accuracy when a user has previously switched between medications.
+ * Only doses belonging to the active medication and whose `date` falls on or
+ * after `medication.startDate` are touched. Doses owned by another Cabinet
+ * medication (and earlier medication periods) remain exactly as recorded.
  *
  * - Injection → Oral: doses in the current period whose site is anything other
  *   than "oral" are corrected to "oral".
@@ -108,13 +109,15 @@ export function useUser() {
 export function useOralDoseMigration() {
   const { medication } = useMedication();
   const { setDoses } = useDoses();
-  const medicationId = medication?.id ?? null;
+  const { user } = useUser();
+  const medicationId = medication ? getMedicationTrackingId(medication) : null;
   const injectionSite = medication?.injectionSite;
   const startDate = medication?.startDate ?? null;
 
   useEffect(() => {
-    if (!medicationId || !startDate) return;
-    const medInfo = medications.find((m) => m.id === medicationId);
+    if (!medication || !medicationId || !startDate) return;
+    const currentMedication = medication;
+    const medInfo = medications.find((m) => m.id === currentMedication.id);
     // Shared guard — same logic used in Dashboard/DoseLog when writing the site field
     const isOral = isOralMedication({ injectionSite }, medInfo);
 
@@ -134,7 +137,9 @@ export function useOralDoseMigration() {
     // Only consider doses that belong to the current medication period.
     // Doses before startDate were logged under a different medication/formulation
     // and must not be rewritten.
-    const inCurrentPeriod = (d: DoseEntry) => d.date >= startDate;
+    const activeDoses = dosesForMedication(current, currentMedication, user.legacyDoseMedicationId);
+    const activeIds = new Set(activeDoses.map((dose) => dose.id));
+    const inCurrentPeriod = (d: DoseEntry) => activeIds.has(d.id) && d.date >= startDate;
 
     if (isOral) {
       // Injection → Oral: correct non-"oral" site values to "oral" for the
@@ -161,7 +166,7 @@ export function useOralDoseMigration() {
         )
       );
     }
-  }, [medicationId, injectionSite, startDate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [medicationId, injectionSite, startDate, user.legacyDoseMedicationId]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 /**

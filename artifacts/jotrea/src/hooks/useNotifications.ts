@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { requestNotificationPermission } from "@/utils/notifications";
+import { getNotificationPermission, requestNotificationPermission } from "@/utils/notifications";
 
 function getSafePermission(): NotificationPermission {
   try {
@@ -15,9 +15,13 @@ export function useNotifications() {
 
   // Re-check permission when user returns to the app (e.g. after granting in iOS Settings)
   useEffect(() => {
+    const refreshPermission = async () => {
+      setPermission(await getNotificationPermission());
+    };
+    void refreshPermission();
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        setPermission(getSafePermission());
+        void refreshPermission();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);

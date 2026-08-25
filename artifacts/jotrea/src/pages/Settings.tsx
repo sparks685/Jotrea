@@ -14,6 +14,13 @@ import {
   Moon,
   Monitor,
   BookOpen,
+  Crown,
+  ChevronRight,
+  Pill,
+  ChartNoAxesCombined,
+  FileHeart,
+  HeartPulse,
+  Upload,
 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -36,6 +43,7 @@ import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
 import { buildDoseCSV, buildWeightCSV, exportCSVFiles } from "@/utils/featureGates";
+import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import {
   scheduleAllNotifications,
   cancelAllNotifications,
@@ -47,6 +55,16 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { trackEvent } from "@/lib/analytics";
 import { ChangeMedicationSheet } from "@/components/ChangeMedicationSheet";
 import type { MedicationData } from "@/types";
+import {
+  getHealthKitAuthorizationStatus,
+  exportHealthKitWeights,
+  isHealthKitAvailable,
+  mergeHealthKitWeights,
+  readHealthKitWeights,
+  requestHealthKitAuthorization,
+  type HealthKitAuthorization,
+  type HealthKitAvailability,
+} from "@/utils/healthKit";
 
 const LBS_PER_KG = 2.20462;
 const CM_PER_INCH = 2.54;
@@ -117,7 +135,34 @@ export default function Settings() {
   const notificationsSupported = isNotificationSupported();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
   const [editingField, setEditingField] = useState<"motivations" | "side-effects" | "daily-targets" | null>(null);
+  const [healthAvailability, setHealthAvailability] = useState<HealthKitAvailability>("checking");
+  const [healthAuthorization, setHealthAuthorization] = useState<HealthKitAuthorization>("notDetermined");
+  const [healthAction, setHealthAction] = useState<"authorize" | "import" | "export" | null>(null);
+  const [healthMessage, setHealthMessage] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
+  const currentMedicationDoses = medication
+    ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
+    : [];
+  const hasPlus = user.subscription === "premium";
+
+  useEffect(() => {
+    let active = true;
+    if (!hasPlus) return;
+    void (async () => {
+      const available = await isHealthKitAvailable();
+      if (!active) return;
+      setHealthAvailability(available ? "available" : "unavailable");
+      if (available) {
+        try {
+          const status = await getHealthKitAuthorizationStatus();
+          if (active) setHealthAuthorization(status);
+        } catch {
+          if (active) setHealthMessage("Apple Health status could not be checked. Please try again.");
+        }
+      }
+    })();
+    return () => { active = false; };
+  }, [hasPlus]);
 
   const toggleMotivation = useCallback((text: string) => {
     const current = user.motivations ?? [];
@@ -138,7 +183,7 @@ export default function Settings() {
 
   const nextDoseDateObj = (() => {
     try {
-      return medication ? getNextDoseDate(medication.startDate, medication.frequency, doses) : null;
+      return medication ? getNextDoseDate(medication.startDate, medication.frequency, currentMedicationDoses) : null;
     } catch { return null; }
   })();
   const nextDoseDate = (() => {
@@ -150,13 +195,13 @@ export default function Settings() {
 
   const nextReminderTime = useMemo(() => {
     if (!medication || !pushEnabled || permission !== "granted") return null;
-    try { return getNextScheduledTime(medication, doses, user); } catch { return null; }
+    try { return getNextScheduledTime(medication, currentMedicationDoses, user); } catch { return null; }
   }, [medication, pushEnabled, permission, user.notificationTime]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reschedule whenever reminder time changes or notifications are toggled on
   useEffect(() => {
     if (!pushEnabled || !medication || permission !== "granted") return;
-    rescheduleAllNotifications(medication, doses, user);
+      rescheduleAllNotifications(medication, currentMedicationDoses, user, { allDoses: doses });
   }, [user.notificationTime, pushEnabled, permission]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePushToggle = async () => {
@@ -169,7 +214,7 @@ export default function Settings() {
     const result = await requestPermission();
     if (result === "granted") {
       setUser({ ...user, notificationsEnabled: true });
-      if (medication) await scheduleAllNotifications(medication, doses, user);
+      if (medication) await scheduleAllNotifications(medication, currentMedicationDoses, user, { allDoses: doses });
       trackEvent("notifications_enabled");
     }
   };
@@ -182,6 +227,58 @@ export default function Settings() {
       { filename: "jotrea-weights.csv", content: weightCsv },
     ]);
     trackEvent("data_exported");
+  };
+
+  const handleHealthAuthorization = async () => {
+    setHealthAction("authorize");
+    setHealthMessage(null);
+    try {
+      const status = await requestHealthKitAuthorization();
+      setHealthAuthorization(status);
+      setHealthMessage(
+        status === "authorized"
+          ? "Apple Health is connected."
+          : status === "denied"
+            ? "Apple Health access is off. Enable it in the Health app or iPhone Settings."
+            : "Apple Health permission was not granted."
+      );
+    } catch {
+      setHealthMessage("Apple Health could not be connected. Please try again.");
+    } finally {
+      setHealthAction(null);
+    }
+  };
+
+  const handleHealthImport = async () => {
+    setHealthAction("import");
+    setHealthMessage(null);
+    try {
+      const samples = await readHealthKitWeights(new Date("2000-01-01T00:00:00"));
+      const merged = mergeHealthKitWeights(weights, samples, user.units);
+      const imported = merged.length - weights.length;
+      if (imported) setWeights(merged);
+      setHealthMessage(imported ? `Imported ${imported} weight ${imported === 1 ? "entry" : "entries"} from Apple Health.` : "Your tracked weights are already up to date.");
+    } catch {
+      setHealthMessage("Apple Health weights could not be imported. Please try again.");
+    } finally {
+      setHealthAction(null);
+    }
+  };
+
+  const handleHealthExport = async () => {
+    setHealthAction("export");
+    setHealthMessage(null);
+    try {
+      const { exported, skipped, failed } = await exportHealthKitWeights(weights, user.units);
+      const summary = [
+        `${exported} exported`,
+        `${skipped} skipped`,
+        `${failed} failed`,
+      ].join(", ");
+      setHealthMessage(`Apple Health weight export complete: ${summary}.`);
+    } finally {
+      setHealthAction(null);
+    }
   };
 
   const handleToggleUnits = (newUnits: "lbs" | "kg") => {
@@ -247,6 +344,9 @@ export default function Settings() {
   };
 
   const handleMedConfirmed = (newMed: MedicationData) => {
+    if (medication && !user.legacyDoseMedicationId) {
+      setUser({ ...user, legacyDoseMedicationId: getMedicationTrackingId(medication) });
+    }
     setMedication(newMed);
   };
 
@@ -440,11 +540,11 @@ export default function Settings() {
         </div>
 
         {/* Only show injection history when the user has injection doses — hidden for oral-only users */}
-        {doses.some(d => d.site && d.site !== "oral") && (
+        {currentMedicationDoses.some(d => d.site && d.site !== "oral") && (
           <div className="pt-2 pb-1 border-t border-border mt-2 space-y-2">
             <p className="text-sm font-semibold text-foreground">Injection History</p>
             <div className="space-y-1.5">
-              {[...doses]
+              {[...currentMedicationDoses]
                 .filter(d => d.site && d.site !== "oral")
                 .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
                 .slice(0, 5)
@@ -501,6 +601,127 @@ export default function Settings() {
           </Button>
         )}
       </SettingsSection>
+
+      {/* Jotrea Plus */}
+      <SettingsSection title="Jotrea Plus" icon={<Crown size={14} className="text-primary" />}>
+        <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-foreground" data-testid="status-subscription">
+                {user.subscription === "premium" ? "Plus active" : "Free"}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {user.subscription === "premium"
+                  ? "Expanded organization and reporting are unlocked."
+                  : "Your essential tracking features stay free."}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              className="rounded-xl"
+              onClick={() => setLocation("/plus")}
+              data-testid="button-manage-subscription"
+            >
+              {user.subscription === "premium" ? "Manage" : "Explore"}
+            </Button>
+          </div>
+        </div>
+        <div className="divide-y divide-border">
+          <PlusFeatureRow
+            icon={<Pill size={15} />}
+            label="Medication Cabinet"
+            onClick={() => setLocation("/medication-cabinet")}
+            testId="button-medication-cabinet"
+          />
+          <PlusFeatureRow
+            icon={<ChartNoAxesCombined size={15} />}
+            label="Advanced Trends"
+            onClick={() => setLocation("/advanced-trends")}
+            testId="button-advanced-trends"
+          />
+          <PlusFeatureRow
+            icon={<FileHeart size={15} />}
+            label="Provider Visit Summary"
+            onClick={() => setLocation("/visit-summary")}
+            testId="button-visit-summary"
+          />
+        </div>
+      </SettingsSection>
+
+      {hasPlus && (
+        <SettingsSection title="Apple Health" icon={<HeartPulse size={14} className="text-primary" />}>
+          {healthAvailability === "checking" ? (
+            <p className="text-xs text-muted-foreground" data-testid="healthkit-checking">
+              Checking Apple Health availability…
+            </p>
+          ) : healthAvailability === "unavailable" ? (
+            <p className="text-xs leading-relaxed text-muted-foreground" data-testid="healthkit-unavailable">
+              Apple Health weight sync is available in the Jotrea Plus iPhone app.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-primary/15 bg-primary/5 p-3">
+                <p className="text-sm font-semibold text-foreground" data-testid="healthkit-status">
+                  {healthAuthorization === "authorized"
+                    ? "Apple Health connected"
+                    : healthAuthorization === "denied"
+                      ? "Apple Health access is off"
+                      : "Connect Apple Health"}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {healthAuthorization === "authorized"
+                    ? "Import or export weight entries only when you choose an action below."
+                    : "Allow Jotrea to read and write weight data in Apple Health."}
+                </p>
+              </div>
+
+              {healthAuthorization !== "authorized" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-xl gap-2"
+                  onClick={handleHealthAuthorization}
+                  disabled={healthAction !== null}
+                  data-testid="healthkit-authorize"
+                >
+                  <HeartPulse size={14} />
+                  {healthAction === "authorize" ? "Connecting…" : "Allow Apple Health Access"}
+                </Button>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl gap-1.5"
+                    onClick={handleHealthImport}
+                    disabled={healthAction !== null}
+                    data-testid="healthkit-import"
+                  >
+                    <Download size={14} />
+                    {healthAction === "import" ? "Importing…" : "Import weights"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl gap-1.5"
+                    onClick={handleHealthExport}
+                    disabled={healthAction !== null || weights.length === 0}
+                    data-testid="healthkit-export"
+                  >
+                    <Upload size={14} />
+                    {healthAction === "export" ? "Exporting…" : "Export weights"}
+                  </Button>
+                </div>
+              )}
+              {healthMessage && (
+                <p className="text-xs leading-relaxed text-muted-foreground" role="status" data-testid="healthkit-message">
+                  {healthMessage}
+                </p>
+              )}
+            </div>
+          )}
+        </SettingsSection>
+      )}
 
       {/* Appearance */}
       <SettingsSection title="Appearance" icon={<Sun size={14} className="text-muted-foreground" />}>
@@ -862,5 +1083,31 @@ function SettingsRow({
       <span className="text-sm text-foreground">{label}</span>
       {children}
     </div>
+  );
+}
+
+function PlusFeatureRow({
+  icon,
+  label,
+  onClick,
+  testId,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  testId: string;
+}) {
+  return (
+    <button
+      className="flex w-full items-center justify-between py-3 text-left"
+      onClick={onClick}
+      data-testid={testId}
+    >
+      <span className="flex items-center gap-2.5 text-sm font-medium text-foreground">
+        <span className="text-primary">{icon}</span>
+        {label}
+      </span>
+      <ChevronRight size={15} className="text-muted-foreground" />
+    </button>
   );
 }

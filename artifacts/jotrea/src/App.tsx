@@ -5,8 +5,10 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
-import { useMedication, useOralDoseMigration } from "@/hooks/useMedication";
+import { useMedication, useOralDoseMigration, useUser } from "@/hooks/useMedication";
 import { initGA, pageView } from "@/lib/analytics";
+import { subscriptionService } from "@/services/subscriptionService";
+import { isNativeCapacitor } from "@/utils/capacitor";
 import { registerNotificationSW } from "@/utils/notifications";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
@@ -15,6 +17,10 @@ import WeightTracker from "@/pages/WeightTracker";
 import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import Sources from "@/pages/Sources";
+import Plus from "@/pages/Plus";
+import MedicationCabinet from "@/pages/MedicationCabinet";
+import AdvancedTrends from "@/pages/AdvancedTrends";
+import VisitSummary from "@/pages/VisitSummary";
 import NotFound from "@/pages/not-found";
 
 export class PageErrorBoundary extends Component<
@@ -98,6 +104,32 @@ function RouteTracker() {
   return null;
 }
 
+function NativeSubscriptionSync() {
+  const { setUser } = useUser();
+
+  useEffect(() => {
+    if (!isNativeCapacitor()) return;
+    let active = true;
+    void subscriptionService.getStatus().then((status) => {
+      if (!active) return;
+      setUser((current) => ({
+        ...current,
+        subscription: status.isPlus ? "premium" : "free",
+        subscriptionProductId: status.productId,
+        subscriptionExpiresAt: status.expiresAt,
+        trialEndDate: status.state === "trial" ? status.expiresAt : undefined,
+      }));
+    }).catch((error) => {
+      console.warn("Unable to refresh Jotrea Plus status", error);
+    });
+    return () => {
+      active = false;
+    };
+  }, []); // RevenueCat is refreshed once when the native app session starts.
+
+  return null;
+}
+
 function AppRoutes() {
   const { medication } = useMedication();
   const [location] = useLocation();
@@ -122,6 +154,7 @@ function AppRoutes() {
   return (
     <>
       <RouteTracker />
+      <NativeSubscriptionSync />
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto"
@@ -149,6 +182,18 @@ function AppRoutes() {
                 </Route>
                 <Route path="/settings">
                   {!medication ? <Redirect to="/onboarding" /> : <Settings />}
+                </Route>
+                <Route path="/plus">
+                  {!medication ? <Redirect to="/onboarding" /> : <Plus />}
+                </Route>
+                <Route path="/medication-cabinet">
+                  {!medication ? <Redirect to="/onboarding" /> : <MedicationCabinet />}
+                </Route>
+                <Route path="/advanced-trends">
+                  {!medication ? <Redirect to="/onboarding" /> : <AdvancedTrends />}
+                </Route>
+                <Route path="/visit-summary">
+                  {!medication ? <Redirect to="/onboarding" /> : <VisitSummary />}
                 </Route>
                 <Route path="/sources"><Sources /></Route>
                 <Route path="/reset"><ResetAndRedirect /></Route>

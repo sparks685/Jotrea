@@ -12,7 +12,7 @@
  *   node generate-screenshots.js ipad              # iPad set only (iPad-S1–S4)
  *   node generate-screenshots.js s1                # slide 1 for both iPhone and iPad
  *   node generate-screenshots.js s2 s4             # slides 2 and 4 (both device sizes)
- *   node generate-screenshots.js --check-colors    # verify brand colors in all A-series HTML files
+ *   node generate-screenshots.js --check-colors    # verify brand colors in all canonical marketing sources
  *   node generate-screenshots.js --help            # print this usage
  *
  * Or run manually for a single file:
@@ -36,9 +36,10 @@
  *     ipad-app-s1-dashboard-hero.html      → Jotrea-iPad-App-S1.png
  *     ipad-app-s2-dose-tracking.html       → Jotrea-iPad-App-S2.png
  *     ipad-app-s3-weight-progress.html     → Jotrea-iPad-App-S3.png
- *     ipad-app-s4-med-info.html            → Jotrea-iPad-App-S4.png
- *     ipad-app-s5-side-effects.html        → Jotrea-iPad-App-S5.png
- *     ipad-app-s6-personalized-plan.html   → Jotrea-iPad-App-S6.png
+ *     app-plus-medication-cabinet.html     → Jotrea-iPad-App-S4.png
+ *     app-plus-advanced-trends.html        → Jotrea-iPad-App-S5.png
+ *     app-plus-provider-summary.html       → Jotrea-iPad-App-S6.png
+ *     app-plus-paywall.html                → Jotrea-iPad-App-S7.png
  *
  * Brand colors (keep these in sync with artifacts/jotrea/src/index.css):
  *   --primary (tan):    #D4A574  (hsl 32 55% 64%)
@@ -232,21 +233,19 @@ function runRulerCheck(dir, cssPath) {
 }
 
 /**
- * The 12 new A-series HTML files that must be checked.
+ * Canonical App Store marketing HTML files that must be checked.
  */
 const A_SERIES_HTML = [
   'app-s1-dashboard-hero.html',
   'app-s2-dose-tracking.html',
   'app-s3-weight-progress.html',
-  'app-s4-med-info.html',
-  'app-s5-side-effects.html',
-  'app-s6-personalized-plan.html',
+  'app-plus-medication-cabinet.html',
+  'app-plus-advanced-trends.html',
+  'app-plus-provider-summary.html',
+  'app-plus-paywall.html',
   'ipad-app-s1-dashboard-hero.html',
   'ipad-app-s2-dose-tracking.html',
   'ipad-app-s3-weight-progress.html',
-  'ipad-app-s4-med-info.html',
-  'ipad-app-s5-side-effects.html',
-  'ipad-app-s6-personalized-plan.html',
 ];
 
 /**
@@ -333,7 +332,7 @@ function runColorCheck(dir, cssPath) {
 
 const DIR = path.resolve(__dirname);
 
-/** All canonical App Store screenshot jobs. */
+/** All canonical App Store screenshot jobs. Version 1.1 uses A1–A7. */
 const ALL_JOBS = [
   // ── Original set (S1–S4) ───────────────────────────────────────────────────
   { id: 's1', device: 'iphone', html: 's1-onboarding.html',         out: 'Jotrea-S1.png',      w: 1290, h: 2796 },
@@ -348,9 +347,10 @@ const ALL_JOBS = [
   { id: 'a1', device: 'iphone', html: 'app-s1-dashboard-hero.html',          out: 'Jotrea-App-S1.png',      w: 1290, h: 2796 },
   { id: 'a2', device: 'iphone', html: 'app-s2-dose-tracking.html',           out: 'Jotrea-App-S2.png',      w: 1290, h: 2796 },
   { id: 'a3', device: 'iphone', html: 'app-s3-weight-progress.html',         out: 'Jotrea-App-S3.png',      w: 1290, h: 2796 },
-  { id: 'a4', device: 'iphone', html: 'app-s4-med-info.html',                out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
-  { id: 'a5', device: 'iphone', html: 'app-s5-side-effects.html',            out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
-  { id: 'a6', device: 'iphone', html: 'app-s6-personalized-plan.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
+  { id: 'a4', device: 'iphone', html: 'app-plus-medication-cabinet.html',     out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
+  { id: 'a5', device: 'iphone', html: 'app-plus-advanced-trends.html',        out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
+  { id: 'a6', device: 'iphone', html: 'app-plus-provider-summary.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
+  { id: 'a7', device: 'iphone', html: 'app-plus-paywall.html',                out: 'Jotrea-App-S7.png',      w: 1290, h: 2796 },
   // ── iPad 11" set at 1668×2388 (for App Store 11" Display slot) ─────────────
   { id: 'ip11s1',  device: 'ipad11', html: 'ipad-s1-onboarding.html',             out: 'Jotrea-iPad11-S1.png',      w: 1668, h: 2388 },
   { id: 'ip11s2',  device: 'ipad11', html: 'ipad-s2-goal-weight.html',            out: 'Jotrea-iPad11-S2.png',      w: 1668, h: 2388 },
@@ -359,9 +359,10 @@ const ALL_JOBS = [
   { id: 'ip11a1',  device: 'ipad11', html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad11-App-S1.png',  w: 1668, h: 2388 },
   { id: 'ip11a2',  device: 'ipad11', html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad11-App-S2.png',  w: 1668, h: 2388 },
   { id: 'ip11a3',  device: 'ipad11', html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad11-App-S3.png',  w: 1668, h: 2388 },
-  { id: 'ip11a4',  device: 'ipad11', html: 'ipad-app-s4-med-info.html',           out: 'Jotrea-iPad11-App-S4.png',  w: 1668, h: 2388 },
-  { id: 'ip11a5',  device: 'ipad11', html: 'ipad-app-s5-side-effects.html',       out: 'Jotrea-iPad11-App-S5.png',  w: 1668, h: 2388 },
-  { id: 'ip11a6',  device: 'ipad11', html: 'ipad-app-s6-personalized-plan.html',  out: 'Jotrea-iPad11-App-S6.png',  w: 1668, h: 2388 },
+  { id: 'ip11a4',  device: 'ipad11', html: 'app-plus-medication-cabinet.html',    out: 'Jotrea-iPad11-App-S4.png',  w: 1668, h: 2388 },
+  { id: 'ip11a5',  device: 'ipad11', html: 'app-plus-advanced-trends.html',       out: 'Jotrea-iPad11-App-S5.png',  w: 1668, h: 2388 },
+  { id: 'ip11a6',  device: 'ipad11', html: 'app-plus-provider-summary.html',      out: 'Jotrea-iPad11-App-S6.png',  w: 1668, h: 2388 },
+  { id: 'ip11a7',  device: 'ipad11', html: 'app-plus-paywall.html',               out: 'Jotrea-iPad11-App-S7.png',  w: 1668, h: 2388 },
   // ── iPhone 6.5" set at 1284×2778 (for App Store 6.5" Display slot) ────────
   { id: 'b1', device: 'iphone65', html: 's1-onboarding.html',                out: 'Jotrea-65-S1.png',       w: 1284, h: 2778 },
   { id: 'b2', device: 'iphone65', html: 's2-goal-weight.html',               out: 'Jotrea-65-S2.png',       w: 1284, h: 2778 },
@@ -370,15 +371,17 @@ const ALL_JOBS = [
   { id: 'c1', device: 'iphone65', html: 'app-s1-dashboard-hero.html',        out: 'Jotrea-65-App-S1.png',   w: 1284, h: 2778 },
   { id: 'c2', device: 'iphone65', html: 'app-s2-dose-tracking.html',         out: 'Jotrea-65-App-S2.png',   w: 1284, h: 2778 },
   { id: 'c3', device: 'iphone65', html: 'app-s3-weight-progress.html',       out: 'Jotrea-65-App-S3.png',   w: 1284, h: 2778 },
-  { id: 'c4', device: 'iphone65', html: 'app-s4-med-info.html',              out: 'Jotrea-65-App-S4.png',   w: 1284, h: 2778 },
-  { id: 'c5', device: 'iphone65', html: 'app-s5-side-effects.html',          out: 'Jotrea-65-App-S5.png',   w: 1284, h: 2778 },
-  { id: 'c6', device: 'iphone65', html: 'app-s6-personalized-plan.html',     out: 'Jotrea-65-App-S6.png',   w: 1284, h: 2778 },
+  { id: 'c4', device: 'iphone65', html: 'app-plus-medication-cabinet.html',   out: 'Jotrea-65-App-S4.png',   w: 1284, h: 2778 },
+  { id: 'c5', device: 'iphone65', html: 'app-plus-advanced-trends.html',      out: 'Jotrea-65-App-S5.png',   w: 1284, h: 2778 },
+  { id: 'c6', device: 'iphone65', html: 'app-plus-provider-summary.html',     out: 'Jotrea-65-App-S6.png',   w: 1284, h: 2778 },
+  { id: 'c7', device: 'iphone65', html: 'app-plus-paywall.html',              out: 'Jotrea-65-App-S7.png',   w: 1284, h: 2778 },
   { id: 'ia1', device: 'ipad',  html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad-App-S1.png', w: 2064, h: 2752 },
   { id: 'ia2', device: 'ipad',  html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad-App-S2.png', w: 2064, h: 2752 },
   { id: 'ia3', device: 'ipad',  html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad-App-S3.png', w: 2064, h: 2752 },
-  { id: 'ia4', device: 'ipad',  html: 'ipad-app-s4-med-info.html',           out: 'Jotrea-iPad-App-S4.png', w: 2064, h: 2752 },
-  { id: 'ia5', device: 'ipad',  html: 'ipad-app-s5-side-effects.html',       out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
-  { id: 'ia6', device: 'ipad',  html: 'ipad-app-s6-personalized-plan.html',  out: 'Jotrea-iPad-App-S6.png', w: 2064, h: 2752 },
+  { id: 'ia4', device: 'ipad',  html: 'app-plus-medication-cabinet.html',     out: 'Jotrea-iPad-App-S4.png', w: 2064, h: 2752 },
+  { id: 'ia5', device: 'ipad',  html: 'app-plus-advanced-trends.html',        out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
+  { id: 'ia6', device: 'ipad',  html: 'app-plus-provider-summary.html',       out: 'Jotrea-iPad-App-S6.png', w: 2064, h: 2752 },
+  { id: 'ia7', device: 'ipad',  html: 'app-plus-paywall.html',                out: 'Jotrea-iPad-App-S7.png', w: 2064, h: 2752 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -395,8 +398,8 @@ Usage:
   node generate-screenshots.js s1                Slide 1 for both device sizes
   node generate-screenshots.js s2 s4             Slides 2 and 4 for both device sizes
   node generate-screenshots.js iphone s1         Specific device + slide combo
-  node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A6)
-  node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S6)
+  node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A7)
+  node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S7)
   node generate-screenshots.js --iphone65        iPhone 6.5" set at 1284×2778 (App Store 6.5" Display slot)
   node generate-screenshots.js --check-colors    Verify brand hex values in all 12 A-series HTML files
   node generate-screenshots.js --check-ruler     Verify ruler dark-mode contrast (opacity guard + snapshot)
@@ -449,7 +452,7 @@ function selectJobs(args) {
     const devices = deviceFilters.length > 0 ? deviceFilters : ['iphone'];
 
     return ALL_JOBS.filter(job => {
-      const isMarketingSlide = /^(a[1-6]|ia[1-6])$/.test(job.id);
+      const isMarketingSlide = /^(a[1-7]|ia[1-7])$/.test(job.id);
       return isMarketingSlide && devices.includes(job.device);
     });
   }
@@ -457,13 +460,13 @@ function selectJobs(args) {
   if (positional.length === 0) return ALL_JOBS;
 
   const deviceFilters = positional.filter(a => a === 'iphone' || a === 'ipad');
-  const slideFilters  = positional.filter(a => /^(s[1-4]|a[1-6]|ia[1-6])$/.test(a));
+  const slideFilters  = positional.filter(a => /^(s[1-4]|a[1-7]|ia[1-7])$/.test(a));
   const unknown       = positional.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
 
   if (unknown.length > 0) {
     console.error(`Unknown filter(s): ${unknown.join(', ')}`);
     console.error('Valid device filters: iphone, ipad');
-    console.error('Valid slide filters:  s1–s4, a1–a6, ia1–ia6');
+    console.error('Valid slide filters:  s1–s4, a1–a7, ia1–ia7');
     process.exit(1);
   }
 
@@ -528,7 +531,7 @@ const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
 // ---------------------------------------------------------------------------
 // Automatic brand-color check when any A-series job was in the run
 // ---------------------------------------------------------------------------
-const hasASeriesJob = jobs.some(job => /^(a[1-6]|ia[1-6])$/.test(job.id));
+const hasASeriesJob = jobs.some(job => /^(a[1-7]|ia[1-7])$/.test(job.id));
 if (hasASeriesJob) {
   runColorCheck(DIR, cssPath);
 }

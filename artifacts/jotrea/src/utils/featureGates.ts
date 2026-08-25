@@ -1,9 +1,10 @@
 import type { DoseEntry, WeightEntry } from "@/types";
+import { getNativePlugin, isNativeCapacitor } from "./capacitor";
 
 export const FREE_HISTORY_DAYS = 30;
 
 export function isPremium(_subscription: string): boolean {
-  return true; // free for launch — all features unlocked
+  return _subscription === "premium";
 }
 
 export function getFreeHistoryCutoff(): Date {
@@ -15,22 +16,15 @@ export function getFreeHistoryCutoff(): Date {
 
 export function filterForFreeTier<T extends { date: string }>(
   items: T[],
-  subscription: string
+  _subscription: string
 ): { visible: T[]; locked: T[] } {
-  if (isPremium(subscription)) {
-    return { visible: items, locked: [] };
-  }
-  const cutoff = getFreeHistoryCutoff();
-  const visible = items.filter((i) => new Date(i.date) >= cutoff);
-  const locked = items.filter((i) => new Date(i.date) < cutoff);
-  return { visible, locked };
+  // Personal tracking history is an essential free feature. Keep the legacy
+  // return shape so existing consumers remain compatible, but never lock it.
+  return { visible: items, locked: [] };
 }
 
-export function isCalendarMonthLocked(year: number, month: number, subscription: string): boolean {
-  if (isPremium(subscription)) return false;
-  const cutoff = getFreeHistoryCutoff();
-  const lastDayOfMonth = new Date(year, month + 1, 0);
-  return lastDayOfMonth < cutoff;
+export function isCalendarMonthLocked(_year: number, _month: number, _subscription: string): boolean {
+  return false;
 }
 
 function escapeCsv(val: string | number | undefined): string {
@@ -93,43 +87,13 @@ type CapFilesystem = {
 type CapShare = {
   share: (opts: { files?: string[]; url?: string }) => Promise<unknown>;
 };
-type CapGlobal = {
-  isNativePlatform?: () => boolean;
-  isPluginAvailable?: (name: string) => boolean;
-  // Capacitor v3+: native plugins are obtained via registerPlugin(), which
-  // the native bridge injects. The old Plugins registry no longer lists
-  // native-only plugins.
-  registerPlugin?: (name: string) => unknown;
-  Plugins?: { Filesystem?: CapFilesystem; Share?: CapShare };
-};
-
-function getCapacitor(): CapGlobal | undefined {
-  return (window as unknown as { Capacitor?: CapGlobal }).Capacitor;
-}
-
-/** True when running inside the native Capacitor shell (iOS/Android app). */
-function isNativeApp(): boolean {
-  return getCapacitor()?.isNativePlatform?.() === true;
-}
-
 // Cache registerPlugin proxies — registering the same plugin twice warns.
 let capPluginCache: { fs: CapFilesystem; share: CapShare } | null = null;
 
 function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
   if (capPluginCache) return capPluginCache;
-  const cap = getCapacitor();
-  if (!cap) throw new Error("Capacitor global not found");
-
-  // Capacitor v3+: obtain native plugins via registerPlugin (the bridge
-  // injects it). Legacy Plugins registry as a last resort.
-  const fs =
-    typeof cap.registerPlugin === "function"
-      ? (cap.registerPlugin("Filesystem") as CapFilesystem)
-      : cap.Plugins?.Filesystem;
-  const share =
-    typeof cap.registerPlugin === "function"
-      ? (cap.registerPlugin("Share") as CapShare)
-      : cap.Plugins?.Share;
+  const fs = getNativePlugin<CapFilesystem>("Filesystem");
+  const share = getNativePlugin<CapShare>("Share");
   if (!fs || !share) {
     throw new Error(
       "Share/Filesystem plugins not found (registerPlugin unavailable)"
@@ -147,7 +111,7 @@ function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
  */
 async function shareViaCapacitor(
   files: { filename: string; content: string }[]
-): Promise<void> {
+): Promise<boolean> {
   const isCancel = (err: unknown) =>
     /cancel/i.test(err instanceof Error ? err.message : String(err));
 
@@ -169,23 +133,24 @@ async function shareViaCapacitor(
       // Preferred: one share sheet with all files.
       await share.share({ files: uris });
     } catch (multiErr) {
-      if (isCancel(multiErr)) return;
+      if (isCancel(multiErr)) return true;
       // Some iOS versions/extensions reject multi-file shares — retry one
       // file at a time using the single-file `url` form.
       for (const uri of uris) {
         try {
           await share.share({ url: uri });
         } catch (singleErr) {
-          if (isCancel(singleErr)) return;
+          if (isCancel(singleErr)) return true;
           throw singleErr;
         }
       }
     }
   } catch (err) {
-    if (isCancel(err)) return;
-    const message = err instanceof Error ? err.message : String(err);
-    alert(`Export failed: ${message}`);
+    if (isCancel(err)) return true;
+    console.warn("[Jotrea] Native CSV share failed; using browser fallback:", err);
+    return false;
   }
+  return true;
 }
 
 /**
@@ -198,9 +163,8 @@ async function shareViaCapacitor(
 export async function exportCSVFiles(
   files: { filename: string; content: string }[]
 ): Promise<boolean> {
-  if (isNativeApp()) {
-    await shareViaCapacitor(files);
-    return true;
+  if (isNativeCapacitor()) {
+    if (await shareViaCapacitor(files)) return true;
   }
   const shareFiles = files.map(
     (f) => new File([f.content], f.filename, { type: "text/csv" })

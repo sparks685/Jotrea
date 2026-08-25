@@ -15,10 +15,12 @@ import {
 import { ChevronLeft, ChevronRight, Plus, Trash2, X, List, CalendarDays, CheckCircle2, FlaskConical, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMedication, useDoses } from "@/hooks/useMedication";
+import { useMedication, useDoses, useUser } from "@/hooks/useMedication";
 import { getScheduledDatesInMonth, getDateStatus } from "@/utils/dates";
 import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
+import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
+import { rescheduleAllNotifications } from "@/utils/notifications";
 import { PageContainer } from "@/components/PageContainer";
 import { SideEffectTrendsChart } from "@/components/SideEffectTrendsChart";
 import type { DoseEntry } from "@/types";
@@ -40,6 +42,7 @@ const SIDE_EFFECTS_LIST = [
 export default function DoseLog() {
   const { medication } = useMedication();
   const { doses, setDoses } = useDoses();
+  const { user } = useUser();
   const [location, navigate] = useLocation();
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -62,6 +65,7 @@ export default function DoseLog() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   if (!medication) return null;
+  const currentDoses = dosesForMedication(doses, medication, user.legacyDoseMedicationId);
 
   const medInfo = medications.find((m) => m.id === medication.id);
   const year = viewMonth.getFullYear();
@@ -85,13 +89,24 @@ export default function DoseLog() {
       notes: logNotes,
       taken: true,
       sideEffects: logSideEffects.length > 0 ? logSideEffects : undefined,
+      medicationId: getMedicationTrackingId(medication),
     };
     if (editingId) {
-      setDoses(doses.map((d) => (d.id === editingId ? { ...newDose, id: editingId } : d)));
+      const nextDoses = doses.map((d) => (d.id === editingId
+        ? { ...newDose, id: editingId, medicationId: d.medicationId }
+        : d));
+      setDoses(nextDoses);
+      if (user.notificationsEnabled) {
+        rescheduleAllNotifications(medication, dosesForMedication(nextDoses, medication, user.legacyDoseMedicationId), user, { allDoses: nextDoses });
+      }
       setEditingId(null);
       setShowAdd(false);
     } else {
-      setDoses([...doses, newDose]);
+      const nextDoses = [...doses, newDose];
+      setDoses(nextDoses);
+      if (user.notificationsEnabled) {
+        rescheduleAllNotifications(medication, dosesForMedication(nextDoses, medication, user.legacyDoseMedicationId), user, { allDoses: nextDoses });
+      }
       setLastLoggedId(newDose.id);
       setShowDoseConfirm(true);
     }
@@ -107,7 +122,7 @@ export default function DoseLog() {
 
   const openAdd = (dateStr?: string) => {
     // Suggest the next injection site in the rotation cycle
-    const lastSiteUsed = [...doses]
+    const lastSiteUsed = [...currentDoses]
       .filter(d => d.site !== "oral")
       .sort((a, b) => b.date.localeCompare(a.date))[0]?.site ?? null;
     const lastIdx = lastSiteUsed ? INJECTION_SITES.indexOf(lastSiteUsed) : -1;
@@ -136,10 +151,14 @@ export default function DoseLog() {
   };
 
   const deleteDose = (id: string) => {
-    setDoses(doses.filter((d) => d.id !== id));
+    const nextDoses = doses.filter((d) => d.id !== id);
+    setDoses(nextDoses);
+    if (user.notificationsEnabled) {
+      rescheduleAllNotifications(medication, dosesForMedication(nextDoses, medication, user.legacyDoseMedicationId), user, { allDoses: nextDoses });
+    }
   };
 
-  const sortedDoses = [...doses].sort((a, b) => b.date.localeCompare(a.date));
+  const sortedDoses = [...currentDoses].sort((a, b) => b.date.localeCompare(a.date));
 
   const availableFilters = SIDE_EFFECTS_LIST.filter((effect) =>
     sortedDoses.some((dose) => dose.sideEffects?.includes(effect.id))
@@ -219,7 +238,7 @@ export default function DoseLog() {
               ))}
               {days.map((day) => {
                 const dateStr = format(day, "yyyy-MM-dd");
-                const status = getDateStatus(dateStr, scheduledDates, doses);
+                const status = getDateStatus(dateStr, scheduledDates, currentDoses);
                 const isSelected = selectedDate === dateStr;
                 const isToday = dateStr === format(new Date(), "yyyy-MM-dd");
 
@@ -288,10 +307,10 @@ export default function DoseLog() {
                   Log
                 </Button>
               </div>
-              {doses.filter((d) => d.date === selectedDate).length === 0 ? (
+              {currentDoses.filter((d) => d.date === selectedDate).length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-2">No doses logged for this date</p>
               ) : (
-                doses
+                currentDoses
                   .filter((d) => d.date === selectedDate)
                   .map((dose) => (
                     <DoseCard key={dose.id} dose={dose} unit={medInfo?.unit ?? "mg"} onEdit={openEdit} onDelete={deleteDose} />
@@ -565,7 +584,7 @@ export default function DoseLog() {
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-semibold text-muted-foreground">Injection Site</label>
-                          {!editingId && doses.some(d => d.site !== "oral") && (
+                          {!editingId && currentDoses.some(d => d.site !== "oral") && (
                             <span className="text-[10px] text-secondary font-semibold">↺ Next site in your tracking rotation</span>
                           )}
                         </div>

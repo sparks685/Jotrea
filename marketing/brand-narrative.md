@@ -36,7 +36,7 @@ This isn't just a tagline. It's the product in six words.
 | Foreground | Deep navy | hsl(240, 39%, 14%) | `#1A1D3D` |
 | Primary | Terracotta gold | hsl(32, 55%, 64%) | `#C4956A` |
 | Secondary | Sage green | hsl(153, 21%, 60%) | `#86A89A` |
-| Premium | Amber gold | `#F59E0B` → `#D97706` | gradient |
+| Plus | Terracotta gold | `#D4A574` → `#C4956A` | gradient |
 | Muted | Warm grey | hsl(220, 9%, 46%) | `#6E7585` |
 
 **The palette tells a story:** cream is the page, navy is the ink, terracotta is warmth and action, sage is health and calm, amber is aspiration.
@@ -64,9 +64,9 @@ This isn't just a tagline. It's the product in six words.
 > Built for the long game.
 > One tap. One streak. One goal.
 
-**Premium:**
-> Go Premium. Go further.
-> Unlock every tool in your GLP-1 journey.
+**Plus:**
+> Go further. Go Plus.
+> More organization and deeper reporting for your records.
 
 **App Store subtitle:**
 > Jot your dose. Read your progress.
@@ -101,4 +101,4 @@ If Jotrea were a person, they would be:
 2. **Data celebrates, never judges** — weight going up? Jotrea shows it without comment.
 3. **Offline first** — works without internet. Your health data doesn't need a server.
 4. **Native feel** — smooth spring animations, bottom sheets, haptic-ready interactions.
-5. **Premium earns its keep** — free tier is genuinely useful. Premium unlocks real value, not fake limitations.
+5. **Plus earns its keep** — essential tracking stays free. Plus adds native integrations, expanded organization, and higher-value reporting.
