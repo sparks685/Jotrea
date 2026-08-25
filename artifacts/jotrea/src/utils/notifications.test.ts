@@ -300,6 +300,49 @@ describe("Capacitor local notifications", () => {
     vi.useRealTimers();
   });
 
+  it("advances only the logged medication while preserving daily, twice-daily, and weekly reminders", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-29T08:00:00"));
+    const cabinet = [
+      {
+        cabinetId: "daily-tracker", id: "daily-med", genericName: "daily", brandName: "Daily Med",
+        dose: 1, frequency: "daily" as const, startDate: "2026-07-29", active: true,
+        reminderTimes: ["10:00"], createdAt: "2026-07-01T00:00:00.000Z",
+      },
+      {
+        cabinetId: "twice-tracker", id: "twice-med", genericName: "twice", brandName: "Twice Med",
+        dose: 2, frequency: "twice-daily" as const, startDate: "2026-07-29", active: true,
+        reminderTimes: ["11:00", "19:00"], createdAt: "2026-07-01T00:00:00.000Z",
+      },
+      {
+        cabinetId: "weekly-tracker", id: "weekly-med", genericName: "weekly", brandName: "Weekly Med",
+        dose: 3, frequency: "weekly" as const, startDate: "2026-07-29", active: true,
+        reminderTimes: ["12:00"], createdAt: "2026-07-01T00:00:00.000Z",
+      },
+    ];
+    const doses = [
+      {
+        id: "weekly-dose", medicationId: "weekly-tracker", date: "2026-07-29",
+        time: "07:00", doseAmount: 3, site: "", notes: "", taken: true,
+      },
+    ] as import("@/types").DoseEntry[];
+    const primary = { brandName: "Weekly Med", startDate: "2026-07-29", frequency: "weekly" } as MedicationData;
+
+    await scheduleAllNotifications(primary, doses, { notificationTime: "09:00" } as UserData, {
+      allDoses: doses,
+      cabinetMedications: cabinet,
+    });
+
+    const tags = localNotifications.schedule.mock.calls[0][0].notifications.map(
+      (item: { extra: { tag: string } }) => item.extra.tag
+    );
+    expect(tags).toContain("jotrea-cabinet-dose-daily-tracker-2026-07-29-10:00");
+    expect(tags).toContain("jotrea-cabinet-dose-twice-tracker-2026-07-29-11:00");
+    expect(tags).toContain("jotrea-cabinet-dose-twice-tracker-2026-07-29-19:00");
+    expect(tags).toContain("jotrea-cabinet-dose-weekly-tracker-2026-08-05-12:00");
+    vi.useRealTimers();
+  });
+
   it("uses post-mutation Cabinet input when rebuilding reminders immediately", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-29T08:00:00"));
@@ -322,6 +365,42 @@ describe("Capacitor local notifications", () => {
     );
     expect(rebuilt).toContain("jotrea-cabinet-dose-editable-2026-07-29-15:00");
     expect(rebuilt).not.toContain("jotrea-cabinet-dose-editable-2026-07-29-10:00");
+    vi.useRealTimers();
+  });
+
+  it("removes deleted reminders while preserving another medication across a Cabinet switch", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-29T08:00:00"));
+    const original = {
+      cabinetId: "original", id: "original-med", genericName: "original", brandName: "Original",
+      dose: 1, frequency: "daily" as const, startDate: "2026-07-29", active: true,
+      reminderTimes: ["10:00", "18:00"], createdAt: "2026-07-01T00:00:00.000Z",
+    };
+    const selected = {
+      cabinetId: "selected", id: "selected-med", genericName: "selected", brandName: "Selected",
+      dose: 2, frequency: "weekly" as const, startDate: "2026-07-29", active: true,
+      reminderTimes: ["15:00"], createdAt: "2026-07-01T00:00:00.000Z",
+    };
+
+    await rescheduleAllNotifications(
+      selected,
+      [],
+      { notificationTime: "09:00" } as UserData,
+      {
+        allDoses: [],
+        cabinetMedications: [{ ...original, reminderTimes: ["18:00"] }, selected],
+      }
+    );
+
+    expect(localNotifications.cancel).toHaveBeenCalledWith({
+      notifications: [{ id: 17 }, { id: 23 }],
+    });
+    const rebuilt = localNotifications.schedule.mock.calls[0][0].notifications.map(
+      (item: { extra: { tag: string } }) => item.extra.tag
+    );
+    expect(rebuilt).toContain("jotrea-cabinet-dose-original-2026-07-29-18:00");
+    expect(rebuilt).toContain("jotrea-cabinet-dose-selected-2026-07-29-15:00");
+    expect(rebuilt).not.toContain("jotrea-cabinet-dose-original-2026-07-29-10:00");
     vi.useRealTimers();
   });
 });

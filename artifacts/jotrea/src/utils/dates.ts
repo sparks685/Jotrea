@@ -25,6 +25,13 @@ export function getNextDoseDate(
     while (isBefore(next, today)) {
       next = addWeeks(next, 1);
     }
+    const nextDate = format(next, "yyyy-MM-dd");
+    if (
+      nextDate === format(today, "yyyy-MM-dd") &&
+      doses.some((dose) => dose.date === nextDate && dose.taken)
+    ) {
+      return addWeeks(next, 1);
+    }
     return next;
   } else if (frequency === "daily") {
     const todayStr = format(today, "yyyy-MM-dd");
