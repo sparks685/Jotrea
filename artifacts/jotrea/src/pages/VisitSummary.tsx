@@ -4,6 +4,7 @@ import { PlusGate } from "@/components/PlusGate";
 import { Button } from "@/components/ui/button";
 import { useDoses, useMedication, useUser, useWeights } from "@/hooks/useMedication";
 import { dosesForMedication } from "@/utils/medicationDoses";
+import { exportVisitSummaryPdf } from "@/utils/visitSummaryPdf";
 
 export default function VisitSummary() {
   const { user } = useUser();
@@ -14,22 +15,14 @@ export default function VisitSummary() {
   const taken = currentDoses.filter((dose) => dose.taken).length;
   const symptoms = [...new Set(currentDoses.flatMap((dose) => dose.sideEffects ?? []))];
 
-  const summaryText = [
-    "Jotrea provider visit summary",
-    `Tracker: ${user.name || "Not provided"}`,
-    `Current prescribed medication recorded: ${medication ? `${medication.brandName}, ${medication.dose} mg, ${medication.frequency}` : "None"}`,
-    `Recorded doses: ${taken} taken of ${currentDoses.length} entries`,
-    `Weight entries: ${weights.length}`,
-    `Recorded symptoms: ${symptoms.join(", ") || "None"}`,
-    "This is a user-recorded tracker summary and does not provide medical advice or dosage recommendations.",
-  ].join("\n");
-
   const share = async () => {
-    if (navigator.share) {
-      await navigator.share({ title: "Jotrea provider visit summary", text: summaryText });
-      return;
-    }
-    await navigator.clipboard.writeText(summaryText);
+    await exportVisitSummaryPdf({
+      trackerName: user.name || "",
+      medication,
+      doses: currentDoses,
+      weights,
+      units: user.units,
+    });
   };
 
   return (
@@ -52,7 +45,7 @@ export default function VisitSummary() {
           <SummaryRow label="Dose entries" value={`${taken} taken of ${currentDoses.length} recorded`} />
           <SummaryRow label="Weight entries" value={String(weights.length)} />
           <SummaryRow label="Recorded symptoms" value={symptoms.join(", ") || "None recorded"} />
-          <p className="mt-5 rounded-xl bg-muted p-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="mt-5 rounded-xl bg-muted p-3 text-base leading-relaxed text-muted-foreground">
             This summary reflects user-recorded information only. Jotrea does not calculate, recommend, modify, or verify dosages or medical care.
           </p>
         </section>

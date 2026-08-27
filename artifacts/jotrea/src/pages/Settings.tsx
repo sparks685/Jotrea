@@ -42,7 +42,13 @@ import { medications } from "@/data/medications";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { getFrequencyLabel, getNextDoseDate } from "@/utils/dates";
-import { buildDoseCSV, buildWeightCSV, exportCSVFiles } from "@/utils/featureGates";
+import {
+  buildDoseCSV,
+  buildSymptomCSV,
+  buildWeightCSV,
+  CSV_EXPORT_FILENAMES,
+  exportCSVFiles,
+} from "@/utils/featureGates";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import {
   scheduleAllNotifications,
@@ -222,9 +228,11 @@ export default function Settings() {
   const handleExport = async () => {
     const doseCsv = buildDoseCSV(doses);
     const weightCsv = buildWeightCSV(weights, user.units);
+    const symptomCsv = buildSymptomCSV(doses);
     await exportCSVFiles([
-      { filename: "jotrea-doses.csv", content: doseCsv },
-      { filename: "jotrea-weights.csv", content: weightCsv },
+      { filename: CSV_EXPORT_FILENAMES.doses, content: doseCsv },
+      { filename: CSV_EXPORT_FILENAMES.weights, content: weightCsv },
+      { filename: CSV_EXPORT_FILENAMES.symptoms, content: symptomCsv },
     ]);
     trackEvent("data_exported");
   };
@@ -957,7 +965,7 @@ export default function Settings() {
       {/* Data Export */}
       <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             Export your personal tracking history as CSV files to share with your healthcare provider.
           </p>
           <Button

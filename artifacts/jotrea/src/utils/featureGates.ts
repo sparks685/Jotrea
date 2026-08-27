@@ -1,7 +1,14 @@
 import type { DoseEntry, WeightEntry } from "@/types";
+import { Directory, Encoding, type FilesystemPlugin } from "@capacitor/filesystem";
+import type { SharePlugin } from "@capacitor/share";
 import { getNativePlugin, isNativeCapacitor } from "./capacitor";
 
 export const FREE_HISTORY_DAYS = 30;
+export const CSV_EXPORT_FILENAMES = {
+  doses: "jotrea-doses.csv",
+  weights: "jotrea-weights.csv",
+  symptoms: "jotrea-symptoms.csv",
+} as const;
 
 export function isPremium(_subscription: string): boolean {
   return _subscription === "premium";
@@ -28,8 +35,11 @@ export function isCalendarMonthLocked(_year: number, _month: number, _subscripti
 }
 
 function escapeCsv(val: string | number | undefined): string {
-  const s = val == null ? "" : String(val);
-  return s.includes(",") || s.includes('"') || s.includes("\n")
+  let s = val == null ? "" : String(val);
+  // Prevent spreadsheet applications from interpreting user-entered text as
+  // a formula when a recipient opens the export.
+  if (/^[\s\u0000-\u001F]*[=+\-@]/.test(s)) s = `'${s}`;
+  return s.includes(",") || s.includes('"') || /[\r\n\t]/.test(s)
     ? `"${s.replace(/"/g, '""')}"`
     : s;
 }
@@ -58,6 +68,23 @@ export function buildWeightCSV(weights: WeightEntry[], units: string): string {
   return [header, ...rows].join("\n");
 }
 
+export function buildSymptomCSV(doses: DoseEntry[]): string {
+  const header = ["Date", "Time", "Symptom", "Dose (mg)", "Notes"].join(",");
+  const rows = [...doses]
+    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
+    .flatMap((dose) =>
+      (dose.sideEffects ?? [])
+        .map((symptom) => symptom.trim())
+        .filter((symptom) => symptom && symptom.toLowerCase() !== "none")
+        .map((symptom) =>
+          [dose.date, dose.time, symptom, dose.doseAmount, dose.notes]
+            .map(escapeCsv)
+            .join(",")
+        )
+    );
+  return [header, ...rows].join("\n");
+}
+
 export function downloadCSV(filename: string, content: string): void {
   const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -76,17 +103,8 @@ export function downloadCSV(filename: string, content: string): void {
  * share sheet (UIActivityViewController) so filenames and .csv icons survive.
  * Returns true if the native share handled it, false to fall through.
  */
-type CapFilesystem = {
-  writeFile: (opts: {
-    path: string;
-    data: string;
-    directory: string;
-    encoding: string;
-  }) => Promise<{ uri: string }>;
-};
-type CapShare = {
-  share: (opts: { files?: string[]; url?: string }) => Promise<unknown>;
-};
+type CapFilesystem = Pick<FilesystemPlugin, "writeFile" | "deleteFile">;
+type CapShare = Pick<SharePlugin, "share">;
 // Cache registerPlugin proxies — registering the same plugin twice warns.
 let capPluginCache: { fs: CapFilesystem; share: CapShare } | null = null;
 
@@ -109,8 +127,16 @@ function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
  * it can be diagnosed on-device instead of silently degrading to a
  * filename-less "Plain Text" web share.
  */
+export type ExportFile = {
+  filename: string;
+  content: string;
+  mimeType?: string;
+  contentType?: string;
+  encoding?: "utf8" | "base64";
+};
+
 async function shareViaCapacitor(
-  files: { filename: string; content: string }[]
+  files: ExportFile[]
 ): Promise<boolean> {
   const isCancel = (err: unknown) =>
     /cancel/i.test(err instanceof Error ? err.message : String(err));
@@ -118,32 +144,39 @@ async function shareViaCapacitor(
   try {
     const { fs, share } = getCapacitorPlugins();
     const uris: string[] = [];
-    for (const f of files) {
-      const { uri } = await fs.writeFile({
-        path: f.filename,
-        data: f.content,
-        // Documents, not Cache: iOS blocks share-sheet access to
-        // Library/Caches ("error fetching item for URL").
-        directory: "DOCUMENTS",
-        encoding: "utf8",
-      });
-      uris.push(uri);
-    }
     try {
-      // Preferred: one share sheet with all files.
-      await share.share({ files: uris });
-    } catch (multiErr) {
-      if (isCancel(multiErr)) return true;
-      // Some iOS versions/extensions reject multi-file shares — retry one
-      // file at a time using the single-file `url` form.
-      for (const uri of uris) {
-        try {
-          await share.share({ url: uri });
-        } catch (singleErr) {
-          if (isCancel(singleErr)) return true;
-          throw singleErr;
+      for (const f of files) {
+        const { uri } = await fs.writeFile({
+          path: f.filename,
+          data: f.content,
+          // Documents is required for reliable UIActivityViewController access
+          // on iOS. Files are deleted immediately after the share sheet closes.
+          directory: Directory.Documents,
+          encoding: f.encoding === "base64" ? undefined : Encoding.UTF8,
+        });
+        uris.push(uri);
+      }
+      try {
+        // The real filename extension lets iOS resolve public.comma-separated-
+        // values-text for CSV and com.adobe.pdf for PDF.
+        await share.share({ files: uris });
+      } catch (multiErr) {
+        if (isCancel(multiErr)) return true;
+        // Some iOS versions/extensions reject multi-file shares — retry one
+        // file at a time using the single-file `url` form.
+        for (const uri of uris) {
+          try {
+            await share.share({ url: uri });
+          } catch (singleErr) {
+            if (isCancel(singleErr)) return true;
+            throw singleErr;
+          }
         }
       }
+    } finally {
+      await Promise.allSettled(files.map((file) =>
+        fs.deleteFile({ path: file.filename, directory: Directory.Documents })
+      ));
     }
   } catch (err) {
     if (isCancel(err)) return true;
@@ -163,11 +196,24 @@ async function shareViaCapacitor(
 export async function exportCSVFiles(
   files: { filename: string; content: string }[]
 ): Promise<boolean> {
+  return exportFiles(files.map((file) => ({
+    ...file,
+    mimeType: "text/csv",
+    contentType: "public.comma-separated-values-text",
+  })));
+}
+
+export async function exportFiles(files: ExportFile[]): Promise<boolean> {
   if (isNativeCapacitor()) {
     if (await shareViaCapacitor(files)) return true;
   }
   const shareFiles = files.map(
-    (f) => new File([f.content], f.filename, { type: "text/csv" })
+    (f) => {
+      const data = f.encoding === "base64"
+        ? Uint8Array.from(atob(f.content), (character) => character.charCodeAt(0))
+        : f.content;
+      return new File([data], f.filename, { type: f.mimeType })
+    }
   );
   const nav = navigator as Navigator & {
     canShare?: (data?: ShareData) => boolean;
@@ -185,7 +231,18 @@ export async function exportCSVFiles(
   }
   for (let i = 0; i < files.length; i++) {
     const f = files[i];
-    setTimeout(() => downloadCSV(f.filename, f.content), i * 300);
+    setTimeout(() => {
+      const data = f.encoding === "base64"
+        ? Uint8Array.from(atob(f.content), (character) => character.charCodeAt(0))
+        : f.content;
+      const blob = new Blob([data], { type: f.mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = f.filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }, i * 300);
   }
   return true;
 }
