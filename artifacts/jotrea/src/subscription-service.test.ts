@@ -4,6 +4,7 @@ const { purchases } = vi.hoisted(() => ({
   purchases: {
   configure: vi.fn(),
   getOfferings: vi.fn(),
+  invalidateCustomerInfoCache: vi.fn(),
   getCustomerInfo: vi.fn(),
   purchasePackage: vi.fn(),
   restorePurchases: vi.fn(),
@@ -88,6 +89,7 @@ describe("RevenueCat subscription service", () => {
   it("maps restored and current customer entitlement status", async () => {
     (window as unknown as { Capacitor: unknown }).Capacitor = { isNativePlatform: () => true };
     purchases.configure.mockResolvedValue(undefined);
+    purchases.invalidateCustomerInfoCache.mockResolvedValue(undefined);
     purchases.getCustomerInfo.mockResolvedValue({ customerInfo: activeCustomerInfo });
     purchases.restorePurchases.mockResolvedValue({
       customerInfo: { entitlements: { active: {}, all: {
@@ -96,6 +98,9 @@ describe("RevenueCat subscription service", () => {
     });
 
     await expect(subscriptionService.getStatus()).resolves.toMatchObject({ state: "trial", isPlus: true });
+    expect(purchases.invalidateCustomerInfoCache).toHaveBeenCalledTimes(1);
+    expect(purchases.invalidateCustomerInfoCache.mock.invocationCallOrder[0])
+      .toBeLessThan(purchases.getCustomerInfo.mock.invocationCallOrder[0]);
     await expect(subscriptionService.restore()).resolves.toMatchObject({
       state: "expired",
       isPlus: false,

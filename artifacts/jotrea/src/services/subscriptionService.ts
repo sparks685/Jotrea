@@ -129,6 +129,7 @@ export const subscriptionService: SubscriptionProvider = {
   async getStatus() {
     if (!isNativeCapacitor()) return { state: "free", isPlus: false };
     await configurePurchases();
+    await Purchases.invalidateCustomerInfoCache();
     const { customerInfo } = await Purchases.getCustomerInfo();
     return mapCustomerInfo(customerInfo as unknown as RevenueCatCustomerInfo);
   },

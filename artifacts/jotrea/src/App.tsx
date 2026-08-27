@@ -10,6 +10,10 @@ import { initGA, pageView } from "@/lib/analytics";
 import { subscriptionService } from "@/services/subscriptionService";
 import { isNativeCapacitor } from "@/utils/capacitor";
 import { registerNotificationSW } from "@/utils/notifications";
+import {
+  applySubscriptionStatus,
+  removeExpiredCachedPlus,
+} from "@/utils/subscriptionState";
 import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import DoseLog from "@/pages/DoseLog";
@@ -110,22 +114,35 @@ function NativeSubscriptionSync() {
   useEffect(() => {
     if (!isNativeCapacitor()) return;
     let active = true;
-    void subscriptionService.getStatus().then((status) => {
-      if (!active) return;
-      setUser((current) => ({
-        ...current,
-        subscription: status.isPlus ? "premium" : "free",
-        subscriptionProductId: status.productId,
-        subscriptionExpiresAt: status.expiresAt,
-        trialEndDate: status.state === "trial" ? status.expiresAt : undefined,
-      }));
-    }).catch((error) => {
-      console.warn("Unable to refresh Jotrea Plus status", error);
-    });
+
+    const syncSubscription = async () => {
+      // Never leave an already-expired cached entitlement unlocked while a
+      // network or StoreKit refresh is pending or unavailable.
+      setUser((current) => removeExpiredCachedPlus(current));
+      try {
+        const status = await subscriptionService.getStatus();
+        if (!active) return;
+        setUser((current) => applySubscriptionStatus(current, status));
+      } catch (error) {
+        if (!active) return;
+        setUser((current) => removeExpiredCachedPlus(current));
+        console.warn("Unable to refresh Jotrea Plus status", error);
+      }
+    };
+
+    void syncSubscription();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void syncSubscription();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       active = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []); // RevenueCat is refreshed once when the native app session starts.
+  }, [setUser]);
 
   return null;
 }
