@@ -9,3 +9,4 @@
 - [Bottom sheet portal pattern](sheet-portal-pattern.md) — all fixed-backdrop sheets must use createPortal(…, document.body) or BottomNav (z-50 in root stacking context) renders on top of them.
 - [App Review medical positioning](app-review-medical-positioning.md) — Jotrea is strictly a prescribed-information tracker/reminder; never present dose or medication-use guidance.
 - [Jotrea Plus model](jotrea-plus-model.md) — keep core tracking free; monetize multiple medications, HealthKit, advanced trends, and provider summaries.
+- [RevenueCat expiry refresh](revenuecat-expiry-refresh.md) — invalidate cached CustomerInfo before native launch checks so expired trials cannot retain Plus access.

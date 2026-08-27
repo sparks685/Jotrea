@@ -108,26 +108,35 @@ function RouteTracker() {
   return null;
 }
 
-function NativeSubscriptionSync() {
+export function NativeSubscriptionSync() {
   const { setUser } = useUser();
+  const setUserRef = useRef(setUser);
+  setUserRef.current = setUser;
 
   useEffect(() => {
     if (!isNativeCapacitor()) return;
     let active = true;
+    let syncInFlight: Promise<void> | null = null;
 
-    const syncSubscription = async () => {
+    const syncSubscription = () => {
+      if (syncInFlight) return syncInFlight;
       // Never leave an already-expired cached entitlement unlocked while a
       // network or StoreKit refresh is pending or unavailable.
-      setUser((current) => removeExpiredCachedPlus(current));
-      try {
-        const status = await subscriptionService.getStatus();
-        if (!active) return;
-        setUser((current) => applySubscriptionStatus(current, status));
-      } catch (error) {
-        if (!active) return;
-        setUser((current) => removeExpiredCachedPlus(current));
-        console.warn("Unable to refresh Jotrea Plus status", error);
-      }
+      setUserRef.current((current) => removeExpiredCachedPlus(current));
+      syncInFlight = subscriptionService.getStatus()
+        .then((status) => {
+          if (!active) return;
+          setUserRef.current((current) => applySubscriptionStatus(current, status));
+        })
+        .catch((error) => {
+          if (!active) return;
+          setUserRef.current((current) => removeExpiredCachedPlus(current));
+          console.warn("Unable to refresh Jotrea Plus status", error);
+        })
+        .finally(() => {
+          syncInFlight = null;
+        });
+      return syncInFlight;
     };
 
     void syncSubscription();
@@ -142,7 +151,7 @@ function NativeSubscriptionSync() {
       active = false;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [setUser]);
+  }, []);
 
   return null;
 }

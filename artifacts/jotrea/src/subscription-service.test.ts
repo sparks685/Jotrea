@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { purchases } = vi.hoisted(() => ({
   purchases: {
-  configure: vi.fn(),
-  getOfferings: vi.fn(),
-  invalidateCustomerInfoCache: vi.fn(),
-  getCustomerInfo: vi.fn(),
-  purchasePackage: vi.fn(),
-  restorePurchases: vi.fn(),
+    configure: vi.fn(),
+    getOfferings: vi.fn(),
+    getCustomerInfo: vi.fn(),
+    invalidateCustomerInfoCache: vi.fn(),
+    purchasePackage: vi.fn(),
+    restorePurchases: vi.fn(),
   },
 }));
 
