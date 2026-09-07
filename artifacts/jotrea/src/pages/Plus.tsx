@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Crown, Loader2, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, ChevronLeft, Crown, Loader2, RotateCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { useLocation } from "wouter";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useMedication";
@@ -16,6 +17,7 @@ const BENEFITS = [
 
 export default function Plus() {
   const { user, setUser } = useUser();
+  const [, setLocation] = useLocation();
   const { products, status, loading, pending, error, purchase, restore } = useSubscription();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isPlus = isNativeCapacitor() ? status.isPlus : user.subscription === "premium";
@@ -59,6 +61,16 @@ export default function Plus() {
 
   return (
     <PageContainer className="space-y-5">
+      <button
+        type="button"
+        className="flex min-h-11 items-center gap-0.5 rounded-xl px-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        onClick={() => setLocation("/settings")}
+        aria-label="Back to Settings"
+        data-testid="button-back-to-settings"
+      >
+        <ChevronLeft size={22} aria-hidden="true" />
+        Settings
+      </button>
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 px-6 py-7 text-primary-foreground shadow-lg">
         <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/10" />
         <div className="relative">
