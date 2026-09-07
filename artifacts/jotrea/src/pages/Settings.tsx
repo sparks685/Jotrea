@@ -745,6 +745,12 @@ export default function Settings() {
             onClick={() => setLocation("/visit-summary")}
             testId="button-visit-summary"
           />
+          <PlusFeatureRow
+            icon={<FileText size={15} />}
+            label="Visit Notes"
+            onClick={() => setLocation("/visit-notes")}
+            testId="button-visit-notes"
+          />
         </div>
       </SettingsSection>
 

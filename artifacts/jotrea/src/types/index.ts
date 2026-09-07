@@ -112,3 +112,35 @@ export interface WeightEntry {
   notes?: string;
   photoUrl?: string;
 }
+
+export interface VisitNoteQuestion {
+  id: string;
+  text: string;
+  discussed: boolean;
+}
+
+export interface VisitNoteFollowUp {
+  id: string;
+  text: string;
+  completed: boolean;
+  date?: string;
+}
+
+export interface VisitNote {
+  id: string;
+  visitDate: string; // ISO date YYYY-MM-DD
+  createdAt: string;
+  updatedAt: string;
+  providerName?: string;
+  specialty?: string;
+  visitType?: string;
+  reason?: string;
+  medicationTrackingId?: string;
+  beforeVisit?: string;
+  duringVisit?: string;
+  afterVisit?: string;
+  tags?: string[];
+  questions?: VisitNoteQuestion[];
+  followUps?: VisitNoteFollowUp[];
+  includeInProviderSummary: boolean;
+}

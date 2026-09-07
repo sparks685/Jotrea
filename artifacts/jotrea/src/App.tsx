@@ -26,6 +26,8 @@ import MedicationCabinet from "@/pages/MedicationCabinet";
 import CabinetDetail from "@/pages/CabinetDetail";
 import AdvancedTrends from "@/pages/AdvancedTrends";
 import VisitSummary from "@/pages/VisitSummary";
+import VisitNotes from "@/pages/VisitNotes";
+import VisitNoteDetail from "@/pages/VisitNoteDetail";
 import NotFound from "@/pages/not-found";
 
 export class PageErrorBoundary extends Component<
@@ -224,6 +226,12 @@ function AppRoutes() {
                 </Route>
                 <Route path="/visit-summary">
                   {!medication ? <Redirect to="/onboarding" /> : <VisitSummary />}
+                </Route>
+                <Route path="/visit-notes">
+                  {!medication ? <Redirect to="/onboarding" /> : <VisitNotes />}
+                </Route>
+                <Route path="/visit-notes/:id">
+                  {!medication ? <Redirect to="/onboarding" /> : <VisitNoteDetail />}
                 </Route>
                 <Route path="/sources"><Sources /></Route>
                 <Route path="/reset"><ResetAndRedirect /></Route>

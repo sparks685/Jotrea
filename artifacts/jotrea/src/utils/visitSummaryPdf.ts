@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { jsPDF } from "jspdf";
-import type { CompanionMedication, DoseEntry, MedicationData, WeightEntry } from "@/types";
+import type { CompanionMedication, DoseEntry, MedicationData, VisitNote, WeightEntry } from "@/types";
 import { exportFiles } from "./featureGates";
 
 export const VISIT_SUMMARY_DISCLAIMER =
@@ -17,6 +17,7 @@ export type VisitSummaryData = {
   weights: WeightEntry[];
   units: string;
   companions?: CompanionMedication[];
+  visitNotes?: VisitNote[];
 };
 
 function textOrNone(value: string | undefined): string {
@@ -101,6 +102,31 @@ export function buildVisitSummaryPdf(data: VisitSummaryData, preparedAt: Date = 
   );
   if (!symptomRows.length) write("No symptoms recorded.", 9, 5);
   symptomRows.forEach((row) => write(row, 9, 4));
+
+  const sharedVisitNotes = data.visitNotes?.filter((note) => note.includeInProviderSummary) ?? [];
+  if (sharedVisitNotes.length > 0) {
+    heading("Shared Visit Notes — Entered by you");
+    sharedVisitNotes.forEach((note) => {
+      write(`Visit Date: ${note.visitDate}${note.providerName ? ` · Provider: ${note.providerName}` : ""}${note.reason ? ` · Reason: ${note.reason}` : ""}`);
+      if (note.beforeVisit) write(`Information before visit: ${note.beforeVisit}`, 9, 4);
+      if (note.duringVisit) write(`Information provided during the visit: ${note.duringVisit}`, 9, 4);
+      if (note.afterVisit) write(`Follow-up information I entered: ${note.afterVisit}`, 9, 4);
+      
+      const discussedQuestions = note.questions?.filter((question) => question.discussed && question.text.trim()) || [];
+      if (discussedQuestions.length > 0) {
+        write("Questions discussed:");
+        discussedQuestions.forEach((question) => write(`- ${question.text}`, 9, 4));
+      }
+      const followUps = note.followUps?.filter((followUp) => followUp.text.trim()) || [];
+      if (followUps.length > 0) {
+        write("Personal reminders recorded:");
+        followUps.forEach((followUp) =>
+          write(`- ${followUp.completed ? "Completed" : "Open"}${followUp.date ? ` · ${followUp.date}` : ""}: ${followUp.text}`, 9, 4)
+        );
+      }
+      y += 2;
+    });
+  }
 
   heading("Tracker-only disclaimer");
   write(VISIT_SUMMARY_DISCLAIMER, 9, 0);

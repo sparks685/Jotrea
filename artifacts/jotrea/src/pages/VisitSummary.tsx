@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/PageContainer";
 import { PlusGate } from "@/components/PlusGate";
 import { Button } from "@/components/ui/button";
 import { useCompanionMedications, useDoses, useMedication, useUser, useWeights } from "@/hooks/useMedication";
+import { useVisitNotes } from "@/hooks/useVisitNotes";
 import { dosesForMedication } from "@/utils/medicationDoses";
 import { exportVisitSummaryPdf } from "@/utils/visitSummaryPdf";
 
@@ -13,9 +14,12 @@ export default function VisitSummary() {
   const { doses } = useDoses();
   const { weights } = useWeights();
   const { companions } = useCompanionMedications();
+  const { notes } = useVisitNotes();
   const currentDoses = medication ? dosesForMedication(doses, medication, user.legacyDoseMedicationId) : [];
   const taken = currentDoses.filter((dose) => dose.taken).length;
   const symptoms = [...new Set(currentDoses.flatMap((dose) => dose.sideEffects ?? []))];
+
+  const sharedNotes = notes.filter((n) => n.includeInProviderSummary);
 
   const share = async () => {
     await exportVisitSummaryPdf({
@@ -25,6 +29,7 @@ export default function VisitSummary() {
       weights,
       units: user.units,
       companions,
+      visitNotes: sharedNotes,
     });
   };
 
@@ -57,6 +62,27 @@ export default function VisitSummary() {
           <SummaryRow label="Dose entries" value={`${taken} taken of ${currentDoses.length} recorded`} />
           <SummaryRow label="Weight entries" value={String(weights.length)} />
           <SummaryRow label="Recorded symptoms" value={symptoms.join(", ") || "None recorded"} />
+          <SummaryRow label="Visit notes" value={`${sharedNotes.length} note${sharedNotes.length === 1 ? "" : "s"} shared`} />
+          {sharedNotes.map((note) => (
+            <div key={note.id} className="border-b border-border/60 py-3 last:border-0" data-testid={`shared-visit-note-${note.id}`}>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {note.visitDate}{note.providerName ? ` · ${note.providerName}` : ""}
+              </p>
+              {note.reason && <p className="mt-1 text-sm font-semibold text-foreground">{note.reason}</p>}
+              {note.beforeVisit && <p className="mt-2 whitespace-pre-line text-sm text-foreground"><span className="font-semibold">Information to share:</span> {note.beforeVisit}</p>}
+              {note.duringVisit && <p className="mt-2 whitespace-pre-line text-sm text-foreground"><span className="font-semibold">Information provided during the visit:</span> {note.duringVisit}</p>}
+              {note.afterVisit && <p className="mt-2 whitespace-pre-line text-sm text-foreground"><span className="font-semibold">Follow-up information I entered:</span> {note.afterVisit}</p>}
+              {(note.followUps ?? []).filter((followUp) => followUp.text.trim()).map((followUp) => (
+                <p key={followUp.id} className="mt-2 text-sm text-foreground">
+                  <span className="font-semibold">Personal reminder:</span>{" "}
+                  {followUp.completed ? "Completed · " : "Open · "}
+                  {followUp.date ? `${followUp.date} · ` : ""}
+                  {followUp.text}
+                </p>
+              ))}
+              <p className="mt-2 text-xs text-muted-foreground">Entered by you</p>
+            </div>
+          ))}
           <p className="mt-5 rounded-xl bg-muted p-3 text-base leading-relaxed text-muted-foreground">
             This summary reflects user-recorded information only. Jotrea does not calculate, recommend, modify, or verify dosages or medical care.
           </p>

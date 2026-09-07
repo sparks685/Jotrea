@@ -12,6 +12,7 @@ const BENEFITS = [
   "Additional reminder times for each cabinet medication",
   "Apple Health weight sync",
   "Advanced weight and symptom trends",
+  "Private visit notes and personal follow-up checklists",
   "Provider visit summaries",
   "PDF reports and CSV data export",
 ];

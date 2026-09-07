@@ -24,6 +24,11 @@ describe("provider visit summary PDF", () => {
         id: "c1", name: "Lisinopril", dose: "10 mg", frequency: "Once daily",
         timeOfDay: "Morning", purpose: "Blood pressure", createdAt: "2026-08-01T12:00:00.000Z",
       }],
+      visitNotes: [{
+        id: "vn1", visitDate: "2026-08-25", providerName: "Dr. Smith", reason: "Follow-up",
+        duringVisit: "Keep taking medication.", questions: [{ id: "q1", text: "Is this dose okay?", discussed: true }],
+        includeInProviderSummary: true, createdAt: "", updatedAt: ""
+      }]
     }, new Date(2026, 7, 27));
     const rendered = doc.output();
     expect(rendered).toContain("Jotrea");
@@ -34,9 +39,35 @@ describe("provider visit summary PDF", () => {
     expect(rendered).toContain("Recorded doses");
     expect(rendered).toContain("Weight");
     expect(rendered).toContain("Recorded symptoms");
+    expect(rendered).toContain("Shared Visit Notes");
+    expect(rendered).toContain("Entered by you");
+    expect(rendered).toContain("Dr. Smith");
+    expect(rendered).toContain("Follow-up");
+    expect(rendered).toContain("Keep taking medication.");
+    expect(rendered).toContain("Is this dose okay?");
     expect(rendered).toContain("This summary reflects user-recorded prescribed information only.");
     expect(rendered).toContain("calculate, recommend, modify, or verify medication use or medical care.");
     expect(VISIT_SUMMARY_DISCLAIMER).not.toMatch(/advice|dosage recommendation/i);
+  });
+
+  it("never exports visit notes that were not explicitly selected", () => {
+    const doc = buildVisitSummaryPdf({
+      trackerName: "Alex",
+      medication: null,
+      doses: [],
+      weights: [],
+      units: "lbs",
+      visitNotes: [{
+        id: "private-note",
+        visitDate: "2026-08-25",
+        duringVisit: "Private information",
+        includeInProviderSummary: false,
+        createdAt: "2026-08-25T12:00:00.000Z",
+        updatedAt: "2026-08-25T12:00:00.000Z",
+      }],
+    });
+
+    expect(doc.output()).not.toContain("Private information");
   });
 
   it("paginates long notes and symptom histories without dropping the disclaimer", () => {
