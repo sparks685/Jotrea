@@ -32,8 +32,8 @@ export function PlusGate({ children, feature }: { children: ReactNode; feature: 
         </div>
         <h1 className="text-xl font-bold text-foreground">{feature}</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Upgrade for expanded organization and reporting while your basic tracking, reminders,
-          history, and CSV export stay free.
+          Upgrade for expanded organization, advanced insights, and provider-ready exports while
+          your basic tracking, reminders, and complete in-app history stay free.
         </p>
         <Button
           className="mt-5 w-full rounded-xl"

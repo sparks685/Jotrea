@@ -104,7 +104,15 @@ vi.mock("@/utils/notifications", () => ({
 vi.mock("@/utils/featureGates", () => ({
   buildDoseCSV: vi.fn(() => ""),
   buildWeightCSV: vi.fn(() => ""),
+  buildSymptomCSV: vi.fn(() => ""),
+  getCsvExportFilenames: vi.fn(() => ({
+    doses: "doses.csv",
+    weights: "weights.csv",
+    symptoms: "symptoms.csv",
+  })),
+  exportCSVFiles: vi.fn(),
   downloadCSV: vi.fn(),
+  isPremium: vi.fn((subscription: string) => subscription === "premium"),
 }));
 
 // AlertDialog primitives used in Settings

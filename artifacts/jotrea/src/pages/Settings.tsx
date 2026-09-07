@@ -51,6 +51,7 @@ import {
   buildWeightCSV,
   getCsvExportFilenames,
   exportCSVFiles,
+  isPremium,
 } from "@/utils/featureGates";
 import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
@@ -153,11 +154,12 @@ export default function Settings() {
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
   const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
   const [dataExportAction, setDataExportAction] = useState<"pdf" | "csv" | null>(null);
+  const [exportPaywallOpen, setExportPaywallOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const currentMedicationDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
     : [];
-  const hasPlus = user.subscription === "premium";
+  const hasPlus = isPremium(user.subscription);
 
   useEffect(() => {
     let active = true;
@@ -234,6 +236,10 @@ export default function Settings() {
   };
 
   const handleCsvExport = async () => {
+    if (!hasPlus) {
+      setExportPaywallOpen(true);
+      return;
+    }
     setDataExportAction("csv");
     try {
       const exportedAt = new Date();
@@ -250,6 +256,10 @@ export default function Settings() {
   };
 
   const handlePdfExport = async () => {
+    if (!hasPlus) {
+      setExportPaywallOpen(true);
+      return;
+    }
     setDataExportAction("pdf");
     try {
       await exportHealthReportPdfs({
@@ -424,6 +434,31 @@ export default function Settings() {
       currentMedication={medication}
       pastDoseCount={doses.length}
     />
+    <AlertDialog open={exportPaywallOpen} onOpenChange={setExportPaywallOpen}>
+      <AlertDialogContent data-testid="export-plus-paywall">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Share with Your Provider</AlertDialogTitle>
+          <AlertDialogDescription>
+            Export your dose, weight, and symptom history to share with your healthcare provider.
+            Upgrade to Jotrea Plus to unlock PDF reports and CSV data export.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-export-maybe-later">
+            Maybe Later
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setExportPaywallOpen(false);
+              setLocation("/plus");
+            }}
+            data-testid="button-export-upgrade"
+          >
+            Upgrade to Plus
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <PageContainer className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>

@@ -21,7 +21,7 @@ describe("Jotrea Plus feature boundaries", () => {
     expect(isCalendarMonthLocked(2020, 0, "free")).toBe(false);
   });
 
-  it("keeps basic CSV exports available without a subscription", () => {
+  it("keeps CSV generation accurate behind the Plus UI gate", () => {
     expect(getCsvExportFilenames(new Date(2026, 8, 7, 4, 41, 32))).toEqual({
       doses: "jotrea-doses-2026-09-07-044132.csv",
       weights: "jotrea-weights-2026-09-07-044132.csv",

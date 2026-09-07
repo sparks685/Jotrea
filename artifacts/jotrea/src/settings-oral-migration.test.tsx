@@ -17,7 +17,7 @@
  *      remain and the section IS shown.
  */
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import React from "react";
 
@@ -86,12 +86,26 @@ vi.mock("@/components/ChangeMedicationSheet", () => ({
   ChangeMedicationSheet: () => null,
 }));
 
+vi.mock("@/utils/healthReportPdf", () => ({
+  exportHealthReportPdfs: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/utils/featureGates", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/utils/featureGates")>();
+  return {
+    ...original,
+    exportCSVFiles: vi.fn().mockResolvedValue(undefined),
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Import subjects AFTER mocks
 // ---------------------------------------------------------------------------
 
 import Settings from "@/pages/Settings";
 import { useOralDoseMigration } from "@/hooks/useMedication";
+import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
+import { exportCSVFiles } from "@/utils/featureGates";
 
 // ---------------------------------------------------------------------------
 // Harness: runs the migration hook in the same render tree as Settings,
@@ -146,10 +160,10 @@ function seedDoses(doses: object[]) {
   localStorage.setItem(DOSES_KEY, JSON.stringify(doses));
 }
 
-function seedUser() {
+function seedUser(subscription: "free" | "premium" = "free") {
   localStorage.setItem(
     USER_KEY,
-    JSON.stringify({ name: "Test", units: "lbs", subscription: "free" }),
+    JSON.stringify({ name: "Test", units: "lbs", subscription }),
   );
 }
 
@@ -226,6 +240,41 @@ describe("Settings — injection history hidden after oral migration", () => {
     render(<SettingsWithMigration />);
 
     expect(screen.queryByText("Injection History")).toBeNull();
+  });
+});
+
+describe("Settings — Jotrea Plus export gate", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.mocked(exportHealthReportPdfs).mockClear();
+    vi.mocked(exportCSVFiles).mockClear();
+  });
+
+  it("shows the export paywall without generating files for free users", () => {
+    seedUser("free");
+    render(<Settings />);
+
+    fireEvent.click(screen.getByTestId("share-report-pdf-btn"));
+    expect(screen.getByText("Share with Your Provider")).toBeTruthy();
+    expect(screen.getByText(/unlock PDF reports and CSV data export/)).toBeTruthy();
+    expect(exportHealthReportPdfs).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId("button-export-maybe-later"));
+    fireEvent.click(screen.getByTestId("export-data-btn"));
+    expect(screen.getByText("Share with Your Provider")).toBeTruthy();
+    expect(exportCSVFiles).not.toHaveBeenCalled();
+  });
+
+  it("runs both existing export paths for Plus users", async () => {
+    seedUser("premium");
+    render(<Settings />);
+
+    fireEvent.click(screen.getByTestId("share-report-pdf-btn"));
+    await waitFor(() => expect(exportHealthReportPdfs).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByTestId("export-data-btn"));
+    await waitFor(() => expect(exportCSVFiles).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId("export-plus-paywall")).toBeNull();
   });
 });
 

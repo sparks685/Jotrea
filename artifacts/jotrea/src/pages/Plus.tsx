@@ -13,6 +13,7 @@ const BENEFITS = [
   "Apple Health weight sync",
   "Advanced weight and symptom trends",
   "Provider visit summaries",
+  "PDF reports and CSV data export",
 ];
 
 export default function Plus() {
@@ -183,7 +184,7 @@ export default function Plus() {
         <RotateCcw size={14} /> Restore Purchases
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        Basic medication, weight, symptom and history tracking, one reminder, and CSV export remain free.
+        Basic medication, weight, symptom and history tracking, plus one reminder, remain free.
       </p>
     </PageContainer>
   );
