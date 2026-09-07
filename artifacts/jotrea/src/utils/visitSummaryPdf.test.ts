@@ -20,10 +20,17 @@ describe("provider visit summary PDF", () => {
       }],
       weights: [{ id: "w1", date: "2026-08-21", weight: 180 }],
       units: "lbs",
+      companions: [{
+        id: "c1", name: "Lisinopril", dose: "10 mg", frequency: "Once daily",
+        timeOfDay: "Morning", purpose: "Blood pressure", createdAt: "2026-08-01T12:00:00.000Z",
+      }],
     }, new Date(2026, 7, 27));
     const rendered = doc.output();
     expect(rendered).toContain("Jotrea");
-    expect(rendered).toContain("Current prescribed medication");
+    expect(rendered).toContain("Current medications");
+    expect(rendered).toContain("Lisinopril 10 mg");
+    expect(rendered).toContain("Once daily");
+    expect(rendered).toContain("Morning");
     expect(rendered).toContain("Recorded doses");
     expect(rendered).toContain("Weight");
     expect(rendered).toContain("Recorded symptoms");

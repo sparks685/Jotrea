@@ -403,4 +403,39 @@ describe("Capacitor local notifications", () => {
     expect(rebuilt).not.toContain("jotrea-cabinet-dose-original-2026-07-29-10:00");
     vi.useRealTimers();
   });
+
+  it("never schedules reminders from reference-only companion medication storage", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-29T08:00:00"));
+    localStorage.setItem("jotrea_companion_medications", JSON.stringify([{
+      id: "companion-only",
+      name: "Lisinopril",
+      dose: "10 mg",
+      frequency: "Once daily",
+      timeOfDay: "Morning",
+      createdAt: "2026-07-01T00:00:00.000Z",
+    }]));
+    const primary = {
+      id: "primary",
+      genericName: "primary",
+      brandName: "Primary",
+      dose: 1,
+      startDate: "2026-07-29",
+      frequency: "weekly",
+      active: true,
+    } as MedicationData;
+
+    await scheduleAllNotifications(
+      primary,
+      [],
+      { notificationTime: "09:00" } as UserData,
+      { cabinetMedications: [] }
+    );
+
+    const scheduledText = JSON.stringify(localNotifications.schedule.mock.calls);
+    expect(scheduledText).not.toContain("Lisinopril");
+    expect(scheduledText).not.toContain("companion-only");
+    localStorage.removeItem("jotrea_companion_medications");
+    vi.useRealTimers();
+  });
 });

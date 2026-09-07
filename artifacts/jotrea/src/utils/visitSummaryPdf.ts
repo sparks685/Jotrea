@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { jsPDF } from "jspdf";
-import type { DoseEntry, MedicationData, WeightEntry } from "@/types";
+import type { CompanionMedication, DoseEntry, MedicationData, WeightEntry } from "@/types";
 import { exportFiles } from "./featureGates";
 
 export const VISIT_SUMMARY_DISCLAIMER =
@@ -16,6 +16,7 @@ export type VisitSummaryData = {
   doses: DoseEntry[];
   weights: WeightEntry[];
   units: string;
+  companions?: CompanionMedication[];
 };
 
 function textOrNone(value: string | undefined): string {
@@ -65,10 +66,19 @@ export function buildVisitSummaryPdf(data: VisitSummaryData, preparedAt: Date = 
   y = 50;
   write(`Prepared ${format(preparedAt, "MMMM d, yyyy")} · Tracker: ${textOrNone(data.trackerName)}`, 10, 5);
 
-  heading("Current prescribed medication");
-  write(data.medication
-    ? `${data.medication.brandName} · ${data.medication.dose} mg · ${data.medication.frequency}`
-    : "None recorded");
+  heading("Current medications");
+  if (!data.medication && !data.companions?.length) {
+    write("None recorded");
+  } else {
+    if (data.medication) {
+      write(`${data.medication.brandName} · ${data.medication.dose} mg · ${data.medication.frequency} · current GLP-1 tracker`);
+    }
+    data.companions?.forEach((companion) => {
+      write(
+        `${companion.name} ${companion.dose} · ${companion.frequency} (${companion.timeOfDay})${companion.purpose ? ` · ${companion.purpose}` : ""}`
+      );
+    });
+  }
 
   heading("Recorded doses");
   if (!data.doses.length) write("No dose entries recorded.");

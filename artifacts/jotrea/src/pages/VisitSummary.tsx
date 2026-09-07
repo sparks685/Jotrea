@@ -2,7 +2,7 @@ import { FileHeart, Share2 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { PlusGate } from "@/components/PlusGate";
 import { Button } from "@/components/ui/button";
-import { useDoses, useMedication, useUser, useWeights } from "@/hooks/useMedication";
+import { useCompanionMedications, useDoses, useMedication, useUser, useWeights } from "@/hooks/useMedication";
 import { dosesForMedication } from "@/utils/medicationDoses";
 import { exportVisitSummaryPdf } from "@/utils/visitSummaryPdf";
 
@@ -11,6 +11,7 @@ export default function VisitSummary() {
   const { medication } = useMedication();
   const { doses } = useDoses();
   const { weights } = useWeights();
+  const { companions } = useCompanionMedications();
   const currentDoses = medication ? dosesForMedication(doses, medication, user.legacyDoseMedicationId) : [];
   const taken = currentDoses.filter((dose) => dose.taken).length;
   const symptoms = [...new Set(currentDoses.flatMap((dose) => dose.sideEffects ?? []))];
@@ -22,6 +23,7 @@ export default function VisitSummary() {
       doses: currentDoses,
       weights,
       units: user.units,
+      companions,
     });
   };
 
@@ -41,7 +43,15 @@ export default function VisitSummary() {
             </div>
           </div>
           <SummaryRow label="Tracker" value={user.name || "Not provided"} />
-          <SummaryRow label="Current prescribed medication" value={medication ? `${medication.brandName} · ${medication.dose} mg · ${medication.frequency}` : "None recorded"} />
+          <SummaryRow
+            label="Current medications"
+            value={[
+              medication ? `${medication.brandName} · ${medication.dose} mg · ${medication.frequency} · current GLP-1 tracker` : null,
+              ...companions.map((companion) =>
+                `${companion.name} ${companion.dose} · ${companion.frequency} (${companion.timeOfDay})${companion.purpose ? ` · ${companion.purpose}` : ""}`
+              ),
+            ].filter(Boolean).join("\n") || "None recorded"}
+          />
           <SummaryRow label="Dose entries" value={`${taken} taken of ${currentDoses.length} recorded`} />
           <SummaryRow label="Weight entries" value={String(weights.length)} />
           <SummaryRow label="Recorded symptoms" value={symptoms.join(", ") || "None recorded"} />
@@ -61,7 +71,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="border-b border-border/60 py-3 last:border-0">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm text-foreground">{value}</p>
+      <p className="mt-1 whitespace-pre-line text-sm text-foreground">{value}</p>
     </div>
   );
 }

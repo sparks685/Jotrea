@@ -23,6 +23,7 @@ import Settings from "@/pages/Settings";
 import Sources from "@/pages/Sources";
 import Plus from "@/pages/Plus";
 import MedicationCabinet from "@/pages/MedicationCabinet";
+import CabinetDetail from "@/pages/CabinetDetail";
 import AdvancedTrends from "@/pages/AdvancedTrends";
 import VisitSummary from "@/pages/VisitSummary";
 import NotFound from "@/pages/not-found";
@@ -214,6 +215,9 @@ function AppRoutes() {
                 </Route>
                 <Route path="/medication-cabinet">
                   {!medication ? <Redirect to="/onboarding" /> : <MedicationCabinet />}
+                </Route>
+                <Route path="/medication-cabinet/:cabinetId">
+                  {!medication ? <Redirect to="/onboarding" /> : <CabinetDetail />}
                 </Route>
                 <Route path="/advanced-trends">
                   {!medication ? <Redirect to="/onboarding" /> : <AdvancedTrends />}

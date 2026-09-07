@@ -57,6 +57,25 @@ export interface CabinetMedication extends MedicationData {
   cabinetId: string;
   nickname?: string;
   reminderTimes: string[];
+  refillReminderDate?: string;
+  createdAt: string;
+}
+
+export interface CabinetActivityEvent {
+  id: string;
+  date: string;
+  type: "started" | "switched" | "removed" | "added";
+  medicationName: string;
+  details?: string;
+}
+
+export interface CompanionMedication {
+  id: string;
+  name: string;
+  dose: string;
+  frequency: string;
+  timeOfDay: "Morning" | "Noon" | "Evening" | "Night" | "As needed";
+  purpose?: string;
   createdAt: string;
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Syringe, Pill, Check, ChevronLeft, X } from "lucide-react";
+import { Search, Syringe, Pill, Check, ChevronLeft, X, Microscope } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ interface ChangeMedicationSheetProps {
   injectionSiteHistory?: { site: string; date: string }[];
   currentMedication?: MedicationData | null;
   pastDoseCount?: number;
+  title?: string;
 }
 
 type View = "select" | "dose";
@@ -37,6 +38,7 @@ export function ChangeMedicationSheet({
   injectionSiteHistory,
   currentMedication,
   pastDoseCount = 0,
+  title,
 }: ChangeMedicationSheetProps) {
   const [view, setView] = useState<View>("select");
   const [search, setSearch] = useState("");
@@ -228,7 +230,7 @@ export function ChangeMedicationSheet({
             )}
             <div className="flex-1">
               <SheetTitle className="text-left text-lg font-bold">
-                {view === "select" ? "Change Tracked Medication" : "Enter Prescribed Dose"}
+                {view === "select" ? (title || "Change Tracked Medication") : "Enter Prescribed Dose"}
               </SheetTitle>
               <SheetDescription className="text-left text-xs mt-0.5">
                 {view === "select"
@@ -448,11 +450,11 @@ export function ChangeMedicationSheet({
                         <div className="grid grid-cols-3 gap-2">
                           {(
                             [
-                              ["injection", "💉", "Injection"],
-                              ["pill", "💊", "Pill"],
-                              ["other", "🔬", "Other"],
+                              ["injection", Syringe, "Injection"],
+                              ["pill", Pill, "Pill"],
+                              ["other", Microscope, "Other"],
                             ] as const
-                          ).map(([val, emoji, label]) => {
+                          ).map(([val, Icon, label]) => {
                             const sel = customFormulation === val;
                             return (
                               <motion.button
@@ -469,7 +471,7 @@ export function ChangeMedicationSheet({
                                     : "hsl(var(--border))",
                                 }}
                               >
-                                <span className="text-xl">{emoji}</span>
+                                <Icon size={24} className={sel ? "text-foreground" : "text-muted-foreground"} />
                                 <span
                                   className={`text-xs font-bold ${sel ? "text-foreground" : "text-muted-foreground"}`}
                                 >

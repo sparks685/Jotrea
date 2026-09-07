@@ -3,7 +3,7 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
-import type { MedicationData, DoseEntry, UserData, WeightEntry } from "@/types";
+import type { MedicationData, DoseEntry, UserData, WeightEntry, CompanionMedication, CabinetActivityEvent } from "@/types";
 
 interface DailyCheckin {
   date: string;
@@ -81,6 +81,44 @@ export function isValidUser(value: unknown): value is UserData {
     (u.units === "lbs" || u.units === "kg") &&
     (u.subscription === "free" || u.subscription === "premium")
   );
+}
+
+export function useCompanionMedications() {
+  const [companions, setCompanions] = useLocalStorage<CompanionMedication[]>("jotrea_companion_medications", []);
+  const safeCompanions = Array.isArray(companions)
+    ? companions.filter((value): value is CompanionMedication => {
+        if (typeof value !== "object" || value === null) return false;
+        const companion = value as unknown as Record<string, unknown>;
+        return (
+          typeof companion.id === "string" &&
+          typeof companion.name === "string" &&
+          typeof companion.dose === "string" &&
+          typeof companion.frequency === "string" &&
+          ["Morning", "Noon", "Evening", "Night", "As needed"].includes(String(companion.timeOfDay)) &&
+          typeof companion.createdAt === "string"
+        );
+      })
+    : [];
+  return { companions: safeCompanions, setCompanions };
+}
+
+export function useCabinetActivity() {
+  const [activity, setActivity] = useLocalStorage<CabinetActivityEvent[]>("jotrea_cabinet_activity", []);
+  const safeActivity = Array.isArray(activity) ? activity : [];
+
+  const logActivity = (event: Omit<CabinetActivityEvent, "id" | "date">) => {
+    setActivity((prev) => {
+      const safePrev = Array.isArray(prev) ? prev : [];
+      const newEvent: CabinetActivityEvent = {
+        ...event,
+        id: `act-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        date: new Date().toISOString(),
+      };
+      return [newEvent, ...safePrev].slice(0, 50); // Keep last 50 events
+    });
+  };
+
+  return { activity: safeActivity, logActivity, setActivity };
 }
 
 export function useUser() {
