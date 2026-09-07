@@ -1,4 +1,5 @@
 import { FileHeart, Share2 } from "lucide-react";
+import { BackToSettingsButton } from "@/components/BackToSettingsButton";
 import { PageContainer } from "@/components/PageContainer";
 import { PlusGate } from "@/components/PlusGate";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export default function VisitSummary() {
   return (
     <PlusGate feature="Provider Visit Summary">
       <PageContainer className="space-y-5">
+        <BackToSettingsButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Provider Visit Summary</h1>
           <p className="mt-1 text-sm text-muted-foreground">A concise view of the information you recorded.</p>

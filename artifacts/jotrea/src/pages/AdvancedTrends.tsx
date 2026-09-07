@@ -1,4 +1,5 @@
 import { Activity, Scale, TrendingDown } from "lucide-react";
+import { BackToSettingsButton } from "@/components/BackToSettingsButton";
 import { PageContainer } from "@/components/PageContainer";
 import { PlusGate } from "@/components/PlusGate";
 import { useDoses, useUser, useWeights } from "@/hooks/useMedication";
@@ -22,6 +23,7 @@ export default function AdvancedTrends() {
   return (
     <PlusGate feature="Advanced Trends">
       <PageContainer className="space-y-5">
+        <BackToSettingsButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Advanced Trends</h1>
           <p className="mt-1 text-sm text-muted-foreground">See patterns across the information you recorded.</p>

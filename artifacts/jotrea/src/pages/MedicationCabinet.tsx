@@ -3,6 +3,7 @@ import { BellPlus, CheckCircle2, Clock3, Plus, Trash2, Pill, Syringe, ChevronRig
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { PageContainer } from "@/components/PageContainer";
+import { BackToSettingsButton } from "@/components/BackToSettingsButton";
 import { PlusGate } from "@/components/PlusGate";
 import { ChangeMedicationSheet } from "@/components/ChangeMedicationSheet";
 import { AddMedicationChoiceSheet } from "@/components/AddMedicationChoiceSheet";
@@ -242,6 +243,7 @@ export default function MedicationCabinet() {
       />
 
       <PageContainer className="space-y-8 pb-20">
+        <BackToSettingsButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Medication History & Context</h1>
           <p className="mt-1 text-sm text-muted-foreground">
