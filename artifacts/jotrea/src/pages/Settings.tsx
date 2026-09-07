@@ -19,6 +19,7 @@ import {
   Pill,
   ChartNoAxesCombined,
   FileHeart,
+  FileText,
   HeartPulse,
   Upload,
 } from "lucide-react";
@@ -46,9 +47,10 @@ import {
   buildDoseCSV,
   buildSymptomCSV,
   buildWeightCSV,
-  CSV_EXPORT_FILENAMES,
+  getCsvExportFilenames,
   exportCSVFiles,
 } from "@/utils/featureGates";
+import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import {
   scheduleAllNotifications,
@@ -148,6 +150,7 @@ export default function Settings() {
   const [healthAction, setHealthAction] = useState<"authorize" | "import" | "export" | "retry" | null>(null);
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
   const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
+  const [dataExportAction, setDataExportAction] = useState<"pdf" | "csv" | null>(null);
   const { theme, setTheme } = useTheme();
   const currentMedicationDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
@@ -228,16 +231,35 @@ export default function Settings() {
     }
   };
 
-  const handleExport = async () => {
-    const doseCsv = buildDoseCSV(doses);
-    const weightCsv = buildWeightCSV(weights, user.units);
-    const symptomCsv = buildSymptomCSV(doses);
-    await exportCSVFiles([
-      { filename: CSV_EXPORT_FILENAMES.doses, content: doseCsv },
-      { filename: CSV_EXPORT_FILENAMES.weights, content: weightCsv },
-      { filename: CSV_EXPORT_FILENAMES.symptoms, content: symptomCsv },
-    ]);
-    trackEvent("data_exported");
+  const handleCsvExport = async () => {
+    setDataExportAction("csv");
+    try {
+      const exportedAt = new Date();
+      const filenames = getCsvExportFilenames(exportedAt);
+      await exportCSVFiles([
+        { filename: filenames.doses, content: buildDoseCSV(doses) },
+        { filename: filenames.weights, content: buildWeightCSV(weights, user.units) },
+        { filename: filenames.symptoms, content: buildSymptomCSV(doses) },
+      ]);
+      trackEvent("data_exported", { format: "csv" });
+    } finally {
+      setDataExportAction(null);
+    }
+  };
+
+  const handlePdfExport = async () => {
+    setDataExportAction("pdf");
+    try {
+      await exportHealthReportPdfs({
+        patientName: user.name,
+        doses,
+        weights,
+        units: user.units,
+      });
+      trackEvent("data_exported", { format: "pdf" });
+    } finally {
+      setDataExportAction(null);
+    }
   };
 
   const handleHealthAuthorization = async () => {
@@ -1009,18 +1031,37 @@ export default function Settings() {
       <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <p className="text-base text-muted-foreground">
-            Export your personal tracking history as CSV files to share with your healthcare provider.
+            Share large-text reports with your healthcare provider, or export spreadsheet-ready data.
+          </p>
+          <Button
+            size="sm"
+            className="w-full rounded-xl gap-2"
+            onClick={handlePdfExport}
+            disabled={dataExportAction !== null}
+            aria-label="Share readable dose, weight, and symptom reports as PDF files"
+            data-testid="share-report-pdf-btn"
+          >
+            {dataExportAction === "pdf" ? <RefreshCw size={14} className="animate-spin" /> : <FileText size={14} />}
+            {dataExportAction === "pdf" ? "Preparing Reports…" : "Share Report (PDF)"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Large, readable text for viewing, printing, or sharing with a doctor.
           </p>
           <Button
             variant="outline"
             size="sm"
             className="w-full rounded-xl gap-2"
-            onClick={handleExport}
+            onClick={handleCsvExport}
+            disabled={dataExportAction !== null}
+            aria-label="Export dose, weight, and symptom data as CSV files for spreadsheets"
             data-testid="export-data-btn"
           >
-            <Download size={14} />
-            Export Data (CSV)
+            {dataExportAction === "csv" ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
+            {dataExportAction === "csv" ? "Preparing Data…" : "Export Data (CSV)"}
           </Button>
+          <p className="text-sm text-muted-foreground">
+            For Excel, Numbers, and other spreadsheet apps.
+          </p>
         </div>
       </SettingsSection>
 

@@ -1,14 +1,18 @@
 import type { DoseEntry, WeightEntry } from "@/types";
 import { Directory, Encoding, type FilesystemPlugin } from "@capacitor/filesystem";
 import type { SharePlugin } from "@capacitor/share";
+import { format } from "date-fns";
 import { getNativePlugin, isNativeCapacitor } from "./capacitor";
 
 export const FREE_HISTORY_DAYS = 30;
-export const CSV_EXPORT_FILENAMES = {
-  doses: "jotrea-doses.csv",
-  weights: "jotrea-weights.csv",
-  symptoms: "jotrea-symptoms.csv",
-} as const;
+export function getCsvExportFilenames(exportedAt: Date = new Date()) {
+  const timestamp = format(exportedAt, "yyyy-MM-dd-HHmmss");
+  return {
+    doses: `jotrea-doses-${timestamp}.csv`,
+    weights: `jotrea-weights-${timestamp}.csv`,
+    symptoms: `jotrea-symptoms-${timestamp}.csv`,
+  } as const;
+}
 
 export function isPremium(_subscription: string): boolean {
   return _subscription === "premium";
@@ -180,7 +184,7 @@ async function shareViaCapacitor(
     }
   } catch (err) {
     if (isCancel(err)) return true;
-    console.warn("[Jotrea] Native CSV share failed; using browser fallback:", err);
+    console.warn("[Jotrea] Native file share failed; using browser fallback:", err);
     return false;
   }
   return true;

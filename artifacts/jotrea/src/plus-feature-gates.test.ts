@@ -3,7 +3,7 @@ import {
   buildDoseCSV,
   buildSymptomCSV,
   buildWeightCSV,
-  CSV_EXPORT_FILENAMES,
+  getCsvExportFilenames,
   filterForFreeTier,
   isCalendarMonthLocked,
   isPremium,
@@ -22,10 +22,10 @@ describe("Jotrea Plus feature boundaries", () => {
   });
 
   it("keeps basic CSV exports available without a subscription", () => {
-    expect(CSV_EXPORT_FILENAMES).toEqual({
-      doses: "jotrea-doses.csv",
-      weights: "jotrea-weights.csv",
-      symptoms: "jotrea-symptoms.csv",
+    expect(getCsvExportFilenames(new Date(2026, 8, 7, 4, 41, 32))).toEqual({
+      doses: "jotrea-doses-2026-09-07-044132.csv",
+      weights: "jotrea-weights-2026-09-07-044132.csv",
+      symptoms: "jotrea-symptoms-2026-09-07-044132.csv",
     });
     expect(buildDoseCSV([{
       id: "dose-1",
