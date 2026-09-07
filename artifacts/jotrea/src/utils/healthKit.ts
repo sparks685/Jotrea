@@ -20,9 +20,13 @@ export interface HealthKitWeightExportResult {
   exported: number;
   skipped: number;
   failed: number;
+  failedEntries: WeightEntry[];
 }
 
-type HealthKitWeightExportState = Record<string, string>;
+interface HealthKitWeightExportState {
+  successful: Record<string, string>;
+  failed: Record<string, string>;
+}
 
 function authorizationFromStatus(status: {
   readAuthorized: readonly string[];
@@ -171,16 +175,28 @@ function exportStorage(): Storage | null {
 export function getHealthKitWeightExportState(): HealthKitWeightExportState {
   try {
     const raw = exportStorage()?.getItem(HEALTHKIT_WEIGHT_EXPORT_STATE_KEY);
-    if (!raw) return {};
+    if (!raw) return { successful: {}, failed: {} };
     const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    const state: HealthKitWeightExportState = {};
-    for (const [key, value] of Object.entries(parsed)) {
-      if (typeof value === "string") state[key] = value;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return { successful: {}, failed: {} };
     }
-    return state;
+    const record = parsed as Record<string, unknown>;
+    const validRecord = (value: unknown): Record<string, string> => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+      return Object.fromEntries(
+        Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string")
+      );
+    };
+    if ("successful" in record || "failed" in record) {
+      return {
+        successful: validRecord(record.successful),
+        failed: validRecord(record.failed),
+      };
+    }
+    // Migrate the original id-to-fingerprint success ledger in place.
+    return { successful: validRecord(record), failed: {} };
   } catch {
-    return {};
+    return { successful: {}, failed: {} };
   }
 }
 
@@ -201,20 +217,31 @@ export function healthKitWeightExportFingerprint(entry: WeightEntry, units: "kg"
   return `${entry.date}:${Number(kilograms.toFixed(6))}`;
 }
 
+/** Returns failed entries that still exist, preserving their current display units and values. */
+export function getFailedHealthKitWeightExports(weights: WeightEntry[]): WeightEntry[] {
+  const failedIds = new Set(Object.keys(getHealthKitWeightExportState().failed));
+  return weights.filter((entry) => failedIds.has(entry.id));
+}
+
 /**
  * Exports only entries that have changed since their last successful export.
  * This is called solely from the explicit Apple Health export action.
  */
 export async function exportHealthKitWeights(
   weights: WeightEntry[],
-  units: "kg" | "lbs"
+  units: "kg" | "lbs",
+  options: { failedOnly?: boolean } = {}
 ): Promise<HealthKitWeightExportResult> {
   const exportState = getHealthKitWeightExportState();
-  const result: HealthKitWeightExportResult = { exported: 0, skipped: 0, failed: 0 };
+  const entries = options.failedOnly
+    ? weights.filter((entry) => entry.id in exportState.failed)
+    : weights;
+  const result: HealthKitWeightExportResult = { exported: 0, skipped: 0, failed: 0, failedEntries: [] };
 
-  for (const entry of weights) {
+  for (const entry of entries) {
     const fingerprint = healthKitWeightExportFingerprint(entry, units);
-    if (exportState[entry.id] === fingerprint) {
+    if (exportState.successful[entry.id] === fingerprint) {
+      delete exportState.failed[entry.id];
       result.skipped++;
       continue;
     }
@@ -226,17 +253,30 @@ export async function exportHealthKitWeights(
         new Date(`${entry.date}T12:00:00`)
       );
       if (!didWrite) {
+        exportState.failed[entry.id] = fingerprint;
+        saveHealthKitWeightExportState(exportState);
         result.failed++;
+        result.failedEntries.push(entry);
         continue;
       }
-      exportState[entry.id] = fingerprint;
+      exportState.successful[entry.id] = fingerprint;
+      delete exportState.failed[entry.id];
       saveHealthKitWeightExportState(exportState);
       result.exported++;
     } catch {
-      // Do not save a fingerprint when the native write fails, so it can retry.
+      exportState.failed[entry.id] = fingerprint;
+      saveHealthKitWeightExportState(exportState);
       result.failed++;
+      result.failedEntries.push(entry);
     }
   }
 
   return result;
+}
+
+export function retryFailedHealthKitWeights(
+  weights: WeightEntry[],
+  units: "kg" | "lbs"
+): Promise<HealthKitWeightExportResult> {
+  return exportHealthKitWeights(weights, units, { failedOnly: true });
 }

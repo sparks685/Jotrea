@@ -64,10 +64,12 @@ import type { MedicationData } from "@/types";
 import {
   getHealthKitAuthorizationStatus,
   exportHealthKitWeights,
+  getFailedHealthKitWeightExports,
   isHealthKitAvailable,
   mergeHealthKitWeights,
   readHealthKitWeights,
   requestHealthKitAuthorization,
+  retryFailedHealthKitWeights,
   type HealthKitAuthorization,
   type HealthKitAvailability,
 } from "@/utils/healthKit";
@@ -143,8 +145,9 @@ export default function Settings() {
   const [editingField, setEditingField] = useState<"motivations" | "side-effects" | "daily-targets" | null>(null);
   const [healthAvailability, setHealthAvailability] = useState<HealthKitAvailability>("checking");
   const [healthAuthorization, setHealthAuthorization] = useState<HealthKitAuthorization>("notDetermined");
-  const [healthAction, setHealthAction] = useState<"authorize" | "import" | "export" | null>(null);
+  const [healthAction, setHealthAction] = useState<"authorize" | "import" | "export" | "retry" | null>(null);
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
+  const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
   const { theme, setTheme } = useTheme();
   const currentMedicationDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
@@ -277,13 +280,30 @@ export default function Settings() {
     setHealthAction("export");
     setHealthMessage(null);
     try {
-      const { exported, skipped, failed } = await exportHealthKitWeights(weights, user.units);
+      const { exported, skipped, failed, failedEntries } = await exportHealthKitWeights(weights, user.units);
+      setFailedHealthExports(failedEntries);
       const summary = [
         `${exported} exported`,
         `${skipped} skipped`,
         `${failed} failed`,
       ].join(", ");
       setHealthMessage(`Apple Health weight export complete: ${summary}.`);
+    } finally {
+      setHealthAction(null);
+    }
+  };
+
+  const handleFailedHealthExportRetry = async () => {
+    setHealthAction("retry");
+    setHealthMessage(null);
+    try {
+      const { exported, failed, failedEntries } = await retryFailedHealthKitWeights(weights, user.units);
+      setFailedHealthExports(failedEntries);
+      setHealthMessage(
+        failed === 0
+          ? `Retry complete: ${exported} ${exported === 1 ? "entry" : "entries"} exported.`
+          : `Retry complete: ${exported} exported, ${failed} still failed.`
+      );
     } finally {
       setHealthAction(null);
     }
@@ -738,6 +758,29 @@ export default function Settings() {
                 <p className="text-xs leading-relaxed text-muted-foreground" role="status" data-testid="healthkit-message">
                   {healthMessage}
                 </p>
+              )}
+              {failedHealthExports.length > 0 && (
+                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 space-y-2" data-testid="healthkit-failed-exports">
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">
+                      {failedHealthExports.length} weight {failedHealthExports.length === 1 ? "entry needs" : "entries need"} another attempt
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Failed: {failedHealthExports.map((entry) => format(parseISO(entry.date), "MMM d, yyyy")).join(", ")}. Successful and skipped entries will not be rewritten.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full rounded-xl gap-1.5"
+                    onClick={handleFailedHealthExportRetry}
+                    disabled={healthAction !== null}
+                    data-testid="healthkit-retry-failed"
+                  >
+                    <RefreshCw size={14} />
+                    {healthAction === "retry" ? "Retrying…" : "Retry failed entries"}
+                  </Button>
+                </div>
               )}
             </div>
           )}

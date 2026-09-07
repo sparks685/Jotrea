@@ -2,12 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Health } from "@capgo/capacitor-health";
 import {
   exportHealthKitWeights,
+  getFailedHealthKitWeightExports,
   HEALTHKIT_WEIGHT_EXPORT_STATE_KEY,
   isHealthKitAvailable,
   getHealthKitAuthorizationStatus,
   mergeHealthKitWeights,
   readHealthKitWeights,
   requestHealthKitAuthorization,
+  retryFailedHealthKitWeights,
   writeHealthKitWeight,
 } from "./healthKit";
 
@@ -139,6 +141,7 @@ describe("HealthKit service", () => {
         exported: 2,
         skipped: 0,
         failed: 0,
+        failedEntries: [],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(2);
 
@@ -146,6 +149,7 @@ describe("HealthKit service", () => {
         exported: 0,
         skipped: 2,
         failed: 0,
+        failedEntries: [],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(2);
     });
@@ -156,6 +160,7 @@ describe("HealthKit service", () => {
         exported: 1,
         skipped: 1,
         failed: 0,
+        failedEntries: [],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(3);
     });
@@ -166,6 +171,7 @@ describe("HealthKit service", () => {
         exported: 2,
         skipped: 0,
         failed: 0,
+        failedEntries: [],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(2);
     });
@@ -179,15 +185,44 @@ describe("HealthKit service", () => {
         exported: 1,
         skipped: 0,
         failed: 1,
+        failedEntries: [weights[0]],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(2);
 
-      await expect(exportHealthKitWeights(weights, "kg")).resolves.toEqual({
+      expect(getFailedHealthKitWeightExports(weights)).toEqual([weights[0]]);
+
+      await expect(retryFailedHealthKitWeights(weights, "kg")).resolves.toEqual({
         exported: 1,
-        skipped: 1,
+        skipped: 0,
         failed: 0,
+        failedEntries: [],
       });
       expect(health.saveSample).toHaveBeenCalledTimes(3);
+      expect(getFailedHealthKitWeightExports(weights)).toEqual([]);
+    });
+
+    it("keeps failed retries safe after restart and a display-unit change", async () => {
+      health.saveSample
+        .mockRejectedValueOnce(new Error("HealthKit write failed"))
+        .mockResolvedValue(undefined);
+
+      await exportHealthKitWeights(weights, "kg");
+      const weightsInPounds = weights.map((entry) => ({
+        ...entry,
+        weight: Number((entry.weight * 2.20462).toFixed(1)),
+      }));
+
+      expect(getFailedHealthKitWeightExports(weightsInPounds)).toEqual([weightsInPounds[0]]);
+      await expect(retryFailedHealthKitWeights(weightsInPounds, "lbs")).resolves.toEqual({
+        exported: 1,
+        skipped: 0,
+        failed: 0,
+        failedEntries: [],
+      });
+      expect(health.saveSample).toHaveBeenCalledTimes(3);
+      expect(health.saveSample).toHaveBeenLastCalledWith(
+        expect.objectContaining({ value: weightsInPounds[0].weight / 2.20462 })
+      );
     });
   });
 });
