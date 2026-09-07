@@ -20,7 +20,9 @@ import {
   ChartNoAxesCombined,
   FileHeart,
   FileText,
+  FileUp,
   HeartPulse,
+  Table2,
   Upload,
 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
@@ -1028,40 +1030,50 @@ export default function Settings() {
       </SettingsSection>
 
       {/* Data Export */}
-      <SettingsSection title="Data" icon={<Download size={14} className="text-muted-foreground" />}>
+      <SettingsSection title="Export & Share" icon={<FileText size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <p className="text-base text-muted-foreground">
-            Share large-text reports with your healthcare provider, or export spreadsheet-ready data.
+            Share a formatted report with your healthcare provider, or export raw data for spreadsheets.
           </p>
           <Button
-            size="sm"
-            className="w-full rounded-xl gap-2"
+            className="h-auto w-full justify-start gap-3 rounded-xl px-4 py-3 text-left"
             onClick={handlePdfExport}
             disabled={dataExportAction !== null}
             aria-label="Share readable dose, weight, and symptom reports as PDF files"
             data-testid="share-report-pdf-btn"
           >
-            {dataExportAction === "pdf" ? <RefreshCw size={14} className="animate-spin" /> : <FileText size={14} />}
-            {dataExportAction === "pdf" ? "Preparing Reports…" : "Share Report (PDF)"}
+            {dataExportAction === "pdf"
+              ? <RefreshCw size={18} className="shrink-0 animate-spin" />
+              : <FileUp size={18} className="shrink-0" />}
+            <span className="min-w-0">
+              <span className="block font-semibold">
+                {dataExportAction === "pdf" ? "Preparing Reports…" : "Share Report (PDF)"}
+              </span>
+              <span className="mt-0.5 block whitespace-normal text-xs font-normal leading-relaxed text-primary-foreground/85">
+                Formatted, easy to read. Best for emailing or printing.
+              </span>
+            </span>
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Large, readable text for viewing, printing, or sharing with a doctor.
-          </p>
           <Button
             variant="outline"
-            size="sm"
-            className="w-full rounded-xl gap-2"
+            className="h-auto w-full justify-start gap-3 rounded-xl px-4 py-3 text-left"
             onClick={handleCsvExport}
             disabled={dataExportAction !== null}
             aria-label="Export dose, weight, and symptom data as CSV files for spreadsheets"
             data-testid="export-data-btn"
           >
-            {dataExportAction === "csv" ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
-            {dataExportAction === "csv" ? "Preparing Data…" : "Export Data (CSV)"}
+            {dataExportAction === "csv"
+              ? <RefreshCw size={18} className="shrink-0 animate-spin" />
+              : <Table2 size={18} className="shrink-0" />}
+            <span className="min-w-0">
+              <span className="block font-semibold">
+                {dataExportAction === "csv" ? "Preparing Data…" : "Export Data (CSV)"}
+              </span>
+              <span className="mt-0.5 block whitespace-normal text-xs font-normal leading-relaxed text-muted-foreground">
+                Raw spreadsheet data. Best for Excel or Google Sheets.
+              </span>
+            </span>
           </Button>
-          <p className="text-sm text-muted-foreground">
-            For Excel, Numbers, and other spreadsheet apps.
-          </p>
         </div>
       </SettingsSection>
 
