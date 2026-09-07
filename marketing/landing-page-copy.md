@@ -108,14 +108,15 @@ GLP-1 Medication Tracker
 > Go further. Go Plus.
 
 **Body:**
-> Essential medication tracking, history, weight and symptom logging, basic reminders, and basic export stay free. Plus adds organization, integrations, and deeper reporting.
+> Essential medication tracking, complete in-app history, weight and symptom logging, and a basic reminder stay free. Plus adds private visit organization, integrations, and provider-ready exports.
 
 **Feature list:**
 - ✦ Track multiple medications
 - ✦ Medication Cabinet with additional reminders
+- ✦ Private Visit Notes and personal follow-up checklists
 - ✦ Apple Health sync
-- ✦ Advanced trends
 - ✦ Provider visit summaries
+- ✦ PDF reports and CSV data export
 
 **Pricing:**
 > **$4.99/month** or **$39.99/year**

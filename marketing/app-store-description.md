@@ -35,12 +35,13 @@ Your weekly streak counter keeps you motivated. Four weeks on track? Eight weeks
 • No account required
 
 **JOTREA PLUS**
-Keep essential medication tracking, history, weight and symptom logging, basic reminders, and basic export free. Plus adds:
-✦ Multiple medications
-✦ Medication Cabinet with additional reminders
-✦ Apple Health sync
-✦ Advanced trends
-✦ Provider visit summaries
+Keep essential medication tracking, history, weight and symptom logging, and a basic reminder free. Plus adds:
+✦ Medication Cabinet for multiple prescribed medications
+✦ Additional reminders
+✦ Private Visit Notes with personal follow-up checklists
+✦ Apple Health weight sync
+✦ Provider Visit Summaries
+✦ PDF reports and CSV data export
 
 Start with a free 14-day trial. $4.99/month or $39.99/year.
 

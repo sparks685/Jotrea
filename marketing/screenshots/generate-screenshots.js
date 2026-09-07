@@ -37,7 +37,7 @@
  *     ipad-app-s2-dose-tracking.html       → Jotrea-iPad-App-S2.png
  *     ipad-app-s3-weight-progress.html     → Jotrea-iPad-App-S3.png
  *     app-plus-medication-cabinet.html     → Jotrea-iPad-App-S4.png
- *     app-plus-advanced-trends.html        → Jotrea-iPad-App-S5.png
+ *     app-plus-visit-notes.html            → Jotrea-iPad-App-S5.png
  *     app-plus-provider-summary.html       → Jotrea-iPad-App-S6.png
  *     app-plus-paywall.html                → Jotrea-iPad-App-S7.png
  *
@@ -240,7 +240,7 @@ const A_SERIES_HTML = [
   'app-s2-dose-tracking.html',
   'app-s3-weight-progress.html',
   'app-plus-medication-cabinet.html',
-  'app-plus-advanced-trends.html',
+  'app-plus-visit-notes.html',
   'app-plus-provider-summary.html',
   'app-plus-paywall.html',
   'ipad-app-s1-dashboard-hero.html',
@@ -348,7 +348,7 @@ const ALL_JOBS = [
   { id: 'a2', device: 'iphone', html: 'app-s2-dose-tracking.html',           out: 'Jotrea-App-S2.png',      w: 1290, h: 2796 },
   { id: 'a3', device: 'iphone', html: 'app-s3-weight-progress.html',         out: 'Jotrea-App-S3.png',      w: 1290, h: 2796 },
   { id: 'a4', device: 'iphone', html: 'app-plus-medication-cabinet.html',     out: 'Jotrea-App-S4.png',      w: 1290, h: 2796 },
-  { id: 'a5', device: 'iphone', html: 'app-plus-advanced-trends.html',        out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
+  { id: 'a5', device: 'iphone', html: 'app-plus-visit-notes.html',            out: 'Jotrea-App-S5.png',      w: 1290, h: 2796 },
   { id: 'a6', device: 'iphone', html: 'app-plus-provider-summary.html',       out: 'Jotrea-App-S6.png',      w: 1290, h: 2796 },
   { id: 'a7', device: 'iphone', html: 'app-plus-paywall.html',                out: 'Jotrea-App-S7.png',      w: 1290, h: 2796 },
   // ── iPad 11" set at 1668×2388 (for App Store 11" Display slot) ─────────────
@@ -360,7 +360,7 @@ const ALL_JOBS = [
   { id: 'ip11a2',  device: 'ipad11', html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad11-App-S2.png',  w: 1668, h: 2388 },
   { id: 'ip11a3',  device: 'ipad11', html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad11-App-S3.png',  w: 1668, h: 2388 },
   { id: 'ip11a4',  device: 'ipad11', html: 'app-plus-medication-cabinet.html',    out: 'Jotrea-iPad11-App-S4.png',  w: 1668, h: 2388 },
-  { id: 'ip11a5',  device: 'ipad11', html: 'app-plus-advanced-trends.html',       out: 'Jotrea-iPad11-App-S5.png',  w: 1668, h: 2388 },
+  { id: 'ip11a5',  device: 'ipad11', html: 'app-plus-visit-notes.html',           out: 'Jotrea-iPad11-App-S5.png',  w: 1668, h: 2388 },
   { id: 'ip11a6',  device: 'ipad11', html: 'app-plus-provider-summary.html',      out: 'Jotrea-iPad11-App-S6.png',  w: 1668, h: 2388 },
   { id: 'ip11a7',  device: 'ipad11', html: 'app-plus-paywall.html',               out: 'Jotrea-iPad11-App-S7.png',  w: 1668, h: 2388 },
   // ── iPhone 6.5" set at 1284×2778 (for App Store 6.5" Display slot) ────────
@@ -372,14 +372,14 @@ const ALL_JOBS = [
   { id: 'c2', device: 'iphone65', html: 'app-s2-dose-tracking.html',         out: 'Jotrea-65-App-S2.png',   w: 1284, h: 2778 },
   { id: 'c3', device: 'iphone65', html: 'app-s3-weight-progress.html',       out: 'Jotrea-65-App-S3.png',   w: 1284, h: 2778 },
   { id: 'c4', device: 'iphone65', html: 'app-plus-medication-cabinet.html',   out: 'Jotrea-65-App-S4.png',   w: 1284, h: 2778 },
-  { id: 'c5', device: 'iphone65', html: 'app-plus-advanced-trends.html',      out: 'Jotrea-65-App-S5.png',   w: 1284, h: 2778 },
+  { id: 'c5', device: 'iphone65', html: 'app-plus-visit-notes.html',          out: 'Jotrea-65-App-S5.png',   w: 1284, h: 2778 },
   { id: 'c6', device: 'iphone65', html: 'app-plus-provider-summary.html',     out: 'Jotrea-65-App-S6.png',   w: 1284, h: 2778 },
   { id: 'c7', device: 'iphone65', html: 'app-plus-paywall.html',              out: 'Jotrea-65-App-S7.png',   w: 1284, h: 2778 },
   { id: 'ia1', device: 'ipad',  html: 'ipad-app-s1-dashboard-hero.html',     out: 'Jotrea-iPad-App-S1.png', w: 2064, h: 2752 },
   { id: 'ia2', device: 'ipad',  html: 'ipad-app-s2-dose-tracking.html',      out: 'Jotrea-iPad-App-S2.png', w: 2064, h: 2752 },
   { id: 'ia3', device: 'ipad',  html: 'ipad-app-s3-weight-progress.html',    out: 'Jotrea-iPad-App-S3.png', w: 2064, h: 2752 },
   { id: 'ia4', device: 'ipad',  html: 'app-plus-medication-cabinet.html',     out: 'Jotrea-iPad-App-S4.png', w: 2064, h: 2752 },
-  { id: 'ia5', device: 'ipad',  html: 'app-plus-advanced-trends.html',        out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
+  { id: 'ia5', device: 'ipad',  html: 'app-plus-visit-notes.html',            out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
   { id: 'ia6', device: 'ipad',  html: 'app-plus-provider-summary.html',       out: 'Jotrea-iPad-App-S6.png', w: 2064, h: 2752 },
   { id: 'ia7', device: 'ipad',  html: 'app-plus-paywall.html',                out: 'Jotrea-iPad-App-S7.png', w: 2064, h: 2752 },
 ];

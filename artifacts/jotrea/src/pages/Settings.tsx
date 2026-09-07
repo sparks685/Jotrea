@@ -17,7 +17,6 @@ import {
   Crown,
   ChevronRight,
   Pill,
-  ChartNoAxesCombined,
   FileHeart,
   FileText,
   FileUp,
@@ -732,12 +731,6 @@ export default function Settings() {
             label="Medication Cabinet"
             onClick={() => setLocation("/medication-cabinet")}
             testId="button-medication-cabinet"
-          />
-          <PlusFeatureRow
-            icon={<ChartNoAxesCombined size={15} />}
-            label="Advanced Trends"
-            onClick={() => setLocation("/advanced-trends")}
-            testId="button-advanced-trends"
           />
           <PlusFeatureRow
             icon={<FileHeart size={15} />}
