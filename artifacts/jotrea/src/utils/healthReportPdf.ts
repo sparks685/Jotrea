@@ -134,16 +134,23 @@ function buildReport(
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     let x = left;
+
+    // Draw every background before drawing any text. Some PDF viewers,
+    // including Apple Files, treat fill and text as one shared non-stroking
+    // color state even though jsPDF tracks them separately.
     for (const column of report.columns) {
-      // PDF fill and text both use the non-stroking color. Reapply the cell
-      // fill after every text draw so Apple Files cannot reuse the previous
-      // cell's dark text color as the next cell's background.
       doc.setFillColor(236, 229, 219);
       doc.rect(x, y, column.width, 12, "FD");
-      doc.setTextColor(26, 29, 61);
+      x += column.width;
+    }
+
+    doc.setTextColor(26, 29, 61);
+    x = left;
+    for (const column of report.columns) {
       doc.text(column.label, x + 2, y + 8);
       x += column.width;
     }
+
     y += 12;
     doc.setFont("helvetica", "normal");
   };
@@ -173,11 +180,18 @@ function buildReport(
     const rowShade = rowIndex % 2 === 0 ? 250 : 242;
     doc.setDrawColor(210, 210, 210);
     let x = left;
-    wrapped.forEach((lines, index) => {
+
+    wrapped.forEach((_, index) => {
       const width = report.columns[index].width;
       doc.setFillColor(rowShade, rowShade, rowShade);
       doc.rect(x, y, width, rowHeight, "FD");
-      doc.setTextColor(35, 35, 35);
+      x += width;
+    });
+
+    doc.setTextColor(35, 35, 35);
+    x = left;
+    wrapped.forEach((lines, index) => {
+      const width = report.columns[index].width;
       doc.text(lines, x + 2, y + 7);
       x += width;
     });
