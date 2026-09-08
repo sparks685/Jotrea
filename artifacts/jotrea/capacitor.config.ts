@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: "com.jotrea.app",
   appName: "Jotrea",
   webDir: "dist",
+  ios: {
+    backgroundColor: "#FFFCF5",
+  },
   plugins: {
     LocalNotifications: {
       smallIcon: "ic_stat_icon_config_sample",
