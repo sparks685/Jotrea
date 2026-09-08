@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.jotrea.app",
+  appId: "com.sparky.jotrea",
   appName: "Jotrea",
   webDir: "dist",
   ios: {
