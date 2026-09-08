@@ -11,3 +11,4 @@
 - [Jotrea Plus model](jotrea-plus-model.md) — keep core tracking free; monetize multiple medications, HealthKit, advanced trends, and provider summaries.
 - [RevenueCat expiry refresh](revenuecat-expiry-refresh.md) — invalidate cached CustomerInfo before native launch checks so expired trials cannot retain Plus access.
 - [Cross-platform pnpm binaries](cross-platform-pnpm-binaries.md) — never exclude macOS native build binaries from the shared lockfile; local iOS builds need them.
+- [Capacitor iOS launch continuity](capacitor-ios-launch-continuity.md) — colors alone cannot prevent the pre-WebView black flash; hold the native splash until React paints.
