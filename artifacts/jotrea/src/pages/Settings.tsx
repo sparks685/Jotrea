@@ -1081,7 +1081,7 @@ export default function Settings() {
               : <FileUp size={18} className="shrink-0" />}
             <span className="min-w-0">
               <span className="block font-semibold">
-                {dataExportAction === "pdf" ? "Preparing Reports…" : "Share Report (PDF)"}
+                {dataExportAction === "pdf" ? "Preparing Reports…" : "Share 3 Reports (PDF)"}
               </span>
               <span className="mt-0.5 block whitespace-normal text-xs font-normal leading-relaxed text-primary-foreground/85">
                 Formatted, easy to read. Best for emailing or printing.
