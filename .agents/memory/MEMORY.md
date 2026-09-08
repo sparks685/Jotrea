@@ -10,3 +10,4 @@
 - [App Review medical positioning](app-review-medical-positioning.md) — Jotrea is strictly a prescribed-information tracker/reminder; never present dose or medication-use guidance.
 - [Jotrea Plus model](jotrea-plus-model.md) — keep core tracking free; monetize multiple medications, HealthKit, advanced trends, and provider summaries.
 - [RevenueCat expiry refresh](revenuecat-expiry-refresh.md) — invalidate cached CustomerInfo before native launch checks so expired trials cannot retain Plus access.
+- [Cross-platform pnpm binaries](cross-platform-pnpm-binaries.md) — never exclude macOS native build binaries from the shared lockfile; local iOS builds need them.
