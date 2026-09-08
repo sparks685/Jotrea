@@ -8,6 +8,12 @@ const config: CapacitorConfig = {
     backgroundColor: "#FFFCF5",
   },
   plugins: {
+    SplashScreen: {
+      launchAutoHide: false,
+      launchFadeOutDuration: 200,
+      backgroundColor: "#FFFCF5",
+      showSpinner: false,
+    },
     LocalNotifications: {
       smallIcon: "ic_stat_icon_config_sample",
       iconColor: "#4F46E5",

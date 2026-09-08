@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -11,3 +13,11 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ThemeProvider>
 );
+
+if (Capacitor.isNativePlatform()) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      void SplashScreen.hide();
+    });
+  });
+}
