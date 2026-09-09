@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useUser } from "@/hooks/useMedication";
 import { subscriptionService } from "@/services/subscriptionService";
+import { applySubscriptionStatus } from "@/utils/subscriptionState";
 import type { SubscriptionProduct, SubscriptionStatus } from "@/types";
 
 const FREE_STATUS: SubscriptionStatus = { state: "free", isPlus: false };
 
 export function useSubscription() {
+  const { setUser } = useUser();
+  const setUserRef = useRef(setUser);
+  setUserRef.current = setUser;
   const [products, setProducts] = useState<SubscriptionProduct[]>([]);
   const [status, setStatus] = useState<SubscriptionStatus>(FREE_STATUS);
   const [loading, setLoading] = useState(true);
@@ -21,6 +26,7 @@ export function useSubscription() {
       ]);
       setProducts(nextProducts);
       setStatus(nextStatus);
+      setUserRef.current((current) => applySubscriptionStatus(current, nextStatus));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to load subscription details.");
     } finally {
@@ -38,6 +44,7 @@ export function useSubscription() {
     try {
       const nextStatus = await operation();
       setStatus(nextStatus);
+      setUserRef.current((current) => applySubscriptionStatus(current, nextStatus));
       return nextStatus;
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The purchase could not be completed.";
