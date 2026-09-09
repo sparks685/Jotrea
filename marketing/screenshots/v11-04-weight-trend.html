@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea V11 - 04 Weight Trend</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  /* Brand colors: #FFFDF7 #1A1D3D #D4A574 #C4956A #86A89A */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1320px; height: 2868px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 60px 96px 0; font-size: 48px; font-weight: 600; flex-shrink: 0;
+  }
+  .caption-band {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #1A1D3D; border-radius: 80px 80px 0 0;
+    padding: 100px 100px 140px;
+  }
+  .caption-band h1 { font-size: 116px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -3px; }
+  .caption-band p { font-size: 58px; font-weight: 500; color: rgba(255,255,255,0.72); margin-top: 32px; line-height: 1.4; }
+  .app-content { flex: 1; position: relative; }
+</style>
+</head>
+<body>
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:18px;align-items:center">
+    <svg width="46" height="32" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="72" height="32" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<div class="app-content">
+  <div style="margin:80px 100px 0;font-size:84px;font-weight:900;letter-spacing:-2px">Weight Trend</div>
+
+  <div style="margin:60px 100px 0;display:flex;gap:36px">
+    <div style="flex:1;background:#fff;border-radius:54px;padding:54px 40px;box-shadow:0 8px 30px rgba(0,0,0,0.03);text-align:center;border: 3px solid #F7F2EA">
+      <div style="font-size:42px;color:#6E7585;margin-bottom:16px">Recorded Change</div>
+      <div style="font-size:84px;font-weight:900;color:#86A89A;letter-spacing:-2px">−11.4</div>
+      <div style="font-size:42px;color:#6E7585;margin-top:12px">lbs</div>
+    </div>
+    <div style="flex:1;background:#fff;border-radius:54px;padding:54px 40px;box-shadow:0 8px 30px rgba(0,0,0,0.03);text-align:center;border: 3px solid #F7F2EA">
+      <div style="font-size:42px;color:#6E7585;margin-bottom:16px">Current BMI</div>
+      <div style="font-size:84px;font-weight:900;color:#1A1D3D;letter-spacing:-2px">29.8</div>
+      <div style="font-size:42px;color:#6E7585;margin-top:12px">Calculated</div>
+    </div>
+  </div>
+
+  <div style="margin:48px 100px 0;background:#fff;border-radius:60px;padding:70px;box-shadow:0 16px 60px rgba(0,0,0,0.04);border: 3px solid #F7F2EA">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:60px">
+      <div style="font-size:58px;font-weight:800">Progress Chart</div>
+      <div style="font-size:46px;font-weight:700;color:#86A89A">↓ Trending</div>
+    </div>
+    <svg width="100%" height="380" viewBox="0 0 1110 380">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#86A89A" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#86A89A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <line x1="0" y1="70" x2="1110" y2="70" stroke="#F7F2EA" stroke-width="3"/>
+      <line x1="0" y1="170" x2="1110" y2="170" stroke="#F7F2EA" stroke-width="3"/>
+      <line x1="0" y1="270" x2="1110" y2="270" stroke="#EDE8E2" stroke-width="3"/>
+      
+      <path d="M60,120 L300,160 L550,200 L800,240 L1050,266 L1050,270 L60,270Z" fill="url(#areaGrad)"/>
+      <polyline points="60,120 300,160 550,200 800,240 1050,266" fill="none" stroke="#86A89A" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      
+      <circle cx="60" cy="120" r="12" fill="#86A89A"/>
+      <circle cx="300" cy="160" r="12" fill="#86A89A"/>
+      <circle cx="550" cy="200" r="12" fill="#86A89A"/>
+      <circle cx="800" cy="240" r="12" fill="#86A89A"/>
+      <circle cx="1050" cy="266" r="20" fill="#fff" stroke="#86A89A" stroke-width="8"/>
+      
+      <text x="60" y="340" text-anchor="middle" font-size="32" fill="#6E7585" font-family="Inter,sans-serif">Aug</text>
+      <text x="550" y="340" text-anchor="middle" font-size="32" fill="#6E7585" font-family="Inter,sans-serif">Sep</text>
+      <text x="1050" y="340" text-anchor="middle" font-size="32" fill="#6E7585" font-family="Inter,sans-serif">Oct</text>
+    </svg>
+  </div>
+</div>
+
+<div class="caption-band" style="background:#86A89A">
+  <h1>Visualize Your Trends</h1>
+  <p>Track your recorded weight and see the big picture securely.</p>
+</div>
+</body>
+</html>

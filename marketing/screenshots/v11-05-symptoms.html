@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jotrea V11 - 05 Symptoms</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  /* Brand colors: #FFFDF7 #1A1D3D #D4A574 #C4956A #86A89A */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1320px; height: 2868px;
+    background: #FFFDF7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden; color: #1A1D3D; position: relative;
+    display: flex; flex-direction: column;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 60px 96px 0; font-size: 48px; font-weight: 600; flex-shrink: 0;
+  }
+  .caption-band {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #1A1D3D; border-radius: 80px 80px 0 0;
+    padding: 100px 100px 140px;
+  }
+  .caption-band h1 { font-size: 116px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -3px; }
+  .caption-band p { font-size: 58px; font-weight: 500; color: rgba(255,255,255,0.72); margin-top: 32px; line-height: 1.4; }
+  .app-content { flex: 1; position: relative; }
+</style>
+</head>
+<body>
+<div class="status-bar">
+  <span>9:41</span>
+  <div style="display:flex;gap:18px;align-items:center">
+    <svg width="46" height="32" viewBox="0 0 42 30" fill="none"><rect x="0" y="6" width="6" height="24" rx="2" fill="#1A1D3D"/><rect x="9" y="12" width="6" height="18" rx="2" fill="#1A1D3D"/><rect x="18" y="3" width="6" height="27" rx="2" fill="#1A1D3D"/><rect x="27" y="0" width="6" height="30" rx="2" fill="#1A1D3D"/></svg>
+    <svg width="72" height="32" viewBox="0 0 66 30" fill="none"><rect x="0" y="3" width="60" height="24" rx="6" stroke="#1A1D3D" stroke-width="2.5" fill="none"/><rect x="3" y="6" width="48" height="18" rx="4" fill="#1A1D3D"/></svg>
+  </div>
+</div>
+
+<div class="app-content">
+  <div style="margin:80px 100px 0;font-size:84px;font-weight:900;letter-spacing:-2px">Log Symptoms</div>
+  
+  <div style="margin:40px 100px 0;font-size:48px;color:#6E7585;line-height:1.5">
+    Record how you feel to spot patterns and share insights with your provider.
+  </div>
+
+  <div style="margin:60px 100px 0;display:grid;grid-template-columns:1fr 1fr;gap:36px">
+    <div style="background:#fff;border:4px solid #86A89A;border-radius:48px;padding:50px;box-shadow:0 8px 30px rgba(134,168,154,0.15)">
+      <div style="font-size:52px;font-weight:800;color:#1A1D3D">Nausea</div>
+      <div style="font-size:40px;color:#86A89A;margin-top:12px;font-weight:700">Mild</div>
+    </div>
+    <div style="background:#fff;border:3px solid #F7F2EA;border-radius:48px;padding:50px">
+      <div style="font-size:52px;font-weight:800;color:#1A1D3D">Fatigue</div>
+      <div style="font-size:40px;color:#6E7585;margin-top:12px;font-weight:600">None</div>
+    </div>
+    <div style="background:#fff;border:3px solid #F7F2EA;border-radius:48px;padding:50px">
+      <div style="font-size:52px;font-weight:800;color:#1A1D3D">Headache</div>
+      <div style="font-size:40px;color:#6E7585;margin-top:12px;font-weight:600">None</div>
+    </div>
+    <div style="background:#fff;border:4px solid #D4A574;border-radius:48px;padding:50px;box-shadow:0 8px 30px rgba(212,165,116,0.15)">
+      <div style="font-size:52px;font-weight:800;color:#1A1D3D">Appetite</div>
+      <div style="font-size:40px;color:#D4A574;margin-top:12px;font-weight:700">Low</div>
+    </div>
+  </div>
+
+  <div style="margin:48px 100px 0;background:#fff;border-radius:60px;padding:60px;border: 3px solid #F7F2EA">
+    <div style="font-size:52px;font-weight:800;margin-bottom:30px">Additional Notes</div>
+    <div style="font-size:44px;color:#6E7585;background:#F9FBFA;padding:40px;border-radius:30px;line-height:1.5">
+      Felt slightly nauseous after breakfast, but it passed quickly.
+    </div>
+  </div>
+</div>
+
+<div class="caption-band">
+  <h1>Track Your Symptoms</h1>
+  <p>Log how you feel to spot patterns and maintain a complete record.</p>
+</div>
+</body>
+</html>

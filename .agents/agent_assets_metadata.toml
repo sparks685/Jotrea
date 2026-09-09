@@ -6,240 +6,280 @@ id = "El9U4mYEp1FAZtzUuw_LF"
 uri = "file://marketing/screenshots/Jotrea-S1.png"
 type = "image"
 title = "iPhone S1 – Onboarding"
+logical_id = "37fa7267-cafd-4068-944a-4dca8975c1c8"
 
 [[outputs]]
 id = "StmXVrDB1eeiuNnJ86Jlb"
 uri = "file://marketing/screenshots/Jotrea-S2.png"
 type = "image"
 title = "iPhone S2 – Goal Weight"
+logical_id = "5dddaac2-06c4-4146-b359-acfd2be18214"
 
 [[outputs]]
 id = "thdPf_42KLHWNckAhFHsP"
 uri = "file://marketing/screenshots/Jotrea-S3.png"
 type = "image"
 title = "iPhone S3 – Dashboard"
+logical_id = "46379bc4-24c7-469b-81ea-46d0b9946617"
 
 [[outputs]]
 id = "YQtsIOJZaEh4PJXCdS-QT"
 uri = "file://marketing/screenshots/Jotrea-S4.png"
 type = "image"
 title = "iPhone S4 – Dose Log"
+logical_id = "b83e087e-7691-4a76-8e7c-ae4efb4cd761"
 
 [[outputs]]
 id = "XqfI3DUu7gOgpXUTLLWdY"
 uri = "file://marketing/screenshots/Jotrea-iPad-S1.png"
 type = "image"
 title = "iPad S1 – Onboarding"
+logical_id = "8b6d0291-72d1-43ea-a23b-54673f78338c"
 
 [[outputs]]
 id = "WNmuWsP3kOH68gr2QOp79"
 uri = "file://marketing/screenshots/Jotrea-iPad-S2.png"
 type = "image"
 title = "iPad S2 – Goal Weight"
+logical_id = "b05bc350-872e-4ae1-85ab-68010532892a"
 
 [[outputs]]
 id = "-ga2q6FuW31-8X9F2p11c"
 uri = "file://marketing/screenshots/Jotrea-iPad-S3.png"
 type = "image"
 title = "iPad S3 – Dashboard"
+logical_id = "d6a5264d-1cb4-4617-bea8-59066abb7e4e"
 
 [[outputs]]
 id = "9P3TKXiGpxUFQfL9wwDIk"
 uri = "file://marketing/screenshots/Jotrea-iPad-S4.png"
 type = "image"
 title = "iPad S4 – Dose Log"
+logical_id = "da1550e6-9c44-4242-9b30-6e5074611708"
 
 [[outputs]]
 id = "2V4dBO21zVU2cFMVCovdv"
 uri = "file://marketing/screenshots/Jotrea-App-S1.png"
 type = "image"
 title = "iPhone App S1 – Dashboard Hero"
+logical_id = "621397b8-5237-4da0-9546-e5703defb4ed"
 
 [[outputs]]
 id = "KQSlAkTSOtIEglduL-PKo"
 uri = "file://marketing/screenshots/Jotrea-App-S2.png"
 type = "image"
 title = "iPhone App S2 – Dose Tracking"
+logical_id = "58551512-7e8b-4f7c-bb72-8d332e6be7fc"
 
 [[outputs]]
 id = "1fJ2jbhvr0yKAV0K4quEY"
 uri = "file://marketing/screenshots/Jotrea-App-S3.png"
 type = "image"
 title = "iPhone App S3 – Weight Progress"
+logical_id = "b5c41993-c013-4bca-b339-0268efd7c872"
 
 [[outputs]]
 id = "MNovyZcRirm7YIXnsTMd6"
 uri = "file://marketing/screenshots/Jotrea-App-S4.png"
 type = "image"
 title = "iPhone App S4 – Med Info"
+logical_id = "023ef681-83ce-48bb-9e6a-a1ec28983013"
 
 [[outputs]]
 id = "GOzTXeD51Oqxrrfe6Pbat"
 uri = "file://marketing/screenshots/Jotrea-App-S5.png"
 type = "image"
 title = "iPhone App S5 – Side Effects"
+logical_id = "d051738e-acec-4a98-b7ac-8d85b9891cf2"
 
 [[outputs]]
 id = "A9xXsBRTKlAMiEj3NBRRt"
 uri = "file://marketing/screenshots/Jotrea-App-S6.png"
 type = "image"
 title = "iPhone App S6 – Personalised Plan"
+logical_id = "805c70cb-cad2-436e-86ed-21fc8cf7ad9c"
 
 [[outputs]]
 id = "vwTcL-tMzFXlhSL9tzU-p"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S1.png"
 type = "image"
 title = "iPad App S1 – Dashboard Hero"
+logical_id = "bd586488-3eb0-4330-9d84-e3971b3a55d6"
 
 [[outputs]]
 id = "T5uhJ1qpeb4NQ2pdd20Lm"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S2.png"
 type = "image"
 title = "iPad App S2 – Dose Tracking"
+logical_id = "ebb778de-5541-420c-a899-084ea1548313"
 
 [[outputs]]
 id = "gKhOaB8S5vi6eN39KRYfX"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S3.png"
 type = "image"
 title = "iPad App S3 – Weight Progress"
+logical_id = "3ea3eb45-f9e7-47b0-b43a-884a6a65576f"
 
 [[outputs]]
 id = "avHWcWW5IJ-_qKybs32la"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S4.png"
 type = "image"
 title = "iPad App S4 – Med Info"
+logical_id = "5993973c-37e4-4864-b9ae-a6e8199aa2cc"
 
 [[outputs]]
 id = "xzpNASJ54XT7iNUn1bO37"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S5.png"
 type = "image"
 title = "iPad App S5 – Side Effects"
+logical_id = "122d76f5-d7d2-455c-b4e9-8175125355fc"
 
 [[outputs]]
 id = "5HVi8N8ZN0t8N6RyoRzog"
 uri = "file://marketing/screenshots/Jotrea-iPad-App-S6.png"
 type = "image"
 title = "iPad App S6 – Personalised Plan"
+logical_id = "08458b8a-1f8b-464b-b364-fcb877c76ad7"
 
 [[outputs]]
 id = "Mix3TRzptHzjqkEKdNGP4"
 uri = "file://marketing/screenshots/Jotrea-65-S1.png"
 type = "image"
 title = "6.5\" S1 – Onboarding"
+logical_id = "2366b6f2-39f3-4a82-9e4f-6c76a9c1aafc"
 
 [[outputs]]
 id = "YwTiLHi_MjqnccVKiGamp"
 uri = "file://marketing/screenshots/Jotrea-65-S2.png"
 type = "image"
 title = "6.5\" S2 – Goal Weight"
+logical_id = "c2425125-edee-450a-953d-36189749a1f1"
 
 [[outputs]]
 id = "zBYxXVjvrhxUw6bW7VGjl"
 uri = "file://marketing/screenshots/Jotrea-65-S3.png"
 type = "image"
 title = "6.5\" S3 – Dashboard"
+logical_id = "6b1b4016-ae09-4727-8a82-e44e2486bb4b"
 
 [[outputs]]
 id = "0rvn6dnfJ7y2CyvuvrBYS"
 uri = "file://marketing/screenshots/Jotrea-65-S4.png"
 type = "image"
 title = "6.5\" S4 – Weight Tracker"
+logical_id = "1700481c-cd30-4e45-8f61-d9c2db6c85f5"
 
 [[outputs]]
 id = "BtcRudDDkKAZgjhRCaYXM"
 uri = "file://marketing/screenshots/Jotrea-65-App-S1.png"
 type = "image"
 title = "6.5\" App S1 – Dashboard Hero"
+logical_id = "0238a5c8-c6c2-4e49-9b10-0b549439e833"
 
 [[outputs]]
 id = "8DNv1g2wra_k11OWdlPNm"
 uri = "file://marketing/screenshots/Jotrea-65-App-S2.png"
 type = "image"
 title = "6.5\" App S2 – Dose Tracking"
+logical_id = "4e71c6e9-e996-48c5-a006-700e64397f30"
 
 [[outputs]]
 id = "yoPkgSvuEsBQZJqaqx9QA"
 uri = "file://marketing/screenshots/Jotrea-65-App-S3.png"
 type = "image"
 title = "6.5\" App S3 – Weight Progress"
+logical_id = "2e545c53-b404-471a-a8bc-a5bc48dde0be"
 
 [[outputs]]
 id = "MHmfvdRn3lylpwwN47WMI"
 uri = "file://marketing/screenshots/Jotrea-65-App-S4.png"
 type = "image"
 title = "6.5\" App S4 – Med Info"
+logical_id = "2e76bf7a-2adf-4e8a-b0b0-fe5c5bcfb720"
 
 [[outputs]]
 id = "Ke0CEZ_TxOJdTsKrkr0ln"
 uri = "file://marketing/screenshots/Jotrea-65-App-S5.png"
 type = "image"
 title = "6.5\" App S5 – Side Effects"
+logical_id = "3eb48002-929d-4c86-b536-cab206579a8f"
 
 [[outputs]]
 id = "RuSXEUCqaHA6PKvhf0E0z"
 uri = "file://marketing/screenshots/Jotrea-65-App-S6.png"
 type = "image"
 title = "6.5\" App S6 – Personalised Plan"
+logical_id = "0ba032af-51c0-40af-ac16-86ed3e2f066a"
 
 [[outputs]]
 id = "N1Jq_VLm-eMUKm6RBGhAx"
 uri = "file://marketing/screenshots/Jotrea-iPad11-S1.png"
 type = "image"
 title = "iPad 11\" S1 – Onboarding"
+logical_id = "cbbf9ee3-c5d0-40a8-be1d-73a7e27df209"
 
 [[outputs]]
 id = "m-Gd_ErgKkd7yL2tNmf4K"
 uri = "file://marketing/screenshots/Jotrea-iPad11-S2.png"
 type = "image"
 title = "iPad 11\" S2 – Goal Weight"
+logical_id = "3c11fa2b-af78-49c1-860c-3d23268fd1d5"
 
 [[outputs]]
 id = "6mW57_l4nr1OyHkFNsTJs"
 uri = "file://marketing/screenshots/Jotrea-iPad11-S3.png"
 type = "image"
 title = "iPad 11\" S3 – Dashboard"
+logical_id = "0970833e-fa97-4c82-908a-963bc9d4267b"
 
 [[outputs]]
 id = "hcBUezjmLYATAYUZ9oIUB"
 uri = "file://marketing/screenshots/Jotrea-iPad11-S4.png"
 type = "image"
 title = "iPad 11\" S4 – Weight Tracker"
+logical_id = "9904c3f4-a505-4afc-9745-d3895e222058"
 
 [[outputs]]
 id = "Fdz-qigj0TLdgSX3YaiKa"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S1.png"
 type = "image"
 title = "iPad 11\" App S1 – Dashboard Hero"
+logical_id = "d3339f04-e0cf-41e6-a311-0893cfc2356f"
 
 [[outputs]]
 id = "HbTBdzruy-0reSfXM0lL3"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S2.png"
 type = "image"
 title = "iPad 11\" App S2 – Dose Tracking"
+logical_id = "446a872b-ff81-481e-a626-12c05b3af0d9"
 
 [[outputs]]
 id = "9NUjNqzBch0i6FE4YbL8U"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S3.png"
 type = "image"
 title = "iPad 11\" App S3 – Weight Progress"
+logical_id = "2c1f2329-3cc9-4772-aa5d-3a4b20907f38"
 
 [[outputs]]
 id = "B9M_p9Sx-iIbmdQdA7Y0P"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S4.png"
 type = "image"
 title = "iPad 11\" App S4 – Med Info"
+logical_id = "2677a0d8-9c4c-4376-b5e8-84871db6dfc4"
 
 [[outputs]]
 id = "-QQGnMKqWZzoMv849Ctup"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S5.png"
 type = "image"
 title = "iPad 11\" App S5 – Side Effects"
+logical_id = "e36e7dae-6f57-4f32-9353-5f83f9fee3fe"
 
 [[outputs]]
 id = "LPL7ODdcJ6zDBNNuenHtc"
 uri = "file://marketing/screenshots/Jotrea-iPad11-App-S6.png"
 type = "image"
 title = "iPad 11\" App S6 – Personalised Plan"
+logical_id = "62bf1ac2-751e-47bb-9ca2-9163497ee296"
 
 [[outputs]]
 id = "PL9aRYOBtDmR1blizgYa-"
@@ -247,3 +287,32 @@ uri = "file://marketing/app-store-review/Jotrea-Plus-IAP-Review-1290x2796.png"
 type = "image"
 title = "Jotrea Plus Review Screenshot"
 description = "Apple-compatible 1290 × 2796 RGB PNG for the Monthly and Annual subscription Review Information fields."
+logical_id = "006f865b-9db4-455c-9290-2eab9f1f2e1d"
+
+[[outputs]]
+id = "MlApe0BRClypcZhKtQFRb"
+uri = "file://marketing/screenshots/Jotrea-v1.1-App-Store-Screenshots-iPhone-6.9.zip"
+type = "unspecified"
+title = "Jotrea Version 1.1 App Store Screenshots"
+description = "Ten upload-ready iPhone 6.9-inch PNGs at 1320 x 2868, ordered 01 through 10 for App Store Connect."
+logical_id = "4f940380-f197-4863-8165-54342a2fc852"
+content_hash = "sha256:72bfd9651afadc2ba9eb311116f000512f10b7f26f218eb6db0fad083a502a7a"
+size = 1631082
+mtime_ms = 1788954209809
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/4f940380-f197-4863-8165-54342a2fc852/f13eb5ac-ccb1-4644-80f7-b331e95d85da"
+storage_version_token = "1788954251474562"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "768RjN4nhjsyI_-a9hjrr"
+uri = "file://marketing/screenshots/Jotrea-v1.1-App-Store-Screenshot-Review-Sheet.png"
+type = "image"
+title = "Jotrea Screenshot Review Sheet"
+description = "A compact visual index of the complete ten-image Version 1.1 sequence."
+logical_id = "965ed8ff-af07-47a3-b08c-ed1b16f27869"
+content_hash = "sha256:f93b675b982c58a3fb1f252e177eedeef985dd48e98be8260b0edada2b057d72"
+size = 1340182
+mtime_ms = 1788954217513
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/965ed8ff-af07-47a3-b08c-ed1b16f27869/31ed1b2c-bc9e-4b70-9922-3c8386a08a20"
+storage_version_token = "1788954252366720"
+content_type = "image/png"

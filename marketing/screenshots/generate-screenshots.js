@@ -71,6 +71,7 @@ const BRAND_COLORS = [
   { name: 'background',             token: '--background',  hex: '#FFFDF7', hsl: [40, 100, 98] },
   { name: 'foreground (navy)',       token: '--foreground',  hex: '#1A1D3D', hsl: [240, 39, 14] },
   { name: 'primary-dark (gradient)', token: '--primary-dark',hex: '#C4956A', hsl: null },
+  { name: 'secondary (sage)',        token: '--secondary',   hex: '#86A89A', hsl: [153, 21, 60] },
 ];
 
 /**
@@ -235,21 +236,21 @@ function runRulerCheck(dir, cssPath) {
 /**
  * Canonical App Store marketing HTML files that must be checked.
  */
-const A_SERIES_HTML = [
-  'app-s1-dashboard-hero.html',
-  'app-s2-dose-tracking.html',
-  'app-s3-weight-progress.html',
-  'app-plus-medication-cabinet.html',
-  'app-plus-visit-notes.html',
-  'app-plus-provider-summary.html',
-  'app-plus-paywall.html',
-  'ipad-app-s1-dashboard-hero.html',
-  'ipad-app-s2-dose-tracking.html',
-  'ipad-app-s3-weight-progress.html',
+const CHECK_HTML = [
+  'v11-01-intro.html',
+  'v11-02-dashboard.html',
+  'v11-03-dose-history.html',
+  'v11-04-weight-trend.html',
+  'v11-05-symptoms.html',
+  'v11-06-med-cabinet.html',
+  'v11-07-provider-summary.html',
+  'v11-08-visit-notes.html',
+  'v11-09-exports.html',
+  'v11-10-plus-paywall.html'
 ];
 
 /**
- * Check that each A-series HTML file contains the expected brand hex values,
+ * Check that each tracked HTML file contains the expected brand hex values,
  * and that the canonical hex table still agrees with index.css.
  *
  * Prints a per-file, per-token report and exits 1 if any check fails.
@@ -282,11 +283,11 @@ function runColorCheck(dir, cssPath) {
   }
   console.log();
 
-  // ── 2. Per-file check: every A-series HTML must contain each brand hex ──────
+  // ── 2. Per-file check: every tracked HTML must contain each brand hex ──────
   let filesPassed = 0;
   let filesFailed = 0;
 
-  for (const htmlFile of A_SERIES_HTML) {
+  for (const htmlFile of CHECK_HTML) {
     const htmlPath = path.join(dir, htmlFile);
     if (!fs.existsSync(htmlPath)) {
       console.log(`SKIP  ${htmlFile} — file not found`);
@@ -316,7 +317,7 @@ function runColorCheck(dir, cssPath) {
   const overallFail = filesFailed > 0 || driftWarnings.length > 0;
   console.log('\n' + '─'.repeat(60));
   if (!overallFail) {
-    console.log(`Brand color check PASSED — all ${filesPassed} A-series files use correct hex values.\n`);
+    console.log(`Brand color check PASSED — all ${filesPassed} tracked files use correct hex values.\n`);
   } else {
     if (filesFailed > 0) {
       console.log(`Brand color check FAILED — ${filesFailed} file(s) have color mismatches (see above).`);
@@ -324,7 +325,7 @@ function runColorCheck(dir, cssPath) {
     }
     if (driftWarnings.length > 0) {
       console.log('Brand color check FAILED — index.css palette has drifted from screenshots.');
-      console.log('Fix: update BRAND_COLORS in generate-screenshots.js AND the A-series HTML files.\n');
+      console.log('Fix: update BRAND_COLORS in generate-screenshots.js AND the HTML files.\n');
     }
     process.exit(1);
   }
@@ -382,6 +383,17 @@ const ALL_JOBS = [
   { id: 'ia5', device: 'ipad',  html: 'app-plus-visit-notes.html',            out: 'Jotrea-iPad-App-S5.png', w: 2064, h: 2752 },
   { id: 'ia6', device: 'ipad',  html: 'app-plus-provider-summary.html',       out: 'Jotrea-iPad-App-S6.png', w: 2064, h: 2752 },
   { id: 'ia7', device: 'ipad',  html: 'app-plus-paywall.html',                out: 'Jotrea-iPad-App-S7.png', w: 2064, h: 2752 },
+  // ── Version 1.1 iPhone 6.9" set (1320×2868) ────────────────────────────────
+  { id: 'v11-01', device: 'iphone69', html: 'v11-01-intro.html', out: 'Jotrea-v11-01-Intro.png', w: 1320, h: 2868 },
+  { id: 'v11-02', device: 'iphone69', html: 'v11-02-dashboard.html', out: 'Jotrea-v11-02-Dashboard.png', w: 1320, h: 2868 },
+  { id: 'v11-03', device: 'iphone69', html: 'v11-03-dose-history.html', out: 'Jotrea-v11-03-Dose-History.png', w: 1320, h: 2868 },
+  { id: 'v11-04', device: 'iphone69', html: 'v11-04-weight-trend.html', out: 'Jotrea-v11-04-Weight-Trend.png', w: 1320, h: 2868 },
+  { id: 'v11-05', device: 'iphone69', html: 'v11-05-symptoms.html', out: 'Jotrea-v11-05-Symptoms.png', w: 1320, h: 2868 },
+  { id: 'v11-06', device: 'iphone69', html: 'v11-06-med-cabinet.html', out: 'Jotrea-v11-06-Med-Cabinet.png', w: 1320, h: 2868 },
+  { id: 'v11-07', device: 'iphone69', html: 'v11-07-provider-summary.html', out: 'Jotrea-v11-07-Provider-Summary.png', w: 1320, h: 2868 },
+  { id: 'v11-08', device: 'iphone69', html: 'v11-08-visit-notes.html', out: 'Jotrea-v11-08-Visit-Notes.png', w: 1320, h: 2868 },
+  { id: 'v11-09', device: 'iphone69', html: 'v11-09-exports.html', out: 'Jotrea-v11-09-Exports.png', w: 1320, h: 2868 },
+  { id: 'v11-10', device: 'iphone69', html: 'v11-10-plus-paywall.html', out: 'Jotrea-v11-10-Plus-Paywall.png', w: 1320, h: 2868 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -401,7 +413,8 @@ Usage:
   node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A7)
   node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S7)
   node generate-screenshots.js --iphone65        iPhone 6.5" set at 1284×2778 (App Store 6.5" Display slot)
-  node generate-screenshots.js --check-colors    Verify brand hex values in all 12 A-series HTML files
+  node generate-screenshots.js --v11             Version 1.1 iPhone 6.9" set (1320x2868)
+  node generate-screenshots.js --check-colors    Verify brand hex values in all tracked HTML files
   node generate-screenshots.js --check-ruler     Verify ruler dark-mode contrast (opacity guard + snapshot)
   node generate-screenshots.js --help            Print this usage message
 `);
@@ -425,9 +438,14 @@ if (args.includes('--check-ruler')) {
 function selectJobs(args) {
   const marketing  = args.includes('--marketing');
   const iphone65   = args.includes('--iphone65');
+  const v11        = args.includes('--v11');
 
   // Strip flag tokens before further processing
   const positional = args.filter(a => !a.startsWith('--'));
+
+  if (v11) {
+    return ALL_JOBS.filter(job => job.device === 'iphone69');
+  }
 
   if (iphone65) {
     return ALL_JOBS.filter(job => job.device === 'iphone65');
@@ -460,13 +478,13 @@ function selectJobs(args) {
   if (positional.length === 0) return ALL_JOBS;
 
   const deviceFilters = positional.filter(a => a === 'iphone' || a === 'ipad');
-  const slideFilters  = positional.filter(a => /^(s[1-4]|a[1-7]|ia[1-7])$/.test(a));
+  const slideFilters  = positional.filter(a => /^(s[1-4]|a[1-7]|ia[1-7]|v11-\d+)$/.test(a));
   const unknown       = positional.filter(a => !deviceFilters.includes(a) && !slideFilters.includes(a));
 
   if (unknown.length > 0) {
     console.error(`Unknown filter(s): ${unknown.join(', ')}`);
     console.error('Valid device filters: iphone, ipad');
-    console.error('Valid slide filters:  s1–s4, a1–a7, ia1–ia7');
+    console.error('Valid slide filters:  s1–s4, a1–a7, ia1–ia7, v11-01 to v11-10');
     process.exit(1);
   }
 
@@ -529,10 +547,10 @@ if (failed > 0) process.exit(1);
 const cssPath = path.resolve(__dirname, '../../artifacts/jotrea/src/index.css');
 
 // ---------------------------------------------------------------------------
-// Automatic brand-color check when any A-series job was in the run
+// Automatic brand-color check when any tracked marketing job was in the run
 // ---------------------------------------------------------------------------
-const hasASeriesJob = jobs.some(job => /^(a[1-7]|ia[1-7])$/.test(job.id));
-if (hasASeriesJob) {
+const hasColorCheckJob = jobs.some(job => /^(a[1-7]|ia[1-7]|v11-\d+)$/.test(job.id));
+if (hasColorCheckJob) {
   runColorCheck(DIR, cssPath);
 }
 
