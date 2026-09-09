@@ -59,13 +59,45 @@ export default function VisitNoteDetail() {
 
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const lastSaved = useRef<VisitNote>(note);
+  const draftRef = useRef<VisitNote>(note);
+  const setNotesRef = useRef(setNotes);
   const initialized = useRef(false);
+
+  setNotesRef.current = setNotes;
+
+  const noteContent = useCallback(({ updatedAt: _updatedAt, ...content }: VisitNote) => content, []);
+
+  const saveImmediately = useCallback(() => {
+    if (!initialized.current) return;
+
+    const draft = draftRef.current;
+    if (JSON.stringify(noteContent(draft)) === JSON.stringify(noteContent(lastSaved.current))) return;
+
+    const updated = { ...draft, updatedAt: new Date().toISOString() };
+    setNotesRef.current((previous) => {
+      const existingIndex = previous.findIndex((item) => item.id === updated.id);
+      if (existingIndex === -1) return [...previous, updated];
+
+      const next = [...previous];
+      next[existingIndex] = updated;
+      return next;
+    });
+    lastSaved.current = updated;
+    setSaveStatus("saved");
+  }, [noteContent]);
+
+  const updateDraft = useCallback((update: (current: VisitNote) => VisitNote) => {
+    const updated = update(draftRef.current);
+    draftRef.current = updated;
+    setNote(updated);
+  }, []);
 
   useEffect(() => {
     if (!isNew && params.id && !initialized.current) {
       const existing = notes.find(n => n.id === params.id);
       if (existing) {
         setNote(existing);
+        draftRef.current = existing;
         lastSaved.current = existing;
         initialized.current = true;
       } else {
@@ -80,26 +112,31 @@ export default function VisitNoteDetail() {
   useEffect(() => {
     if (!initialized.current) return;
     const timer = setTimeout(() => {
-      const hasChanges = JSON.stringify(note) !== JSON.stringify(lastSaved.current);
+      const hasChanges = JSON.stringify(noteContent(note)) !== JSON.stringify(noteContent(lastSaved.current));
       if (hasChanges) {
         setSaveStatus("saving");
-        const updated = { ...note, updatedAt: new Date().toISOString() };
-        
-        setNotes(prev => {
-          const exists = prev.find(p => p.id === updated.id);
-          if (exists) {
-            return prev.map(p => p.id === updated.id ? updated : p);
-          }
-          return [...prev, updated];
-        });
-        
-        lastSaved.current = updated;
-        setTimeout(() => setSaveStatus("saved"), 600);
+        saveImmediately();
       }
     }, 1000); // 1s debounce
     
     return () => clearTimeout(timer);
-  }, [note, setNotes]);
+  }, [note, noteContent, saveImmediately]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") saveImmediately();
+    };
+    const handlePageHide = () => saveImmediately();
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      saveImmediately();
+    };
+  }, [saveImmediately]);
 
   // Clear "saved" status after a while
   useEffect(() => {
@@ -111,23 +148,23 @@ export default function VisitNoteDetail() {
   }, [saveStatus]);
 
   const updateField = useCallback(<K extends keyof VisitNote>(field: K, value: VisitNote[K]) => {
-    setNote(prev => ({ ...prev, [field]: value }));
-  }, []);
+    updateDraft(prev => ({ ...prev, [field]: value }));
+  }, [updateDraft]);
 
   const addQuestion = () => {
     const q: VisitNoteQuestion = { id: `q-${Date.now()}`, text: "", discussed: false };
-    setNote(prev => ({ ...prev, questions: [...(prev.questions || []), q] }));
+    updateDraft(prev => ({ ...prev, questions: [...(prev.questions || []), q] }));
   };
 
   const updateQuestion = (id: string, updates: Partial<VisitNoteQuestion>) => {
-    setNote(prev => ({
+    updateDraft(prev => ({
       ...prev,
       questions: (prev.questions || []).map(q => q.id === id ? { ...q, ...updates } : q)
     }));
   };
 
   const removeQuestion = (id: string) => {
-    setNote(prev => ({
+    updateDraft(prev => ({
       ...prev,
       questions: (prev.questions || []).filter(q => q.id !== id)
     }));
@@ -135,18 +172,18 @@ export default function VisitNoteDetail() {
 
   const addFollowUp = () => {
     const f: VisitNoteFollowUp = { id: `f-${Date.now()}`, text: "", completed: false };
-    setNote(prev => ({ ...prev, followUps: [...(prev.followUps || []), f] }));
+    updateDraft(prev => ({ ...prev, followUps: [...(prev.followUps || []), f] }));
   };
 
   const updateFollowUp = (id: string, updates: Partial<VisitNoteFollowUp>) => {
-    setNote(prev => ({
+    updateDraft(prev => ({
       ...prev,
       followUps: (prev.followUps || []).map(f => f.id === id ? { ...f, ...updates } : f)
     }));
   };
 
   const removeFollowUp = (id: string) => {
-    setNote(prev => ({
+    updateDraft(prev => ({
       ...prev,
       followUps: (prev.followUps || []).filter(f => f.id !== id)
     }));
@@ -158,33 +195,25 @@ export default function VisitNoteDetail() {
       e.preventDefault();
       const newTag = tagInput.trim();
       if (!note.tags?.includes(newTag)) {
-        setNote(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
+        updateDraft(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
       }
       setTagInput("");
     }
   };
   const removeTag = (tag: string) => {
-    setNote(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tag) }));
+    updateDraft(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== tag) }));
   };
 
   return (
     <PlusGate feature="Visit Notes">
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background" onBlurCapture={saveImmediately}>
       {/* Sticky Header */}
       <header className="sticky top-0 z-50 bg-background/90 backdrop-blur border-b border-border px-4 h-14 flex items-center justify-between">
         <button
            type="button"
           className="flex items-center gap-1 text-sm font-medium text-primary hover:bg-primary/10 px-2 py-1.5 rounded-lg -ml-2 transition-colors"
           onClick={() => {
-            // Force an immediate save if there are changes before navigating away
-            if (JSON.stringify(note) !== JSON.stringify(lastSaved.current)) {
-              const updated = { ...note, updatedAt: new Date().toISOString() };
-              setNotes(prev => {
-                const exists = prev.find(p => p.id === updated.id);
-                if (exists) return prev.map(p => p.id === updated.id ? updated : p);
-                return [...prev, updated];
-              });
-            }
+            saveImmediately();
             setLocation("/visit-notes");
           }}
           data-testid="button-back-to-notes"

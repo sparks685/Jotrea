@@ -15,3 +15,4 @@
 - [jsPDF cell color isolation](jspdf-cell-color-isolation.md) — paint all cell backgrounds before any row text, with separate fill/stroke operations, for Apple Files compatibility.
 - [Capacitor web-bundle canary](capacitor-web-bundle-canary.md) — verify a visible source change exists in both dist and iOS public assets before device testing to catch stale builds.
 - [RevenueCat status synchronization](revenuecat-status-synchronization.md) — persist every successful native refresh and show checking, not Free, until RevenueCat resolves.
+- [Interruption-safe draft saves](interruption-safe-draft-saves.md) — debounced sensitive drafts also need synchronous blur, page-hide, background, navigation, and unmount saves.
