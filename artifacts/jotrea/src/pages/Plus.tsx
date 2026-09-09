@@ -17,7 +17,7 @@ const BENEFITS = [
 ];
 
 export default function Plus() {
-  const { user, setUser } = useUser();
+  const { user } = useUser();
   const [, setLocation] = useLocation();
   const { products, status, loading, pending, error, purchase, restore } = useSubscription();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -34,19 +34,10 @@ export default function Plus() {
     }
   }, [selectedId, sortedProducts]);
 
-  const persistStatus = (next: typeof status) => {
-    setUser({
-      ...user,
-      subscription: next.isPlus ? "premium" : "free",
-      subscriptionProductId: next.productId,
-      subscriptionExpiresAt: next.expiresAt,
-    });
-  };
-
   const handlePurchase = async () => {
     if (!selectedId) return;
     try {
-      persistStatus(await purchase(selectedId));
+      await purchase(selectedId);
     } catch {
       // The hook exposes a clear, user-visible error.
     }
@@ -54,7 +45,7 @@ export default function Plus() {
 
   const handleRestore = async () => {
     try {
-      persistStatus(await restore());
+      await restore();
     } catch {
       // The hook exposes a clear, user-visible error.
     }
