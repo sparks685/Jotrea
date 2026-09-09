@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import {
   Bell,
@@ -53,6 +53,9 @@ import {
   isPremium,
 } from "@/utils/featureGates";
 import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
+import { subscriptionService } from "@/services/subscriptionService";
+import { isNativeCapacitor } from "@/utils/capacitor";
+import { applySubscriptionStatus } from "@/utils/subscriptionState";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import {
   scheduleAllNotifications,
@@ -154,11 +157,36 @@ export default function Settings() {
   const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
   const [dataExportAction, setDataExportAction] = useState<"pdf" | "csv" | null>(null);
   const [exportPaywallOpen, setExportPaywallOpen] = useState(false);
+  const [subscriptionCheck, setSubscriptionCheck] = useState<"checking" | "ready" | "error">(
+    () => isNativeCapacitor() ? "checking" : "ready"
+  );
+  const setUserRef = useRef(setUser);
+  setUserRef.current = setUser;
   const { theme, setTheme } = useTheme();
   const currentMedicationDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
     : [];
   const hasPlus = isPremium(user.subscription);
+
+  useEffect(() => {
+    if (!isNativeCapacitor()) return;
+    let active = true;
+    setSubscriptionCheck("checking");
+    void subscriptionService.getStatus()
+      .then((status) => {
+        if (!active) return;
+        setUserRef.current((current) => applySubscriptionStatus(current, status));
+        setSubscriptionCheck("ready");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setSubscriptionCheck("error");
+        console.warn("Unable to verify Jotrea Plus status in Settings", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -694,15 +722,23 @@ export default function Settings() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-foreground" data-testid="status-subscription">
-                {user.subscription === "premium" ? "Plus active" : "Free"}
+                {subscriptionCheck === "checking"
+                  ? "Checking Plus status…"
+                  : subscriptionCheck === "error"
+                    ? "Status unavailable"
+                    : user.subscription === "premium" ? "Plus active" : "Free"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {user.subscription === "premium"
-                  ? "Expanded organization and reporting are unlocked."
-                  : "Your essential tracking features stay free."}
+                {subscriptionCheck === "checking"
+                  ? "Confirming your App Store access."
+                  : subscriptionCheck === "error"
+                    ? "Open Plus to check your App Store access again."
+                    : user.subscription === "premium"
+                      ? "Expanded organization and reporting are unlocked."
+                      : "Your essential tracking features stay free."}
               </p>
             </div>
-            {user.subscription === "premium" ? (
+            {subscriptionCheck === "ready" && user.subscription === "premium" ? (
               <Button asChild size="sm" className="rounded-xl">
                 <a
                   href="https://apps.apple.com/account/subscriptions"
@@ -713,7 +749,7 @@ export default function Settings() {
                   Manage
                 </a>
               </Button>
-            ) : (
+            ) : subscriptionCheck !== "checking" ? (
               <Button
                 size="sm"
                 className="rounded-xl"
@@ -722,7 +758,7 @@ export default function Settings() {
               >
                 Explore
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
         <div className="divide-y divide-border">
