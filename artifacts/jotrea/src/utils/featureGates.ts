@@ -6,7 +6,7 @@ import { getNativePlugin, isNativeCapacitor } from "./capacitor";
 
 export const FREE_HISTORY_DAYS = 30;
 export function getCsvExportFilenames(exportedAt: Date = new Date()) {
-  const timestamp = format(exportedAt, "yyyy-MM-dd-HHmmss");
+  const timestamp = format(exportedAt, "yyyy-MM-dd-h-mm-ss-a");
   return {
     doses: `jotrea-doses-${timestamp}.csv`,
     weights: `jotrea-weights-${timestamp}.csv`,

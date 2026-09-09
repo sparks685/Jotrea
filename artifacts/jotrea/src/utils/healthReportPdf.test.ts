@@ -24,11 +24,11 @@ describe("readable health report PDFs", () => {
     }],
   };
 
-  it("uses unique date-and-time filenames for every report", () => {
+  it("uses unique filenames with a readable 12-hour export time", () => {
     expect(getHealthReportFilenames(exportedAt)).toEqual({
-      doses: "Jotrea-Dose-History-2026-09-07-044132.pdf",
-      weights: "Jotrea-Weight-History-2026-09-07-044132.pdf",
-      symptoms: "Jotrea-Symptom-History-2026-09-07-044132.pdf",
+      doses: "Jotrea-Dose-History-2026-09-07-4-41-32-AM.pdf",
+      weights: "Jotrea-Weight-History-2026-09-07-4-41-32-AM.pdf",
+      symptoms: "Jotrea-Symptom-History-2026-09-07-4-41-32-AM.pdf",
     });
   });
 

@@ -222,7 +222,7 @@ function buildReport(
 }
 
 export function getHealthReportFilenames(exportedAt: Date = new Date()) {
-  const timestamp = format(exportedAt, "yyyy-MM-dd-HHmmss");
+  const timestamp = format(exportedAt, "yyyy-MM-dd-h-mm-ss-a");
   return {
     doses: `Jotrea-Dose-History-${timestamp}.pdf`,
     weights: `Jotrea-Weight-History-${timestamp}.pdf`,
