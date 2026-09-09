@@ -12,6 +12,7 @@
  *   node generate-screenshots.js ipad              # iPad set only (iPad-S1–S4)
  *   node generate-screenshots.js s1                # slide 1 for both iPhone and iPad
  *   node generate-screenshots.js s2 s4             # slides 2 and 4 (both device sizes)
+ *   node generate-screenshots.js --v11             # generate and zip the 10-image Version 1.1 set
  *   node generate-screenshots.js --check-colors    # verify brand colors in all canonical marketing sources
  *   node generate-screenshots.js --help            # print this usage
  *
@@ -48,7 +49,7 @@
  *   --primary-dark:     #C4956A  (darker tan, used in gradients)
  */
 
-const { execSync } = require('child_process');
+const { execFileSync, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -413,7 +414,7 @@ Usage:
   node generate-screenshots.js --marketing       iPhone App Store marketing set (A1–A7)
   node generate-screenshots.js --marketing ipad  iPad App Store marketing set (iPad-App-S1–S7)
   node generate-screenshots.js --iphone65        iPhone 6.5" set at 1284×2778 (App Store 6.5" Display slot)
-  node generate-screenshots.js --v11             Version 1.1 iPhone 6.9" set (1320x2868)
+  node generate-screenshots.js --v11             Generate and zip the Version 1.1 iPhone 6.9" set
   node generate-screenshots.js --check-colors    Verify brand hex values in all tracked HTML files
   node generate-screenshots.js --check-ruler     Verify ruler dark-mode contrast (opacity guard + snapshot)
   node generate-screenshots.js --help            Print this usage message
@@ -562,4 +563,23 @@ const isFullRun  = process.argv.slice(2).filter(a => !a.startsWith('--')).length
 const hasGoalJob = jobs.some(job => job.html.includes('goal-weight'));
 if (isFullRun || hasGoalJob) {
   runRulerCheck(DIR, cssPath);
+}
+
+// ---------------------------------------------------------------------------
+// Package the complete Version 1.1 set for App Store Connect
+// ---------------------------------------------------------------------------
+if (args.includes('--v11')) {
+  const archiveName = 'Jotrea-v1.1-App-Store-Screenshots-iPhone-6.9.zip';
+  const archivePath = path.join(DIR, archiveName);
+  const pngNames = jobs.map(job => job.out);
+
+  fs.rmSync(archivePath, { force: true });
+  execFileSync('zip', ['-j', '-q', archivePath, ...pngNames], {
+    cwd: DIR,
+    stdio: 'inherit',
+  });
+
+  const archiveSize = fs.statSync(archivePath).size;
+  console.log(`\n✓ Packaged ${pngNames.length} screenshots`);
+  console.log(`  ${archivePath}  (${(archiveSize / 1024 / 1024).toFixed(1)} MB)\n`);
 }
