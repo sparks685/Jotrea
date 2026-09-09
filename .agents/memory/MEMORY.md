@@ -12,6 +12,6 @@
 - [RevenueCat expiry refresh](revenuecat-expiry-refresh.md) — invalidate cached CustomerInfo before native launch checks so expired trials cannot retain Plus access.
 - [Cross-platform pnpm binaries](cross-platform-pnpm-binaries.md) — never exclude macOS native build binaries from the shared lockfile; local iOS builds need them.
 - [Capacitor iOS launch continuity](capacitor-ios-launch-continuity.md) — colors alone cannot prevent the pre-WebView black flash; hold the native splash until React paints.
-- [jsPDF cell color isolation](jspdf-cell-color-isolation.md) — reapply fill and text colors for every table cell so Apple Files does not render later cells with dark text-color fills.
+- [jsPDF cell color isolation](jspdf-cell-color-isolation.md) — paint all cell backgrounds before any row text, with separate fill/stroke operations, for Apple Files compatibility.
 - [Capacitor web-bundle canary](capacitor-web-bundle-canary.md) — verify a visible source change exists in both dist and iOS public assets before device testing to catch stale builds.
 - [RevenueCat status synchronization](revenuecat-status-synchronization.md) — persist every successful native refresh and show checking, not Free, until RevenueCat resolves.

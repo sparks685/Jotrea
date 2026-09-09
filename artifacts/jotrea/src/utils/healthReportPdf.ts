@@ -130,17 +130,18 @@ function buildReport(
   };
 
   const drawTableHeader = () => {
+    doc.setFillColor(236, 229, 219);
     doc.setDrawColor(190, 184, 176);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     let x = left;
 
-    // Draw every background before drawing any text. Some PDF viewers,
-    // including Apple Files, treat fill and text as one shared non-stroking
-    // color state even though jsPDF tracks them separately.
+    // Paint every cell before selecting the text color. PDF fills and text
+    // share non-stroking color state in Apple Files, while jsPDF tracks those
+    // colors separately and may otherwise omit a needed color reset.
     for (const column of report.columns) {
-      doc.setFillColor(236, 229, 219);
-      doc.rect(x, y, column.width, 12, "FD");
+      doc.rect(x, y, column.width, 12, "F");
+      doc.rect(x, y, column.width, 12, "S");
       x += column.width;
     }
 
@@ -177,24 +178,23 @@ function buildReport(
     const rowHeight = Math.max(14, maxLines * 6.3 + 6);
     if (y + rowHeight > pageHeight - 20) addPage();
 
-    const rowShade = rowIndex % 2 === 0 ? 250 : 242;
+    doc.setFillColor(rowIndex % 2 === 0 ? 250 : 242, rowIndex % 2 === 0 ? 250 : 242, rowIndex % 2 === 0 ? 250 : 242);
     doc.setDrawColor(210, 210, 210);
     let x = left;
-
     wrapped.forEach((_, index) => {
       const width = report.columns[index].width;
-      doc.setFillColor(rowShade, rowShade, rowShade);
-      doc.rect(x, y, width, rowHeight, "FD");
+      doc.rect(x, y, width, rowHeight, "F");
+      doc.rect(x, y, width, rowHeight, "S");
       x += width;
     });
 
     doc.setTextColor(35, 35, 35);
     x = left;
     wrapped.forEach((lines, index) => {
-      const width = report.columns[index].width;
       doc.text(lines, x + 2, y + 7);
-      x += width;
+      x += report.columns[index].width;
     });
+
     y += rowHeight;
     rowIndex += 1;
   }
