@@ -14,3 +14,4 @@
 - [Capacitor iOS launch continuity](capacitor-ios-launch-continuity.md) — colors alone cannot prevent the pre-WebView black flash; hold the native splash until React paints.
 - [jsPDF cell color isolation](jspdf-cell-color-isolation.md) — reapply fill and text colors for every table cell so Apple Files does not render later cells with dark text-color fills.
 - [Capacitor web-bundle canary](capacitor-web-bundle-canary.md) — verify a visible source change exists in both dist and iOS public assets before device testing to catch stale builds.
+- [RevenueCat status synchronization](revenuecat-status-synchronization.md) — persist every successful native refresh and show checking, not Free, until RevenueCat resolves.
