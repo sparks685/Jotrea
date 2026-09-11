@@ -54,7 +54,12 @@ import {
 } from "@/utils/featureGates";
 import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
 import { subscriptionService } from "@/services/subscriptionService";
-import { isNativeCapacitor } from "@/utils/capacitor";
+import {
+  getSubscriptionManagementUrl,
+  isAndroidCapacitor,
+  isIosCapacitor,
+  isNativeCapacitor,
+} from "@/utils/capacitor";
 import { applySubscriptionStatus } from "@/utils/subscriptionState";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import {
@@ -167,6 +172,8 @@ export default function Settings() {
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
     : [];
   const hasPlus = isPremium(user.subscription);
+  const isAndroidNative = isAndroidCapacitor();
+  const canUseAppleHealth = isIosCapacitor() && hasPlus;
 
   useEffect(() => {
     if (!isNativeCapacitor()) return;
@@ -190,7 +197,7 @@ export default function Settings() {
 
   useEffect(() => {
     let active = true;
-    if (!hasPlus) return;
+    if (!canUseAppleHealth) return;
     void (async () => {
       const available = await isHealthKitAvailable();
       if (!active) return;
@@ -205,7 +212,7 @@ export default function Settings() {
       }
     })();
     return () => { active = false; };
-  }, [hasPlus]);
+  }, [canUseAppleHealth]);
 
   const toggleMotivation = useCallback((text: string) => {
     const current = user.motivations ?? [];
@@ -741,7 +748,7 @@ export default function Settings() {
             {subscriptionCheck === "ready" && user.subscription === "premium" ? (
               <Button asChild size="sm" className="rounded-xl">
                 <a
-                  href="https://apps.apple.com/account/subscriptions"
+                  href={getSubscriptionManagementUrl()}
                   target="_blank"
                   rel="noreferrer"
                   data-testid="button-manage-subscription"
@@ -783,7 +790,7 @@ export default function Settings() {
         </div>
       </SettingsSection>
 
-      {hasPlus && (
+      {canUseAppleHealth && (
         <SettingsSection title="Apple Health" icon={<HeartPulse size={14} className="text-primary" />}>
           {healthAvailability === "checking" ? (
             <p className="text-xs text-muted-foreground" data-testid="healthkit-checking">
@@ -1040,7 +1047,7 @@ export default function Settings() {
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-3 space-y-1">
               <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">Notifications disabled</p>
               <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                Go to iPhone Settings → Notifications → Jotrea, then turn on Allow Notifications.
+                Go to {isAndroidNative ? "Android" : "iPhone"} Settings → Notifications → Jotrea, then turn on Allow Notifications.
               </p>
             </div>
           )}
@@ -1065,9 +1072,14 @@ export default function Settings() {
             {permission === "granted" && pushEnabled
               ? "Notifications enabled — dose reminders and weekly weigh-in"
               : permission === "denied"
-              ? "Notifications disabled — enable in iOS Settings"
+              ? `Notifications disabled — enable in ${isAndroidNative ? "Android" : "iOS"} Settings`
               : "We'll remind you on dose days and weigh-in days"}
           </p>
+          {isAndroidNative && (
+            <p className="text-xs leading-relaxed text-muted-foreground px-1" data-testid="android-reminder-caveat">
+              Android battery settings may delay reminders. Do not rely on Jotrea as your only reminder.
+            </p>
+          )}
 
           {pushEnabled && permission === "granted" && (
             <>

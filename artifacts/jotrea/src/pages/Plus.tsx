@@ -5,12 +5,11 @@ import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useMedication";
 import { useSubscription } from "@/hooks/useSubscription";
-import { isNativeCapacitor } from "@/utils/capacitor";
+import { getCapacitorPlatform, isIosCapacitor, isNativeCapacitor } from "@/utils/capacitor";
 
 const BENEFITS = [
   "Medication Cabinet for multiple prescribed medications",
   "Additional reminder times for each cabinet medication",
-  "Apple Health weight sync",
   "Private visit notes and personal follow-up checklists",
   "Provider visit summaries",
   "PDF reports and CSV data export",
@@ -22,6 +21,14 @@ export default function Plus() {
   const { products, status, loading, pending, error, purchase, restore } = useSubscription();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const isPlus = isNativeCapacitor() ? status.isPlus : user.subscription === "premium";
+  const benefits = isIosCapacitor()
+    ? [
+        ...BENEFITS.slice(0, 2),
+        "Apple Health weight sync",
+        ...BENEFITS.slice(2),
+      ]
+    : BENEFITS;
+  const storeName = getCapacitorPlatform() === "android" ? "Google Play" : "App Store";
 
   const sortedProducts = useMemo(
     () => [...products].sort((a, b) => (a.interval === "year" ? -1 : b.interval === "year" ? 1 : 0)),
@@ -92,7 +99,7 @@ export default function Plus() {
       <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
         <h2 className="font-bold text-foreground">Everything in Plus</h2>
         <div className="mt-4 space-y-3">
-          {BENEFITS.map((benefit) => (
+          {benefits.map((benefit) => (
             <div key={benefit} className="flex gap-3 text-sm text-foreground">
               <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-primary/10">
                 <Check size={13} className="text-primary" />
@@ -154,7 +161,7 @@ export default function Plus() {
             Start free trial
           </Button>
           <p className="px-3 text-center text-[11px] leading-relaxed text-muted-foreground">
-            Payment is charged to your App Store account. Subscription renews unless canceled at least 24 hours before renewal.
+            Payment is charged to your {storeName} account. Subscription renews unless canceled at least 24 hours before renewal.
           </p>
         </div>
       )}

@@ -12,6 +12,7 @@ import {
   cancelNotificationTag,
   isNotificationSupported,
   requestNotificationPermission,
+  registerNotificationSW,
   rescheduleAllNotifications,
   scheduleAllNotifications,
 } from "./notifications";
@@ -150,6 +151,26 @@ describe("Capacitor local notifications", () => {
     expect(localNotifications.requestPermissions).toHaveBeenCalledOnce();
   });
 
+  it("does not register a browser service worker inside an Android shell", async () => {
+    Object.defineProperty(window, "Capacitor", {
+      configurable: true,
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => "android",
+        isPluginAvailable: (name: string) => name === "LocalNotifications",
+        registerPlugin: () => localNotifications,
+      },
+    });
+    const register = vi.fn();
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: { register },
+    });
+
+    await expect(registerNotificationSW()).resolves.toBeNull();
+    expect(register).not.toHaveBeenCalled();
+  });
+
   it("schedules real calendar notifications through the native plugin", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-29T08:00:00"));
@@ -171,6 +192,41 @@ describe("Capacitor local notifications", () => {
     });
     expect(scheduled[0].schedule.at).toEqual(new Date("2026-07-29T09:00:00"));
     vi.useRealTimers();
+  });
+
+  it("schedules best-effort Android reminders without exact-alarm special access", async () => {
+    Object.defineProperty(window, "Capacitor", {
+      configurable: true,
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => "android",
+        isPluginAvailable: (name: string) => name === "LocalNotifications",
+        // The fixture intentionally exposes no exact-alarm permission API.
+        registerPlugin: () => localNotifications,
+      },
+    });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-29T08:00:00"));
+    const medication = {
+      brandName: "Zepbound",
+      startDate: "2026-07-29",
+      frequency: "weekly",
+    } as MedicationData;
+
+    try {
+      await scheduleAllNotifications(medication, [], { notificationTime: "09:00" } as UserData);
+
+      expect(localNotifications.schedule).toHaveBeenCalledOnce();
+      const scheduled = localNotifications.schedule.mock.calls[0][0].notifications;
+      expect(scheduled[0]).toMatchObject({
+        schedule: { allowWhileIdle: true },
+        extra: { tag: "jotrea-dose-due-2026-07-29" },
+      });
+      expect(scheduled[0].schedule.at).toEqual(new Date("2026-07-29T09:00:00"));
+      expect(localNotifications.requestPermissions).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("cancels native pending notifications without a service worker", async () => {

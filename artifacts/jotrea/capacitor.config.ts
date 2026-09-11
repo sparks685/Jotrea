@@ -4,6 +4,17 @@ const config: CapacitorConfig = {
   appId: "com.sparky.jotrea",
   appName: "Jotrea",
   webDir: "dist",
+  android: {
+    backgroundColor: "#FFFCF5",
+    // Apple Health remains iOS-only; do not bundle unused Health Connect permissions.
+    includePlugins: [
+      "@capacitor/filesystem",
+      "@capacitor/local-notifications",
+      "@capacitor/share",
+      "@capacitor/splash-screen",
+      "@revenuecat/purchases-capacitor",
+    ],
+  },
   ios: {
     backgroundColor: "#FFFCF5",
   },

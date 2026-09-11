@@ -47,6 +47,10 @@ function normalizePermission(permission: string): NotificationPermission {
 // ─── Service Worker ───────────────────────────────────────────────────────────
 
 export async function registerNotificationSW(): Promise<ServiceWorkerRegistration | null> {
+  // Capacitor shells use LocalNotifications. Registering a browser service
+  // worker inside the Android WebView is unsupported and can leave the app
+  // showing a web-only notification path that never delivers reminders.
+  if (isNativeCapacitor()) return null;
   if (!("serviceWorker" in navigator)) return null;
   try {
     const swUrl = `${import.meta.env.BASE_URL}sw.js`;
@@ -288,6 +292,9 @@ export async function scheduleAllNotifications(
       id: notificationId(item.tag),
       title: item.title,
       body: item.body,
+      // This is best-effort on Android: allowWhileIdle permits delivery during
+      // Doze when possible, but does not grant exact-alarm special access or
+      // guarantee an exact fire time.
       schedule: { at: new Date(Date.now() + item.delayMs), allowWhileIdle: true },
       extra: { ...item.data, tag: item.tag },
     }));

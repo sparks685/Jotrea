@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { exportCSVFiles } from "./featureGates";
+import { exportCSVFiles, exportFiles } from "./featureGates";
 
 describe("native CSV export", () => {
   afterEach(() => {
@@ -18,6 +18,7 @@ describe("native CSV export", () => {
       configurable: true,
       value: {
         isNativePlatform: () => true,
+        getPlatform: () => "ios",
         isPluginAvailable: () => true,
         registerPlugin: (name: string) =>
           name === "Filesystem" ? { writeFile, deleteFile } : { share },
@@ -41,5 +42,41 @@ describe("native CSV export", () => {
       files: ["file:///dose-history.csv", "file:///weight-history.csv"],
     });
     expect(deleteFile).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses app-private cache files for Android shares", async () => {
+    const writeFile = vi.fn().mockResolvedValue({ uri: "file:///cache/report.pdf" });
+    const deleteFile = vi.fn().mockResolvedValue(undefined);
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window, "Capacitor", {
+      configurable: true,
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => "android",
+        isPluginAvailable: () => true,
+        registerPlugin: (name: string) =>
+          name === "Filesystem" ? { writeFile, deleteFile } : { share },
+      },
+    });
+
+    await expect(
+      exportFiles([{
+        filename: "Jotrea-Visit-Summary.pdf",
+        content: "JVBERi0=",
+        encoding: "base64",
+        mimeType: "application/pdf",
+      }])
+    ).resolves.toBe(true);
+
+    expect(writeFile).toHaveBeenCalledWith(expect.objectContaining({
+      path: "Jotrea-Visit-Summary.pdf",
+      directory: "CACHE",
+      encoding: undefined,
+    }));
+    expect(deleteFile).toHaveBeenCalledWith({
+      path: "Jotrea-Visit-Summary.pdf",
+      directory: "CACHE",
+    });
+    expect(share).toHaveBeenCalledWith({ files: ["file:///cache/report.pdf"] });
   });
 });

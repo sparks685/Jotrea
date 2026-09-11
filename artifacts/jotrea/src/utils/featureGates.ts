@@ -2,7 +2,7 @@ import type { DoseEntry, WeightEntry } from "@/types";
 import { Directory, Encoding, type FilesystemPlugin } from "@capacitor/filesystem";
 import type { SharePlugin } from "@capacitor/share";
 import { format } from "date-fns";
-import { getNativePlugin, isNativeCapacitor } from "./capacitor";
+import { getNativePlugin, isAndroidCapacitor, isNativeCapacitor } from "./capacitor";
 
 export const FREE_HISTORY_DAYS = 30;
 export function getCsvExportFilenames(exportedAt: Date = new Date()) {
@@ -110,10 +110,15 @@ export function downloadCSV(filename: string, content: string): void {
 type CapFilesystem = Pick<FilesystemPlugin, "writeFile" | "deleteFile">;
 type CapShare = Pick<SharePlugin, "share">;
 // Cache registerPlugin proxies — registering the same plugin twice warns.
-let capPluginCache: { fs: CapFilesystem; share: CapShare } | null = null;
+let capPluginCache: { bridge: unknown; fs: CapFilesystem; share: CapShare } | null = null;
 
 function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
-  if (capPluginCache) return capPluginCache;
+  const bridge = typeof window === "undefined"
+    ? undefined
+    : (window as unknown as { Capacitor?: unknown }).Capacitor;
+  if (capPluginCache && capPluginCache.bridge === bridge) {
+    return capPluginCache;
+  }
   const fs = getNativePlugin<CapFilesystem>("Filesystem");
   const share = getNativePlugin<CapShare>("Share");
   if (!fs || !share) {
@@ -121,7 +126,7 @@ function getCapacitorPlugins(): { fs: CapFilesystem; share: CapShare } {
       "Share/Filesystem plugins not found (registerPlugin unavailable)"
     );
   }
-  capPluginCache = { fs, share };
+  capPluginCache = { bridge, fs, share };
   return capPluginCache;
 }
 
@@ -147,6 +152,11 @@ async function shareViaCapacitor(
 
   try {
     const { fs, share } = getCapacitorPlugins();
+    // Android's public Documents directory can require storage access on
+    // older devices and is not covered by every FileProvider configuration.
+    // Cache is app-private and is explicitly shareable through Capacitor's
+    // provider, so it avoids a permission prompt while retaining filenames.
+    const directory = isAndroidCapacitor() ? Directory.Cache : Directory.Documents;
     const uris: string[] = [];
     try {
       for (const f of files) {
@@ -154,8 +164,9 @@ async function shareViaCapacitor(
           path: f.filename,
           data: f.content,
           // Documents is required for reliable UIActivityViewController access
-          // on iOS. Files are deleted immediately after the share sheet closes.
-          directory: Directory.Documents,
+          // on iOS. Android uses app-private Cache; files are deleted
+          // immediately after the share sheet closes on both platforms.
+          directory,
           encoding: f.encoding === "base64" ? undefined : Encoding.UTF8,
         });
         uris.push(uri);
@@ -179,7 +190,7 @@ async function shareViaCapacitor(
       }
     } finally {
       await Promise.allSettled(files.map((file) =>
-        fs.deleteFile({ path: file.filename, directory: Directory.Documents })
+        fs.deleteFile({ path: file.filename, directory })
       ));
     }
   } catch (err) {
