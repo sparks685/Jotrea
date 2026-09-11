@@ -316,3 +316,101 @@ mtime_ms = 1788954217513
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/965ed8ff-af07-47a3-b08c-ed1b16f27869/31ed1b2c-bc9e-4b70-9922-3c8386a08a20"
 storage_version_token = "1788954252366720"
 content_type = "image/png"
+
+[[outputs]]
+id = "mpIxKwDgbwZlHXP4wExfq"
+uri = "file://marketing/shipaton/01-Daily-Dashboard.png"
+type = "image"
+title = "Daily Dashboard"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "5db9858f-7da3-4051-841e-27dd010cc633"
+content_hash = "sha256:38f6fe8a16dfe45ff3aa0c31ad7d57ed4d63cf3e2d0dea1c861620f565591795"
+size = 435108
+mtime_ms = 1789097055763
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/5db9858f-7da3-4051-841e-27dd010cc633/0752af75-800f-4c66-a05f-95860057843d"
+storage_version_token = "1789097073792108"
+content_type = "image/png"
+
+[[outputs]]
+id = "MvJXWBKbE-xOD68PkMej7"
+uri = "file://marketing/shipaton/02-Dose-History.png"
+type = "image"
+title = "Dose History"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "505c8b48-467d-48d1-ba70-5a827907a81d"
+content_hash = "sha256:a902d71d4a3014735d5616b06c036c422c722dd6b777387c90baa42ae20509a2"
+size = 435088
+mtime_ms = 1789097056443
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/505c8b48-467d-48d1-ba70-5a827907a81d/c5991765-3850-41b8-be55-9c92fdf173da"
+storage_version_token = "1789097074643579"
+content_type = "image/png"
+
+[[outputs]]
+id = "MGfidBDwHqu-PjjAMgxWK"
+uri = "file://marketing/shipaton/03-Medication-Cabinet.png"
+type = "image"
+title = "Medication Cabinet"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "438e955f-d73b-4d85-a04b-94e2d8faa3cc"
+content_hash = "sha256:d6627ce770a48eafe53e97915f66ece80d91358ef3dded207e9aae01dcb77199"
+size = 457546
+mtime_ms = 1789097057151
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/438e955f-d73b-4d85-a04b-94e2d8faa3cc/05229c99-bbbd-483b-a077-edf722a673c6"
+storage_version_token = "1789097075488464"
+content_type = "image/png"
+
+[[outputs]]
+id = "cswsQUDES4ISvtb-sV_JF"
+uri = "file://marketing/shipaton/04-Provider-Visit-Summary.png"
+type = "image"
+title = "Provider Visit Summary"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "09326108-e360-4ebd-af69-8e7cfd704f1a"
+content_hash = "sha256:4b1a45769c9d2175e366807e356e6b57d3f2cf0238948c518c094094a8b14eee"
+size = 460767
+mtime_ms = 1789097057987
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/09326108-e360-4ebd-af69-8e7cfd704f1a/15f90dfd-8d10-4fc5-af89-9ffb9bf57d59"
+storage_version_token = "1789097076287613"
+content_type = "image/png"
+
+[[outputs]]
+id = "yuDzaHOTHLZWgObb9vwtt"
+uri = "file://marketing/shipaton/05-Visit-Notes.png"
+type = "image"
+title = "Visit Notes"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "f91853ff-b697-4fcc-8d50-bdb7a5c59a72"
+content_hash = "sha256:9ee49c47faeb3391c900368d68358bf7c460be57e3d1fb80bc264fab55cf5ced"
+size = 463115
+mtime_ms = 1789097058547
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/f91853ff-b697-4fcc-8d50-bdb7a5c59a72/bdc12b61-86db-4128-8b65-3be4aa9253b3"
+storage_version_token = "1789097077063657"
+content_type = "image/png"
+
+[[outputs]]
+id = "AOSJJgIfman3AdK51dS_H"
+uri = "file://marketing/shipaton/06-Jotrea-Plus.png"
+type = "image"
+title = "Jotrea Plus"
+description = "Devpost gallery image • 1800 × 1200 • 3:2 • under 1 MB"
+logical_id = "a46b1158-f781-4b14-9e9e-cf2dd7c7ed39"
+content_hash = "sha256:8fa41262e195fbb7300346962d4f689073bb58dae5188ec5588724f2d8ac3708"
+size = 561801
+mtime_ms = 1789097059311
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/a46b1158-f781-4b14-9e9e-cf2dd7c7ed39/6ad72cf5-683d-4ec4-89d5-edcc88233534"
+storage_version_token = "1789097077818370"
+content_type = "image/png"
+
+[[outputs]]
+id = "02sbPtgdq07K3t_ums2dW"
+uri = "file://marketing/shipaton/Jotrea-Shipaton-Gallery.zip"
+type = "unspecified"
+title = "Download all six Shipaton gallery images"
+description = "Six numbered PNGs ready to extract and upload to Devpost."
+logical_id = "18a7487e-a481-4170-a6a0-75803eb05778"
+content_hash = "sha256:ae31f2483823c85e745f61f917819ff9e1f1172fc56be8a963bb5e87dcc32437"
+size = 2662930
+mtime_ms = 1789097059407
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/18a7487e-a481-4170-a6a0-75803eb05778/4611e20d-c12b-45ea-a9c2-7e563549c7c7"
+storage_version_token = "1789097078670333"
+content_type = "application/octet-stream"
