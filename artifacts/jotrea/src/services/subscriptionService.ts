@@ -1,4 +1,5 @@
 import { Purchases } from "@revenuecat/purchases-capacitor";
+import { Capacitor } from "@capacitor/core";
 import type { SubscriptionProduct, SubscriptionStatus } from "@/types";
 import { isNativeCapacitor } from "@/utils/capacitor";
 
@@ -52,9 +53,13 @@ function unavailable(): Error {
 async function configurePurchases(): Promise<void> {
   if (!isNativeCapacitor()) throw unavailable();
   if (!configurePromise) {
-    const apiKey = import.meta.env.VITE_REVENUECAT_IOS_API_KEY;
+    const platform = Capacitor.getPlatform();
+    if (platform !== "ios" && platform !== "android") throw unavailable();
+    const apiKey = platform === "android"
+      ? import.meta.env.VITE_REVENUECAT_ANDROID_API_KEY
+      : import.meta.env.VITE_REVENUECAT_IOS_API_KEY;
     if (!apiKey) {
-      throw new Error("Purchases are unavailable because the RevenueCat iOS API key is not configured.");
+      throw new Error(`Purchases are unavailable because the RevenueCat ${platform === "ios" ? "iOS" : "Android"} API key is not configured.`);
     }
     configurePromise = Purchases.configure({ apiKey });
   }

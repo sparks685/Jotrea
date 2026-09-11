@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Capacitor } from "@capacitor/core";
 
 const { purchases } = vi.hoisted(() => ({
   purchases: {
@@ -12,6 +13,7 @@ const { purchases } = vi.hoisted(() => ({
 }));
 
 vi.mock("@revenuecat/purchases-capacitor", () => ({ Purchases: purchases }));
+vi.mock("@capacitor/core", () => ({ Capacitor: { getPlatform: vi.fn() } }));
 
 import {
   FALLBACK_PRODUCTS,
@@ -49,10 +51,34 @@ describe("RevenueCat subscription service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("VITE_REVENUECAT_IOS_API_KEY", "appl_test_key");
+    vi.stubEnv("VITE_REVENUECAT_ANDROID_API_KEY", "goog_test_key");
+    vi.mocked(Capacitor.getPlatform).mockReturnValue("ios");
     resetSubscriptionServiceForTests();
     (window as unknown as { Capacitor?: unknown }).Capacitor = {
       isNativePlatform: () => false,
     };
+  });
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("uses the Android key for Android purchases", async () => {
+    (window as unknown as { Capacitor: unknown }).Capacitor = { isNativePlatform: () => true };
+    vi.mocked(Capacitor.getPlatform).mockReturnValue("android");
+    purchases.configure.mockResolvedValue(undefined);
+    purchases.getOfferings.mockResolvedValue({ current: { availablePackages: [monthlyPackage] } });
+    purchases.purchasePackage.mockResolvedValue({ customerInfo: activeCustomerInfo });
+    await subscriptionService.getProducts();
+    await subscriptionService.purchase("jotrea_plus_monthly");
+    expect(purchases.configure).toHaveBeenCalledExactlyOnceWith({ apiKey: "goog_test_key" });
+    expect(purchases.purchasePackage).toHaveBeenCalledWith({ aPackage: monthlyPackage });
+  });
+
+  it.each(["ios", "android"])("rejects a missing %s key without using the other platform's key", async (platform) => {
+    (window as unknown as { Capacitor: unknown }).Capacitor = { isNativePlatform: () => true };
+    vi.mocked(Capacitor.getPlatform).mockReturnValue(platform);
+    vi.stubEnv(platform === "android" ? "VITE_REVENUECAT_ANDROID_API_KEY" : "VITE_REVENUECAT_IOS_API_KEY", "");
+    await expect(subscriptionService.getProducts()).rejects.toThrow(`${platform === "ios" ? "iOS" : "Android"} API key is not configured`);
+    expect(purchases.configure).not.toHaveBeenCalled();
   });
 
   it("provides safe metadata fallbacks and never simulates web purchase", async () => {
