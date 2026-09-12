@@ -1,12 +1,13 @@
 # Jotrea Android
 
-Package: `com.sparky.jotrea`. Initial Android release: version name **1.1**, version code **1**.
+Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **2**.
 This is the existing Capacitor app, not an Expo or React Native rewrite.
 
 ## Mac prerequisites
 
 - Node.js 22 and pnpm (the repository pins pnpm).
-- Android Studio, Android SDK Platform 35, and its SDK build tools.
+- Android Studio, Android SDK Platform 36 (plain API 36), and its SDK build tools.
+- Android Gradle Plugin 8.9.2 with the existing Gradle 8.11.1 wrapper.
 - JDK 21 (select Android Studio's bundled JDK 21 in Gradle settings, or install/select JDK 21).
 
 ## Get the changes without losing local iOS work
@@ -46,8 +47,10 @@ modify the iOS project. Repeat it after web code changes before running Android.
 
 In Android Studio, let Gradle sync finish, then run on an emulator or Android phone.
 The generated native project requires Android 6/API 23 or later.
-The initial configuration targets Android 15/API 35; confirm Play Console's current
-target API requirement before submission and upgrade if required.
+The configuration targets Android 16/API 36 to meet the Google Play new-app
+requirement effective August 31, 2026. Build 1 targeted API 35 and was rejected;
+use build 2 or later for the replacement upload. Installing an emulator image
+does not install the SDK Platform package used to compile the app.
 
 ## Create the Google Play bundle
 
