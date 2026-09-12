@@ -1,6 +1,6 @@
 # Jotrea Android
 
-Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **2**.
+Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **3**.
 This is the existing Capacitor app, not an Expo or React Native rewrite.
 
 ## Mac prerequisites
@@ -44,6 +44,20 @@ pnpm --filter @workspace/jotrea android:open
 `android:prepare` checks that the Android SDK key is present, builds web assets
 with the native root base path, then syncs **Android only**. It does not sync or
 modify the iOS project. Repeat it after web code changes before running Android.
+
+The preparation step also adds theme-opacity CSS fallbacks for Android WebViews
+without `color-mix` support. Always use `android:prepare`, not a plain Vite build
+followed by sync, for Android releases. The fallback retains live light/dark theme
+variables and runs only in browsers without color mixing; modern rendering is
+unchanged. Its regression checks run with:
+
+```bash
+node --test scripts/android-css-compat.test.mjs
+```
+
+Before public release, verify selected dose and injection-site text, dashboard
+icons, and modal backdrops on both an older WebView and the current Pixel emulator,
+in light and dark themes. Build success alone does not verify device rendering.
 
 In Android Studio, let Gradle sync finish, then run on an emulator or Android phone.
 The generated native project requires Android 6/API 23 or later.

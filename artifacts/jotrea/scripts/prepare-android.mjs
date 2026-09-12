@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "vite";
+import { patchAndroidCss } from "./android-css-compat.mjs";
 
 const appDir = fileURLToPath(new URL("../", import.meta.url));
 const env = loadEnv("production", appDir, "VITE_");
@@ -24,5 +25,6 @@ for (const args of [
     process.exit(1);
   }
   if (result.status !== 0) process.exit(result.status ?? 1);
+  if (args[1] === "vite") patchAndroidCss(fileURLToPath(new URL("../dist/", import.meta.url)));
 }
 console.log("Android web assets and native plugins are ready. Run pnpm --filter @workspace/jotrea android:open to open Android Studio.");

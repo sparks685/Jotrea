@@ -17,3 +17,4 @@
 - [RevenueCat status synchronization](revenuecat-status-synchronization.md) — persist every successful native refresh and show checking, not Free, until RevenueCat resolves.
 - [Interruption-safe draft saves](interruption-safe-draft-saves.md) — debounced sensitive drafts also need synchronous blur, page-hide, background, navigation, and unmount saves.
 - [Android reminder policy](android-reminder-policy.md) — best-effort timing avoids unreviewed exact-alarm special access; allowWhileIdle alone does not grant it.
+- [Android WebView opacity](android-webview-opacity.md) — old WebViews render Tailwind theme-opacity fallbacks as solid fills; preserve alpha in Android builds.
