@@ -20,3 +20,4 @@
 - [Android WebView opacity](android-webview-opacity.md) — old WebViews render Tailwind theme-opacity fallbacks as solid fills; preserve alpha in Android builds.
 - [Google notification permissions](google-notification-permissions.md) — RevenueCat topic creation needed Pub/Sub Admin despite valid credentials and Editor.
 - [Android reviewer access](android-review-access.md) — permanent grants; rotation stops new activations only; use the existing Vercel deployment, not Replit.
+- [Native privacy verification](native-privacy-verification.md) — verify analytics in the submitted native bundle; source and website configuration do not establish mobile collection.
