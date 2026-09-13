@@ -70,7 +70,7 @@ export default function Plus() {
         <ChevronLeft size={22} aria-hidden="true" />
         Settings
       </button>
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 px-6 py-7 text-primary-foreground shadow-lg">
+      <section className="plus-hero relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/70 px-6 py-7 text-primary-foreground shadow-lg">
         <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/10" />
         <div className="relative">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-widest">

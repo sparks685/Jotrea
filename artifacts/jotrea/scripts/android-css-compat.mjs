@@ -20,20 +20,27 @@ export function addAndroidColorFallbacks(css) {
     rules.push(`${selector.trim()}{${fallback}}`);
   }
   if (!rules.length) throw new Error("No theme opacity rules found; review Android CSS compatibility");
-  return `${css}\n${marker}\n@supports not (color: color-mix(in oklab, red, transparent)) {\n@layer utilities {\n${[...new Set(rules)].join("\n")}\n}\n}\n`;
+  const gradientFallback = css.includes(".bg-gradient-to-br") && css.includes(".to-primary\\/70")
+    ? `\n/* Android legacy WebView gradient interpolation */\n@supports not (background-image: linear-gradient(to bottom right in oklab, red, blue)) {\n@layer utilities {\n.plus-hero{background-image:linear-gradient(to bottom right,hsl(var(--primary)),hsl(var(--primary) / 0.7))}\n}\n}\n`
+    : "";
+  return `${css}\n${marker}\n@supports not (color: color-mix(in oklab, red, transparent)) {\n@layer utilities {\n${[...new Set(rules)].join("\n")}\n}\n}\n${gradientFallback}`;
 }
 
 export function patchAndroidCss(distDir) {
   const assetsDir = join(distDir, "assets");
   const files = readdirSync(assetsDir).filter((file) => file.endsWith(".css"));
   let patched = 0;
+  let gradientPatched = false;
   for (const file of files) {
     const path = join(assetsDir, file);
     const css = readFileSync(path, "utf8");
     if (!css.includes("hsl(var(--")) continue;
-    writeFileSync(path, addAndroidColorFallbacks(css));
+    const output = addAndroidColorFallbacks(css);
+    writeFileSync(path, output);
+    gradientPatched ||= output.includes("/* Android legacy WebView gradient interpolation */");
     patched++;
   }
   if (!patched) throw new Error("Android CSS bundle not found; refusing to sync unpatched assets");
+  if (!gradientPatched) throw new Error("Plus hero gradient rules not found; refusing to sync unpatched assets");
   console.log(`Added legacy WebView theme opacity fallbacks to ${patched} Android CSS bundle(s).`);
 }
