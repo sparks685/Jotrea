@@ -19,3 +19,4 @@
 - [Android reminder policy](android-reminder-policy.md) — best-effort timing avoids unreviewed exact-alarm special access; allowWhileIdle alone does not grant it.
 - [Android WebView opacity](android-webview-opacity.md) — old WebViews render Tailwind theme-opacity fallbacks as solid fills; preserve alpha in Android builds.
 - [Google notification permissions](google-notification-permissions.md) — RevenueCat topic creation needed Pub/Sub Admin despite valid credentials and Editor.
+- [Android reviewer access](android-review-access.md) — permanent grants; code rotation stops new activations only; confirm external Vercel backend before wiring endpoints.
