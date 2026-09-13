@@ -14,3 +14,9 @@ The user clarified that production was a pure Vite frontend on Vercel, not a pre
 **Why:** Native releases must not depend on a Replit development URL. The user wants to keep the existing GitHub → Vercel deployment and use Vercel environment-variable administration rather than a separate admin login or database.
 
 **How to apply:** Keep the reviewer code server-only. Rotation or disabling requires updating Vercel Production settings and redeploying, not rebuilding Android. Live readiness also requires the Vercel Firewall rule; an in-memory serverless limiter alone is not durable protection.
+
+The user confirmed successful live reviewer activation on the AYN Odin on 2026-09-13. Preserve the activation-once approach.
+
+**Why:** This confirms the native-device-to-Vercel flow beyond browser simulations; it does not independently establish firewall enforcement, offline relaunch behavior, or the faded-card rendering fix.
+
+**How to apply:** Treat initial live activation as confirmed, without generalizing that confirmation to the other checks.
