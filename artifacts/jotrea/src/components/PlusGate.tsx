@@ -3,13 +3,15 @@ import { useLocation } from "wouter";
 import { ChevronLeft, LockKeyhole, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useMedication";
+import { useReviewerAccess } from "@/hooks/useReviewerAccess";
 import { isPremium } from "@/utils/featureGates";
 
 export function PlusGate({ children, feature }: { children: ReactNode; feature: string }) {
   const { user } = useUser();
+  const { grant } = useReviewerAccess();
   const [, setLocation] = useLocation();
 
-  if (isPremium(user.subscription)) return <>{children}</>;
+  if (isPremium(user.subscription, grant)) return <>{children}</>;
 
   return (
     <div className="relative flex min-h-[70dvh] items-center justify-center px-6 pt-14">

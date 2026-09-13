@@ -53,6 +53,19 @@ export interface SubscriptionStatus {
   willRenew?: boolean;
 }
 
+/**
+ * A permanent reviewer entitlement for this Android installation.
+ *
+ * This is deliberately separate from UserData.subscription and RevenueCat:
+ * reviewer access must not look like a paid subscription or be changed by
+ * subscription refreshes.
+ */
+export interface ReviewerAccessGrant {
+  platform: "android";
+  access: "jotrea_plus";
+  activatedAt: string;
+}
+
 export interface CabinetMedication extends MedicationData {
   cabinetId: string;
   nickname?: string;

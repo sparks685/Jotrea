@@ -3,6 +3,8 @@ import { Directory, Encoding, type FilesystemPlugin } from "@capacitor/filesyste
 import type { SharePlugin } from "@capacitor/share";
 import { format } from "date-fns";
 import { getNativePlugin, isAndroidCapacitor, isNativeCapacitor } from "./capacitor";
+import { hasReviewerAccess, readReviewerAccessGrant } from "./reviewerAccess";
+import type { ReviewerAccessGrant } from "@/types";
 
 export const FREE_HISTORY_DAYS = 30;
 export function getCsvExportFilenames(exportedAt: Date = new Date()) {
@@ -14,8 +16,11 @@ export function getCsvExportFilenames(exportedAt: Date = new Date()) {
   } as const;
 }
 
-export function isPremium(_subscription: string): boolean {
-  return _subscription === "premium";
+export function isPremium(
+  subscription: string,
+  reviewerAccess: ReviewerAccessGrant | null = readReviewerAccessGrant()
+): boolean {
+  return subscription === "premium" || hasReviewerAccess(reviewerAccess);
 }
 
 export function getFreeHistoryCutoff(): Date {

@@ -2,6 +2,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { ChevronLeft, Info, Calendar, Target, Scale, Activity } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
+import { PlusGate } from "@/components/PlusGate";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDoses, useWeights, useUser, useCabinetActivity, useMedication } from "@/hooks/useMedication";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
@@ -26,14 +27,16 @@ export default function CabinetDetail() {
 
   if (!item) {
     return (
-      <PageContainer className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Link href="/medication-cabinet" className="p-2 -ml-2 rounded-full hover:bg-muted text-muted-foreground transition-colors" data-testid="link-back-cabinet">
-            <ChevronLeft size={20} />
-          </Link>
-          <h1 className="text-xl font-bold text-foreground">Tracker Not Found</h1>
-        </div>
-      </PageContainer>
+      <PlusGate feature="Medication Cabinet">
+        <PageContainer className="space-y-6">
+          <div className="flex items-center gap-2">
+            <Link href="/medication-cabinet" className="p-2 -ml-2 rounded-full hover:bg-muted text-muted-foreground transition-colors" data-testid="link-back-cabinet">
+              <ChevronLeft size={20} />
+            </Link>
+            <h1 className="text-xl font-bold text-foreground">Tracker Not Found</h1>
+          </div>
+        </PageContainer>
+      </PlusGate>
     );
   }
 
@@ -85,7 +88,8 @@ export default function CabinetDetail() {
   const takenCount = trackerDoses.filter(d => d.taken).length;
 
   return (
-    <PageContainer className="space-y-6 pb-20">
+    <PlusGate feature="Medication Cabinet">
+      <PageContainer className="space-y-6 pb-20">
       <div className="flex items-center gap-2">
         <Link href="/medication-cabinet" className="p-2 -ml-2 rounded-full hover:bg-muted text-muted-foreground transition-colors" data-testid="link-back-cabinet">
           <ChevronLeft size={20} />
@@ -232,6 +236,7 @@ export default function CabinetDetail() {
           Remove from cabinet
         </Button>
       </div>
-    </PageContainer>
+      </PageContainer>
+    </PlusGate>
   );
 }

@@ -9,8 +9,8 @@ Android reviewer access must be separate from RevenueCat subscriptions and must 
 
 **How to apply:** Keep review access separate from paid subscription state. Explicitly state the revocation limit in the admin control. Do not claim existing grants can be remotely revoked without changing the agreed design.
 
-The user identifies GitHub → Vercel as the production backend hosting arrangement. The checkout inspected during planning contained no Vercel deployment configuration or live backend URL.
+The user clarified that production was a pure Vite frontend on Vercel, not a pre-existing backend. Reviewer validation belongs on the same production domain, not the Replit API artifact.
 
-**Why:** A native release must not call a Replit development URL, and an external deployment may not be represented in this checkout.
+**Why:** Native releases must not depend on a Replit development URL. The user wants to keep the existing GitHub → Vercel deployment and use Vercel environment-variable administration rather than a separate admin login or database.
 
-**How to apply:** Confirm the actual live Vercel backend URL and source before wiring activation endpoints. Do not infer that the external backend does not exist merely because it is absent here.
+**How to apply:** Keep the reviewer code server-only. Rotation or disabling requires updating Vercel Production settings and redeploying, not rebuilding Android. Live readiness also requires the Vercel Firewall rule; an in-memory serverless limiter alone is not durable protection.

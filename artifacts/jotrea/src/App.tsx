@@ -8,7 +8,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { useMedication, useOralDoseMigration, useUser } from "@/hooks/useMedication";
 import { initGA, pageView } from "@/lib/analytics";
 import { subscriptionService } from "@/services/subscriptionService";
-import { isNativeCapacitor } from "@/utils/capacitor";
+import { isAndroidCapacitor, isNativeCapacitor } from "@/utils/capacitor";
 import { registerNotificationSW } from "@/utils/notifications";
 import {
   applySubscriptionStatus,
@@ -22,6 +22,7 @@ import MedInfo from "@/pages/MedInfo";
 import Settings from "@/pages/Settings";
 import Sources from "@/pages/Sources";
 import Plus from "@/pages/Plus";
+import ReviewerAccess from "@/pages/ReviewerAccess";
 import MedicationCabinet from "@/pages/MedicationCabinet";
 import CabinetDetail from "@/pages/CabinetDetail";
 import VisitSummary from "@/pages/VisitSummary";
@@ -213,6 +214,11 @@ function AppRoutes() {
                 </Route>
                 <Route path="/plus">
                   {!medication ? <Redirect to="/onboarding" /> : <Plus />}
+                </Route>
+                <Route path="/reviewer-access">
+                  {!isAndroidCapacitor()
+                    ? <Redirect to="/settings" />
+                    : !medication ? <Redirect to="/onboarding" /> : <ReviewerAccess />}
                 </Route>
                 <Route path="/medication-cabinet">
                   {!medication ? <Redirect to="/onboarding" /> : <MedicationCabinet />}

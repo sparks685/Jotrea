@@ -1,6 +1,6 @@
 # Jotrea Android
 
-Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **3**.
+Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **4**.
 This is the existing Capacitor app, not an Expo or React Native rewrite.
 
 ## Mac prerequisites
@@ -91,7 +91,9 @@ Increment `versionCode` in `android/app/build.gradle` for each subsequent upload
   offering mappings, then test purchase, restore, cancellation, and expiry using
   Play internal testers who are also billing license testers.
 - Reviewer access, Play declarations, listing, and closed-testing requirements
-  are separate release steps. No reviewer bypass has been added.
+  are separate release steps. Follow [Reviewer access setup](REVIEWER_ACCESS.md)
+  after the backend endpoint has been deployed and tested; do not put a reviewer
+  code in this repository or in a `VITE_` variable.
 
 The Replit web build and Capacitor sync do not compile or sign an Android binary.
 An Android Studio/Gradle build and on-device checks are required before release.

@@ -5,7 +5,25 @@ import { PageContainer } from "@/components/PageContainer";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useMedication";
 import { useSubscription } from "@/hooks/useSubscription";
-import { getCapacitorPlatform, isIosCapacitor, isNativeCapacitor } from "@/utils/capacitor";
+import { useReviewerAccess } from "@/hooks/useReviewerAccess";
+import { getCapacitorPlatform, isAndroidCapacitor, isIosCapacitor, isNativeCapacitor } from "@/utils/capacitor";
+
+export function resolvePlusAccess({
+  native,
+  platform,
+  revenueCatActive,
+  cachedSubscription,
+  reviewerGrantActive,
+}: {
+  native: boolean;
+  platform: string;
+  revenueCatActive: boolean;
+  cachedSubscription: "free" | "premium";
+  reviewerGrantActive: boolean;
+}): boolean {
+  if (!native) return cachedSubscription === "premium";
+  return revenueCatActive || (platform === "android" && reviewerGrantActive);
+}
 
 const BENEFITS = [
   "Medication Cabinet for multiple prescribed medications",
@@ -19,8 +37,19 @@ export default function Plus() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
   const { products, status, loading, pending, error, purchase, restore } = useSubscription();
+  const { isActive: hasReviewerAccess } = useReviewerAccess();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const isPlus = isNativeCapacitor() ? status.isPlus : user.subscription === "premium";
+  const native = isNativeCapacitor();
+  const platform = getCapacitorPlatform();
+  const isPlus = resolvePlusAccess({
+    native,
+    platform,
+    revenueCatActive: status.isPlus,
+    cachedSubscription: user.subscription,
+    reviewerGrantActive: isAndroidCapacitor() && hasReviewerAccess,
+  });
+  const paidSubscriptionActive = native ? status.isPlus : user.subscription === "premium";
+  const reviewerOnly = hasReviewerAccess && platform === "android" && !status.isPlus;
   const benefits = isIosCapacitor()
     ? [
         ...BENEFITS.slice(0, 2),
@@ -89,8 +118,10 @@ export default function Plus() {
             <ShieldCheck className="text-secondary" size={19} /> Jotrea Plus is active
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {status.state === "trial" ? "Your free trial is active." : "Premium features are unlocked."}
-            {(status.expiresAt || user.subscriptionExpiresAt) &&
+            {reviewerOnly
+              ? "Reviewer access is active on this Android installation."
+              : status.state === "trial" ? "Your free trial is active." : "Premium features are unlocked."}
+            {!reviewerOnly && (status.expiresAt || user.subscriptionExpiresAt) &&
               ` Access through ${new Date(status.expiresAt ?? user.subscriptionExpiresAt!).toLocaleDateString()}.`}
           </p>
         </div>
@@ -110,7 +141,7 @@ export default function Plus() {
         </div>
       </div>
 
-      {!isPlus && (
+      {!paidSubscriptionActive && (
         <div className="space-y-3">
           {loading ? (
             <div className="flex justify-center py-7" data-testid="status-products-loading">

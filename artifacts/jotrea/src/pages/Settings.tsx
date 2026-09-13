@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  ShieldCheck,
   User,
   Sun,
   Moon,
@@ -40,6 +41,7 @@ import {
 import { useUser, useMedication, useDoses, useWeights } from "@/hooks/useMedication";
 // doses is needed for notification scheduling
 import { useTheme } from "@/hooks/useTheme";
+import { useReviewerAccess } from "@/hooks/useReviewerAccess";
 import { medications } from "@/data/medications";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
@@ -168,11 +170,13 @@ export default function Settings() {
   const setUserRef = useRef(setUser);
   setUserRef.current = setUser;
   const { theme, setTheme } = useTheme();
+  const { grant: reviewerAccessGrant, isActive: hasReviewerAccess } = useReviewerAccess();
   const currentMedicationDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
     : [];
-  const hasPlus = isPremium(user.subscription);
+  const hasPlus = isPremium(user.subscription, reviewerAccessGrant);
   const isAndroidNative = isAndroidCapacitor();
+  const reviewerOnly = hasReviewerAccess && user.subscription !== "premium";
   const canUseAppleHealth = isIosCapacitor() && hasPlus;
 
   useEffect(() => {
@@ -729,14 +733,18 @@ export default function Settings() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-foreground" data-testid="status-subscription">
-                {subscriptionCheck === "checking"
+                {reviewerOnly
+                  ? "Reviewer access"
+                  : subscriptionCheck === "checking"
                   ? "Checking Plus status…"
                   : subscriptionCheck === "error"
                     ? "Status unavailable"
                     : user.subscription === "premium" ? "Plus active" : "Free"}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {subscriptionCheck === "checking"
+                {reviewerOnly
+                  ? "Reviewer access is active on this Android installation."
+                  : subscriptionCheck === "checking"
                   ? "Confirming your App Store access."
                   : subscriptionCheck === "error"
                     ? "Open Plus to check your App Store access again."
@@ -787,6 +795,14 @@ export default function Settings() {
             onClick={() => setLocation("/visit-notes")}
             testId="button-visit-notes"
           />
+          {isAndroidNative && (
+            <PlusFeatureRow
+              icon={<ShieldCheck size={15} />}
+              label="Reviewer Access"
+              onClick={() => setLocation("/reviewer-access")}
+              testId="button-reviewer-access"
+            />
+          )}
         </div>
       </SettingsSection>
 

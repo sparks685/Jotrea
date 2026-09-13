@@ -1,9 +1,32 @@
 import { spawnSync } from "node:child_process";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "vite";
 import { patchAndroidCss } from "./android-css-compat.mjs";
 
 const appDir = fileURLToPath(new URL("../", import.meta.url));
+
+function assertNoClientReviewerCode() {
+  if (Object.prototype.hasOwnProperty.call(process.env, "VITE_REVIEWER_CODE")) {
+    console.error("Android build stopped: remove VITE_REVIEWER_CODE from the build environment. Reviewer codes must stay server-side as REVIEWER_CODE.");
+    process.exit(1);
+  }
+
+  const envFiles = readdirSync(appDir)
+    .filter((file) => file === ".env" || file.startsWith(".env."))
+    .sort();
+  const assignment = /^\s*(?:export\s+)?VITE_REVIEWER_CODE(?:\s*=|\s*$)/;
+  for (const file of envFiles) {
+    const source = readFileSync(join(appDir, file), "utf8");
+    if (source.split(/\r?\n/).some((line) => assignment.test(line))) {
+      console.error(`Android build stopped: remove VITE_REVIEWER_CODE from ${file}. Reviewer codes must stay server-side as REVIEWER_CODE.`);
+      process.exit(1);
+    }
+  }
+}
+
+assertNoClientReviewerCode();
 const env = loadEnv("production", appDir, "VITE_");
 // This is a public mobile SDK key, not a service-account or RevenueCat secret key.
 if (!env.VITE_REVENUECAT_ANDROID_API_KEY?.startsWith("goog_")) {
