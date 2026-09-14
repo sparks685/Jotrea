@@ -22,3 +22,4 @@
 - [Android reviewer access](android-review-access.md) — permanent grants; rotation stops new activations only; use the existing Vercel deployment, not Replit.
 - [Native privacy verification](native-privacy-verification.md) — verify analytics in the submitted native bundle; source and website configuration do not establish mobile collection.
 - [Store capture provenance](store-capture-provenance.md) — use rendered app UI; browser platform shims are not native verification, and proxy banners must be excluded.
+- [Google Play category review](google-play-category-review.md) — Health & fitness correction led to published closed testing after the organization-account rejection.
