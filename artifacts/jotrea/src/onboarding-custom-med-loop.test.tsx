@@ -355,8 +355,8 @@ describe("Onboarding completion (custom med) – rapid double-taps", () => {
       ([name]) => name === "onboarding_complete",
     );
     expect(completeCalls).toHaveLength(1);
-    // The event carries the custom brand name
-    expect(completeCalls[0][1]).toMatchObject({ medication: CUSTOM_BRAND });
+    // Custom medication details must stay local, not enter analytics.
+    expect(completeCalls[0]).toEqual(["onboarding_complete"]);
 
     // Starting weight seeded exactly once
     const weights = JSON.parse(localStorage.getItem("jotrea_weights") ?? "[]");

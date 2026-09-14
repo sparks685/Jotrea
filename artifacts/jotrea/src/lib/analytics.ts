@@ -36,7 +36,26 @@ export function pageView(path: string): void {
   });
 }
 
-export function trackEvent(name: string, params?: Record<string, unknown>): void {
+type AnalyticsEvent =
+  | [name: "onboarding_complete" | "medication_changed" | "dose_logged" | "weight_logged" | "notifications_enabled"]
+  | [name: "data_exported", params: { format: "csv" | "pdf" }];
+
+// Keep this closed: medication details, measurements and user-entered text
+// must never become analytics parameters. Validate at runtime as well as in TS.
+export function trackEvent(...[name, params]: AnalyticsEvent): void {
   if (!GA_ID || !window.gtag) return;
-  window.gtag("event", name, params);
+  switch (name) {
+    case "onboarding_complete":
+    case "medication_changed":
+    case "dose_logged":
+    case "weight_logged":
+    case "notifications_enabled":
+      window.gtag("event", name);
+      break;
+    case "data_exported":
+      if (params?.format === "csv" || params?.format === "pdf") {
+        window.gtag("event", name, { format: params.format });
+      }
+      break;
+  }
 }

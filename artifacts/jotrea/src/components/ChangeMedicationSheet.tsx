@@ -131,7 +131,7 @@ export function ChangeMedicationSheet({
         injectionSite: customFormulation === "injection" ? injectionSite : undefined,
         active: true,
       };
-      trackEvent("medication_changed", { medication: customBrand || "custom" });
+      trackEvent("medication_changed");
     } else {
       if (!selectedMed || selectedDose === null) return;
       newMed = {
@@ -145,7 +145,7 @@ export function ChangeMedicationSheet({
           selectedMed.formulation === "injection" ? injectionSite : undefined,
         active: true,
       };
-      trackEvent("medication_changed", { medication: selectedMed.genericName });
+      trackEvent("medication_changed");
     }
     onConfirm(newMed);
     handleOpenChange(false);
