@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="fade">
+      <stop offset="0" stop-color="#faf5eb"/>
+      <stop offset=".46" stop-color="#faf5eb"/>
+      <stop offset=".70" stop-color="#faf5eb" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#fade)"/>
+  <path d="M64 81H96" stroke="#ad874c" stroke-width="2"/>
+  <text x="111" y="88" font-family="DejaVu Sans" font-size="24" letter-spacing="6" fill="#39483b">JOTREA</text>
+  <text x="62" y="199" font-family="DejaVu Serif" font-size="45" fill="#283e34">GLP-1 tracking.</text>
+  <text x="62" y="260" font-family="DejaVu Serif" font-size="45" fill="#283e34">Beautifully simple.</text>
+  <text x="65" y="318" font-family="DejaVu Sans" font-size="19" fill="#576052">Doses. Reminders. Weight. Notes.</text>
+  <path d="M65 367H109" stroke="#ad874c" stroke-width="1.5"/>
+  <text x="65" y="402" font-family="DejaVu Sans" font-size="14" letter-spacing="2" fill="#596452">YOUR RECORDS. YOUR ROUTINE.</text>
+  <g fill="#56624b" font-family="DejaVu Sans" text-anchor="middle">
+    <text x="841" y="252" font-size="17" letter-spacing="3">JOTREA</text>
+    <path d="M800 271H879" stroke="#ad874c" stroke-width="1"/>
+    <text x="841" y="298" font-size="11" letter-spacing="2">TRACK</text>
+    <text x="841" y="325" font-size="11" letter-spacing="2">REFLECT</text>
+    <text x="841" y="352" font-size="11" letter-spacing="2">REMEMBER</text>
+  </g>
+</svg>

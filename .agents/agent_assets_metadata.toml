@@ -414,3 +414,17 @@ mtime_ms = 1789097059407
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/18a7487e-a481-4170-a6a0-75803eb05778/4611e20d-c12b-45ea-a9c2-7e563549c7c7"
 storage_version_token = "1789097078670333"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "tvgpU3Hr5JfqqP0phR8jX"
+uri = "file://marketing/google-play/Jotrea-Google-Play-Feature-Graphic-1024x500.png"
+type = "image"
+title = "Jotrea — Google Play Feature Graphic"
+description = "Upload-ready 1024 × 500 PNG with cream, sage, and gold styling. Headline: GLP-1 tracking. Beautifully simple."
+logical_id = "3f185146-bcff-4550-b5b9-a19ed71ea4ef"
+content_hash = "sha256:c7a18a6254d153d780882b54692341b054d45d21e174ceb525579515e1943fcd"
+size = 358218
+mtime_ms = 1789372478013
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/3f185146-bcff-4550-b5b9-a19ed71ea4ef/36978d74-a3ac-4e03-8392-12e2f21412e3"
+storage_version_token = "1789372493858088"
+content_type = "image/png"
