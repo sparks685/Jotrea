@@ -1,0 +1,170 @@
+{
+  "_provenance": "Fictional demo records for isolated browser capture only. Date offsets are relative to the capture date.",
+  "user": {
+    "name": "Jordan",
+    "gender": "prefer_not_to_say",
+    "birthday": "1990-04-12",
+    "heightFt": 5,
+    "heightIn": 7,
+    "heightUnit": "imperial",
+    "currentWeightLbs": 181.8,
+    "startingWeightLbs": 186,
+    "goalWeightLbs": 170,
+    "goalWeight": 170,
+    "goalPaceLbs": 1,
+    "activityLevel": "lightly_active",
+    "motivations": [
+      "Feel more confident",
+      "Boost my energy"
+    ],
+    "troublesomeSideEffects": [],
+    "units": "lbs",
+    "subscription": "premium",
+    "legacyDoseMedicationId": "cab-current",
+    "notificationsEnabled": false,
+    "waterGoalCups": 8,
+    "proteinGoalG": 90,
+    "stepsGoal": 7000
+  },
+  "medication": {
+    "id": "semaglutide-wegovy",
+    "genericName": "Semaglutide",
+    "brandName": "Wegovy",
+    "dose": 0.5,
+    "frequency": "weekly",
+    "injectionSite": "Abdomen",
+    "active": true,
+    "cabinetId": "cab-current"
+  },
+  "doses": [
+    {
+      "id": "demo-dose-01",
+      "dateOffset": -35,
+      "time": "08:10",
+      "doseAmount": 0.5,
+      "site": "Abdomen",
+      "notes": "Recorded after the morning routine.",
+      "taken": true,
+      "sideEffects": ["fatigue"],
+      "medicationId": "cab-current"
+    },
+    {
+      "id": "demo-dose-02",
+      "dateOffset": -28,
+      "time": "08:25",
+      "doseAmount": 0.5,
+      "site": "Thigh",
+      "notes": "Felt comfortable afterward.",
+      "taken": true,
+      "sideEffects": ["nausea"],
+      "medicationId": "cab-current"
+    },
+    {
+      "id": "demo-dose-03",
+      "dateOffset": -21,
+      "time": "08:05",
+      "doseAmount": 0.5,
+      "site": "Upper Arm",
+      "notes": "Logged for personal reference.",
+      "taken": true,
+      "sideEffects": [],
+      "medicationId": "cab-current"
+    },
+    {
+      "id": "demo-dose-04",
+      "dateOffset": -14,
+      "time": "08:15",
+      "doseAmount": 0.5,
+      "site": "Buttocks",
+      "notes": "No additional notes.",
+      "taken": true,
+      "sideEffects": ["fatigue"],
+      "medicationId": "cab-current"
+    },
+    {
+      "id": "demo-dose-05",
+      "dateOffset": -7,
+      "time": "08:20",
+      "doseAmount": 0.5,
+      "site": "Abdomen",
+      "notes": "Tracking entry.",
+      "taken": true,
+      "sideEffects": [],
+      "medicationId": "cab-current"
+    }
+  ],
+  "weights": [
+    { "id": "demo-weight-01", "dateOffset": -42, "weight": 186, "notes": "Baseline entry." },
+    { "id": "demo-weight-02", "dateOffset": -35, "weight": 185.3, "notes": "Morning entry." },
+    { "id": "demo-weight-03", "dateOffset": -28, "weight": 184.7, "notes": "Morning entry." },
+    { "id": "demo-weight-04", "dateOffset": -21, "weight": 183.8, "notes": "Morning entry." },
+    { "id": "demo-weight-05", "dateOffset": -14, "weight": 183.1, "notes": "Morning entry." },
+    { "id": "demo-weight-06", "dateOffset": -7, "weight": 182.3, "notes": "Morning entry." },
+    { "id": "demo-weight-07", "dateOffset": 0, "weight": 181.8, "notes": "Morning entry." }
+  ],
+  "cabinet": [
+    {
+      "id": "semaglutide-wegovy",
+      "genericName": "Semaglutide",
+      "brandName": "Wegovy",
+      "dose": 0.5,
+      "frequency": "weekly",
+      "injectionSite": "Abdomen",
+      "active": true,
+      "cabinetId": "cab-current",
+      "nickname": "Weekly tracker",
+      "reminderTimes": ["08:00", "18:00"],
+      "refillReminderDateOffset": 21,
+      "createdAtOffset": -42
+    },
+    {
+      "id": "tirzepatide-zepbound",
+      "genericName": "Tirzepatide",
+      "brandName": "Zepbound",
+      "dose": 5,
+      "frequency": "weekly",
+      "injectionSite": "Thigh",
+      "active": false,
+      "cabinetId": "cab-previous",
+      "nickname": "Previous tracker",
+      "reminderTimes": [],
+      "createdAtOffset": -126
+    }
+  ],
+  "companions": [
+    {
+      "id": "demo-companion-01",
+      "name": "Daily multivitamin",
+      "dose": "1 tablet",
+      "frequency": "Daily",
+      "timeOfDay": "Morning",
+      "purpose": "General routine",
+      "createdAtOffset": -21
+    }
+  ],
+  "cabinetActivity": [],
+  "visitNotes": [
+    {
+      "id": "demo-visit-note-01",
+      "visitDateOffset": -5,
+      "createdAtOffset": -5,
+      "providerName": "",
+      "specialty": "",
+      "visitType": "Telehealth",
+      "reason": "Routine tracking check-in",
+      "medicationTrackingId": "tracker-cab-current",
+      "beforeVisit": "Shared recent dose dates and a gradual weight trend.",
+      "duringVisit": "Reviewed my tracking history and questions for a future visit.",
+      "afterVisit": "Added a short personal recap for reference.",
+      "tags": ["tracking", "check-in"],
+      "questions": [
+        { "id": "demo-question-01", "text": "Review the recent tracking pattern.", "discussed": true },
+        { "id": "demo-question-02", "text": "Note any observations to revisit.", "discussed": false }
+      ],
+      "followUps": [
+        { "id": "demo-follow-up-01", "text": "Bring the tracking history to the next visit.", "completed": false, "dateOffset": 9 }
+      ],
+      "includeInProviderSummary": true
+    }
+  ]
+}

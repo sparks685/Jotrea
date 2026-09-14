@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Backgrounds */
+.bg-cream { background-color: #FFFDF7; }
+.bg-tan { background-color: #D4A574; }
+.bg-navy { background-color: #1A1D3D; }
+.bg-sage { background-color: #86A89A; }
+
+/* Text colors */
+.text-navy { color: #1A1D3D; }
+.text-cream { color: #FFFDF7; }
+
+/* Layout */
+.top-section {
+  height: 384px; /* <= 20% of 1920 */
+  position: relative;
+}
+
+.tagline-container {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottom-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 48px;
+}
+
+/* Typography */
+.tagline {
+  font-family: 'Instrument Serif', serif;
+  font-size: 88px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.01em;
+  padding: 0 40px;
+}
+
+.pill {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 12px 28px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+}
+
+/* Pill variants */
+.pill.navy-on-cream {
+  background-color: rgba(26, 29, 61, 0.05);
+  color: #1A1D3D;
+}
+.pill.navy-on-tan {
+  background-color: rgba(26, 29, 61, 0.08);
+  color: #1A1D3D;
+}
+.pill.navy-on-sage {
+  background-color: rgba(26, 29, 61, 0.08);
+  color: #1A1D3D;
+}
+.pill.cream-on-navy {
+  background-color: rgba(255, 253, 247, 0.1);
+  color: #FFFDF7;
+}
+
+/* UI Mockup */
+.mockup-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 64px 64px 0 0;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(26, 29, 61, 0.12), 0 10px 30px rgba(26, 29, 61, 0.04);
+  position: relative;
+  background-color: #FFFDF7;
+  /* Optional: a subtle inner border for realism */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: none;
+}
+.bg-navy .mockup-container {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  background-color: #1a1d3d; /* In case image doesn't cover */
+}
+
+.mockup-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}

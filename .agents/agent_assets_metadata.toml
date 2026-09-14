@@ -428,3 +428,31 @@ mtime_ms = 1789372478013
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/3f185146-bcff-4550-b5b9-a19ed71ea4ef/36978d74-a3ac-4e03-8392-12e2f21412e3"
 storage_version_token = "1789372493858088"
 content_type = "image/png"
+
+[[outputs]]
+id = "ZUIp4yG-Vu75Lxj0USIJ9"
+uri = "file://marketing/google-play/Google-Play-Review-Sheet.jpg"
+type = "image"
+title = "Google Play screenshots — preview all eight"
+description = "Review the coordinated cream, gold, navy, and sage set. This contact sheet is for review, not uploading to Play."
+logical_id = "e92f89e5-c59b-4d05-88ae-4edccff28c8d"
+content_hash = "sha256:7c172bccbf7113d2b32acb9e6b9980f8d66bc3dfb92e8e68d7b988436ce9796e"
+size = 250578
+mtime_ms = 1789388501824
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/e92f89e5-c59b-4d05-88ae-4edccff28c8d/fd8c7a78-7e71-4fca-9109-cd1ca0e91793"
+storage_version_token = "1789388539211983"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "Al6_HdiU7yJNlpzGF2kbU"
+uri = "file://marketing/google-play/Jotrea-Google-Play-8-Phone-Screenshots.zip"
+type = "unspecified"
+title = "Download all 8 Google Play phone screenshots"
+description = "Eight numbered 1080 × 1920 RGB PNGs, plus upload order and suggested alt text. Unzip before uploading to Google Play."
+logical_id = "09c5b115-e61b-4067-aadc-15291bfa5015"
+content_hash = "sha256:14ab18aeba3ef530757a4b3e35cb290bdeaeeb33b02c62f33607e72b4ebff31c"
+size = 1710491
+mtime_ms = 1789388531336
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/09c5b115-e61b-4067-aadc-15291bfa5015/4fdaba1d-64db-4f29-8522-390c0517382e"
+storage_version_token = "1789388540115648"
+content_type = "application/octet-stream"
