@@ -16,16 +16,18 @@
  *   - stepsGoal      (Dashboard renders toLocaleString() + unit "/day")
  */
 
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import React from "react";
+
+const navigate = vi.fn();
 
 // ---------------------------------------------------------------------------
 // Module mocks — declared before any import that triggers them
 // ---------------------------------------------------------------------------
 
 vi.mock("wouter", () => ({
-  useLocation: () => ["/", vi.fn()],
+  useLocation: () => ["/", navigate],
   Link: ({
     children,
     asChild: _a,
@@ -326,4 +328,27 @@ describe("Daily Targets — simultaneous update of all three goals", () => {
     expect(screen.queryByText("100g")).not.toBeInTheDocument();
     expect(screen.queryByText((7000).toLocaleString())).not.toBeInTheDocument();
   });
+});
+
+describe("Daily Targets — check-in interaction", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    navigate.mockClear();
+    seedMedication();
+    seedUser();
+  });
+
+  it.each(["water", "protein", "steps"] as const)(
+    "toggles %s without navigating",
+    (target) => {
+      render(<Dashboard />);
+      const button = screen.getByTestId(`daily-target-${target}`);
+
+      expect(button).toHaveAttribute("aria-pressed", "false");
+      fireEvent.click(button);
+
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
 });

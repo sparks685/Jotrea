@@ -15,6 +15,7 @@ import {
   registerNotificationSW,
   rescheduleAllNotifications,
   scheduleAllNotifications,
+  getNextScheduledTime,
 } from "./notifications";
 import type { MedicationData, UserData } from "@/types";
 
@@ -191,6 +192,63 @@ describe("Capacitor local notifications", () => {
       extra: { path: "/", tag: "jotrea-dose-due-2026-07-29" },
     });
     expect(scheduled[0].schedule.at).toEqual(new Date("2026-07-29T09:00:00"));
+    vi.useRealTimers();
+  });
+
+  it("shows the newly selected primary reminder time instead of the earlier weigh-in", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-25T08:00:00"));
+    const medication = {
+      brandName: "Zepbound",
+      startDate: "2026-07-26",
+      frequency: "weekly",
+    } as MedicationData;
+
+    expect(
+      getNextScheduledTime(medication, [], { notificationTime: "10:00" } as UserData)
+    ).toEqual(new Date("2026-07-26T10:00:00"));
+    vi.useRealTimers();
+  });
+
+  it("reschedules the primary selected time while preserving multiple Cabinet reminders", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-25T08:00:00"));
+    const medication = {
+      brandName: "Zepbound",
+      startDate: "2026-07-26",
+      frequency: "weekly",
+    } as MedicationData;
+    const cabinet = [{
+      cabinetId: "daily-med",
+      id: "daily-med",
+      genericName: "daily",
+      brandName: "Daily medication",
+      dose: 1,
+      frequency: "daily" as const,
+      startDate: "2026-07-25",
+      active: true,
+      reminderTimes: ["11:00", "19:00"],
+      createdAt: "2026-07-01T00:00:00.000Z",
+    }];
+
+    await rescheduleAllNotifications(
+      medication,
+      [],
+      { notificationTime: "10:00" } as UserData,
+      { cabinetMedications: cabinet }
+    );
+
+    const scheduled = localNotifications.schedule.mock.calls[0][0].notifications;
+    expect(
+      scheduled.find((item: { extra: { tag: string } }) =>
+        item.extra.tag.startsWith("jotrea-dose-due-")
+      ).schedule.at
+    ).toEqual(new Date("2026-07-26T10:00:00"));
+    expect(
+      scheduled.filter((item: { extra: { tag: string } }) =>
+        item.extra.tag.startsWith("jotrea-cabinet-dose-daily-med-")
+      )
+    ).toHaveLength(2);
     vi.useRealTimers();
   });
 

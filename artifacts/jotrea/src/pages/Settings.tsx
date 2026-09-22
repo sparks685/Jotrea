@@ -75,6 +75,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { trackEvent } from "@/lib/analytics";
 import { ChangeMedicationSheet } from "@/components/ChangeMedicationSheet";
 import type { MedicationData } from "@/types";
+import { getInstalledAppVersion, WEB_APP_VERSION } from "@/utils/appVersion";
 import {
   getHealthKitAuthorizationStatus,
   exportHealthKitWeights,
@@ -164,6 +165,7 @@ export default function Settings() {
   const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
   const [dataExportAction, setDataExportAction] = useState<"pdf" | "csv" | null>(null);
   const [exportPaywallOpen, setExportPaywallOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState(WEB_APP_VERSION);
   const [subscriptionCheck, setSubscriptionCheck] = useState<"checking" | "ready" | "error">(
     () => isNativeCapacitor() ? "checking" : "ready"
   );
@@ -178,6 +180,14 @@ export default function Settings() {
   const isAndroidNative = isAndroidCapacitor();
   const reviewerOnly = hasReviewerAccess && user.subscription !== "premium";
   const canUseAppleHealth = isIosCapacitor() && hasPlus;
+
+  useEffect(() => {
+    let active = true;
+    void getInstalledAppVersion().then((version) => {
+      if (active) setAppVersion(version);
+    });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!isNativeCapacitor()) return;
@@ -1205,7 +1215,7 @@ export default function Settings() {
             </div>
             <div className="flex items-center justify-between py-1">
               <span className="text-sm text-muted-foreground">Version</span>
-              <span className="text-sm font-semibold text-foreground">1.0.0</span>
+               <span className="text-sm font-semibold text-foreground" data-testid="app-version">{appVersion}</span>
             </div>
           </div>
           <div className="pt-2 border-t border-border flex gap-4 text-xs font-medium text-muted-foreground">

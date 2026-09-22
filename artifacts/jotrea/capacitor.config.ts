@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     backgroundColor: "#FFFCF5",
     // Apple Health remains iOS-only; do not bundle unused Health Connect permissions.
     includePlugins: [
+      "@capacitor/app",
       "@capacitor/filesystem",
       "@capacitor/local-notifications",
       "@capacitor/share",

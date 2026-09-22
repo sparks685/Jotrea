@@ -15,6 +15,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { requestNotificationPermission, scheduleAllNotifications, isNotificationSupported } from "@/utils/notifications";
 import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
+import { canonicalWeights, convertWeightInput, type WeightUnit } from "@/utils/weightUnits";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 const BRAND = "#D4A574";
@@ -144,6 +145,26 @@ export default function Onboarding() {
   const nav = (next: number) => { haptic(); setDirection(1); setStep(next); };
   const back = () => { haptic(); setDirection(-1); setStep(step === 10 ? 8 : step - 1); };
 
+  const handleUnitChange = (nextUnit: "imperial" | "metric") => {
+    if (nextUnit === heightUnit) return;
+    const from: WeightUnit = heightUnit === "imperial" ? "lbs" : "kg";
+    const to: WeightUnit = nextUnit === "imperial" ? "lbs" : "kg";
+    setCurrentWeight((value) => convertWeightInput(value, from, to));
+    setStartWeight((value) => convertWeightInput(value, from, to));
+    setGoalWeight((value) => convertWeightInput(value, from, to));
+
+    if (nextUnit === "metric") {
+      const inches = parseFloat(heightFt) * 12 + parseFloat(heightIn);
+      setHeightCm(String(Math.round(inches * 2.54 * 100) / 100));
+    } else {
+      const inches = parseFloat(heightCm) / 2.54;
+      setHeightFt(String(Math.floor(inches / 12)));
+      setHeightIn(String(Math.round((inches % 12) * 100) / 100));
+    }
+    setHeightUnit(nextUnit);
+    haptic();
+  };
+
   const grouped = medications.reduce<Record<string, typeof medications>>((acc, med) => {
     if (!acc[med.genericName]) acc[med.genericName] = [];
     acc[med.genericName].push(med);
@@ -201,14 +222,50 @@ export default function Onboarding() {
     const stepsGoal = STEPS_BY_ACTIVITY[activity] ?? 7000;
     const med = buildMedication();
     if (!med) return;
+    const unit: WeightUnit = heightUnit === "imperial" ? "lbs" : "kg";
+    const currentCanonical = canonicalWeights(cw, unit);
+    const startingCanonical = canonicalWeights(sw, unit);
+    const goalCanonical = canonicalWeights(gw, unit);
+    const heightInches = heightUnit === "imperial"
+      ? parseFloat(heightFt) * 12 + parseFloat(heightIn)
+      : parseFloat(heightCm) / 2.54;
+    const canonicalHeightCm = heightUnit === "metric"
+      ? parseFloat(heightCm)
+      : Math.round(heightInches * 2.54 * 10) / 10;
+    const completedUser = {
+      name: user.name || "User",
+      gender: gender as any,
+      birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`,
+      heightUnit,
+      heightFt: Math.floor(heightInches / 12),
+      heightIn: Math.round((heightInches % 12) * 10) / 10,
+      heightCm: canonicalHeightCm,
+      currentWeightLbs: currentCanonical.lbs,
+      currentWeightKg: currentCanonical.kg,
+      startingWeightLbs: startingCanonical.lbs,
+      startingWeightKg: startingCanonical.kg,
+      glpStartDate: startDateGlp,
+      goalWeightLbs: goalCanonical.lbs,
+      goalWeightKg: goalCanonical.kg,
+      goalWeight: gw,
+      goalPaceLbs: goalPace,
+      activityLevel: activity as any,
+      motivations,
+      troublesomeSideEffects: sideEffects,
+      units: unit,
+      waterGoalCups: 8,
+      proteinGoalG,
+      stepsGoal,
+      subscription: "free" as const,
+    };
     setMedication(med);
     if (isCustomMed) {
-      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
+      setUser(completedUser);
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete");
       completedRef.current = true;
     } else {
-      setUser({ name: user.name || "User", gender: gender as any, birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`, heightUnit, heightFt: parseInt(heightFt), heightIn: parseInt(heightIn), heightCm: parseInt(heightCm), currentWeightLbs: heightUnit === "imperial" ? cw : undefined, currentWeightKg: heightUnit === "metric" ? cw : undefined, startingWeightLbs: heightUnit === "imperial" ? sw : undefined, startingWeightKg: heightUnit === "metric" ? sw : undefined, glpStartDate: startDateGlp, goalWeightLbs: heightUnit === "imperial" ? gw : undefined, goalWeightKg: heightUnit === "metric" ? gw : undefined, goalPaceLbs: goalPace, activityLevel: activity as any, motivations, troublesomeSideEffects: sideEffects, units: heightUnit === "imperial" ? "lbs" : "kg", waterGoalCups: 8, proteinGoalG, stepsGoal, subscription: "free" });
+      setUser(completedUser);
       seedStartingWeight(cw, startDateGlp, setWeights);
       trackEvent("onboarding_complete");
       completedRef.current = true;
@@ -458,7 +515,7 @@ export default function Onboarding() {
 
             <div className="flex bg-muted/60 p-1 rounded-xl w-fit mx-auto mb-6">
               {(["imperial","metric"] as const).map(u => (
-                <button key={u} onClick={()=>{setHeightUnit(u);haptic();}}
+                <button key={u} onClick={()=>handleUnitChange(u)}
                   className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${heightUnit===u?"bg-card shadow text-foreground":"text-muted-foreground"}`}>
                   {u==="imperial"?"Imperial":"Metric"}
                 </button>
@@ -474,30 +531,51 @@ export default function Onboarding() {
                       {[3,4,5,6,7].map(v=><option key={v} value={v}>{v} ft</option>)}
                     </select>
                     <select value={heightIn} onChange={e=>{setHeightIn(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center">
-                      {Array.from({length:12},(_,i)=><option key={i} value={i}>{i} in</option>)}
+                      {(() => {
+                        const values = Array.from({ length: 12 }, (_, i) => String(i));
+                        if (!values.includes(heightIn)) values.push(heightIn);
+                        return values
+                          .sort((a, b) => Number(a) - Number(b))
+                          .map((value) => <option key={value} value={value}>{value} in</option>);
+                      })()}
                     </select>
                   </div>
                 ) : (
                   <select value={heightCm} onChange={e=>{setHeightCm(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center w-full">
-                    {Array.from({length:100},(_,i)=><option key={i+130} value={i+130}>{i+130} cm</option>)}
+                    {(() => {
+                      const values = Array.from({ length: 100 }, (_, i) => String(i + 130));
+                      if (!values.includes(heightCm)) values.push(heightCm);
+                      return values
+                        .sort((a, b) => Number(a) - Number(b))
+                        .map((value) => <option key={value} value={value}>{value} cm</option>);
+                    })()}
                   </select>
                 )}
               </div>
               <div className="flex-1 bg-card rounded-2xl border border-border/60 shadow-sm p-4">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2 text-center">Weight</p>
                 <select value={currentWeight} onChange={e=>{setCurrentWeight(e.target.value);haptic();}} className="bg-transparent text-lg font-bold outline-none appearance-none text-center w-full">
-                  {heightUnit==="imperial"
-                    ? Array.from({length:301},(_,i)=><option key={i+100} value={i+100}>{i+100} lbs</option>)
-                    : Array.from({length:161},(_,i)=><option key={i+40} value={i+40}>{i+40} kg</option>)
-                  }
+                  {(() => {
+                    const min = heightUnit === "imperial" ? 100 : 40;
+                    const max = heightUnit === "imperial" ? 400 : 200;
+                    const values = Array.from({ length: max - min + 1 }, (_, i) => String(i + min));
+                    if (!values.includes(currentWeight)) values.push(currentWeight);
+                    return values
+                      .sort((a, b) => Number(a) - Number(b))
+                      .map((value) => (
+                        <option key={value} value={value}>
+                          {value} {heightUnit === "imperial" ? "lbs" : "kg"}
+                        </option>
+                      ));
+                  })()}
                 </select>
               </div>
             </div>
 
             {(() => {
               const bmi = heightUnit==="imperial"
-                ? calculateBMI(parseFloat(currentWeight), parseInt(heightFt)*12+parseInt(heightIn))
-                : calculateBMIFromKg(parseFloat(currentWeight), parseInt(heightCm));
+                ? calculateBMI(parseFloat(currentWeight), parseFloat(heightFt)*12+parseFloat(heightIn))
+                : calculateBMIFromKg(parseFloat(currentWeight), parseFloat(heightCm));
               let label="Healthy", color="#22c55e";
               if(bmi<18.5){label="Underweight";color="#3b82f6";}
               else if(bmi>=25&&bmi<30){label="Overweight";color="#f59e0b";}

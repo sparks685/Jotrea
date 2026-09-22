@@ -1,5 +1,6 @@
 import { parseISO, differenceInWeeks, format, subDays, addWeeks } from "date-fns";
 import type { DoseEntry, WeightEntry } from "@/types";
+import { orderWeightEntries } from "@/utils/weightEntries";
 
 export function calculateBMI(weightLbs: number, heightInches: number): number {
   if (!heightInches || !weightLbs) return 0;
@@ -14,13 +15,13 @@ export function calculateBMIFromKg(weightKg: number, heightCm: number): number {
 
 export function calculateWeightLost(entries: WeightEntry[]): number {
   if (entries.length < 2) return 0;
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = orderWeightEntries(entries);
   return sorted[0].weight - sorted[sorted.length - 1].weight;
 }
 
 export function calculateAvgWeeklyLoss(entries: WeightEntry[]): number {
   if (entries.length < 2) return 0;
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = orderWeightEntries(entries);
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
   const weeks = differenceInWeeks(parseISO(last.date), parseISO(first.date));
@@ -70,7 +71,5 @@ export function getLastDose(doses: DoseEntry[]): DoseEntry | null {
 }
 
 export function getLast7WeightEntries(entries: WeightEntry[]): WeightEntry[] {
-  return [...entries]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-7);
+  return orderWeightEntries(entries).slice(-7);
 }

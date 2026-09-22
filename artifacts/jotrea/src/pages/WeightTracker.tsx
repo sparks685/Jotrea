@@ -24,6 +24,7 @@ import {
 } from "@/utils/calculations";
 import { PageContainer } from "@/components/PageContainer";
 import type { UserData, WeightEntry } from "@/types";
+import { orderWeightEntries } from "@/utils/weightEntries";
 
 const LBS_PER_KG = 2.20462;
 const CM_PER_INCH = 2.54;
@@ -67,6 +68,7 @@ export default function WeightTracker() {
   const [inputWeight, setInputWeight] = useState("");
   const [inputDate, setInputDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [inputNotes, setInputNotes] = useState("");
+  const [weightError, setWeightError] = useState("");
 
   // Close sheet immediately on navigation to prevent fixed backdrop blocking the incoming page
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function WeightTracker() {
   }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
   const [goalInput, setGoalInput] = useState(initGoal != null ? String(initGoal) : "");
 
-  const sortedWeights = [...weights].sort((a, b) => a.date.localeCompare(b.date));
+  const sortedWeights = orderWeightEntries(weights);
 
   const chartData = sortedWeights.map((w) => ({
     date: format(parseISO(w.date), "MMM d"),
@@ -185,17 +187,21 @@ export default function WeightTracker() {
 
   // ── Form handlers ─────────────────────────────────────────────────────────
   const handleAdd = () => {
-    const w = parseFloat(inputWeight);
-    if (!w || isNaN(w)) return;
+    const w = Number(inputWeight);
+    if (!inputWeight.trim() || !Number.isFinite(w) || w <= 0) {
+      setWeightError("Please enter a valid weight.");
+      return;
+    }
     const entry: WeightEntry = {
       id: Date.now().toString(),
       date: inputDate,
       weight: w,
       notes: inputNotes || undefined,
     };
-    setWeights([...weights, entry]);
+    setWeights((previous) => [...(Array.isArray(previous) ? previous : []), entry]);
     setInputWeight("");
     setInputNotes("");
+    setWeightError("");
     setShowForm(false);
   };
 
@@ -419,7 +425,10 @@ export default function WeightTracker() {
           <Button
             size="sm"
             className="rounded-xl gap-1"
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              setWeightError("");
+              setShowForm(!showForm);
+            }}
             data-testid="add-weight-btn"
           >
             <Plus size={14} />
@@ -439,7 +448,10 @@ export default function WeightTracker() {
                 <p className="text-sm font-semibold text-foreground">New Entry</p>
                 <button
                   className="p-1 rounded-lg hover:bg-muted transition-colors"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setWeightError("");
+                    setShowForm(false);
+                  }}
                 >
                   <X size={14} className="text-muted-foreground" />
                 </button>
@@ -453,9 +465,14 @@ export default function WeightTracker() {
                     type="number"
                     placeholder="e.g. 195"
                     value={inputWeight}
-                    onChange={(e) => setInputWeight(e.target.value)}
+                    onChange={(e) => {
+                      setInputWeight(e.target.value);
+                      if (weightError) setWeightError("");
+                    }}
                     className="rounded-xl"
                     data-testid="weight-value-input"
+                    aria-invalid={weightError ? "true" : undefined}
+                    aria-describedby={weightError ? "weight-entry-error" : undefined}
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -469,6 +486,15 @@ export default function WeightTracker() {
                   />
                 </div>
               </div>
+              {weightError && (
+                <p
+                  id="weight-entry-error"
+                  role="alert"
+                  className="text-xs font-medium text-destructive"
+                >
+                  {weightError}
+                </p>
+              )}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground">
                   Notes (optional)

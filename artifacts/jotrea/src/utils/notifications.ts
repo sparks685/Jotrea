@@ -381,8 +381,12 @@ export function getNextScheduledTime(
   user: UserData
 ): Date | null {
   if (!isNativeCapacitor() && (!("Notification" in window) || Notification.permission !== "granted")) return null;
-  const schedule = buildSchedule(medication, doses, user);
-  if (!schedule.length) return null;
-  const soonest = schedule.reduce((a, b) => (a.delayMs < b.delayMs ? a : b));
-  return new Date(Date.now() + soonest.delayMs);
+  // Settings labels this as the selected dose reminder, so weekly weigh-ins
+  // (fixed at 8 AM) and Cabinet medication times must not take precedence.
+  const primaryDoseReminder = buildSchedule(medication, doses, user).find(
+    (notification) => notification.tag.startsWith("jotrea-dose-due-")
+  );
+  return primaryDoseReminder
+    ? new Date(Date.now() + primaryDoseReminder.delayMs)
+    : null;
 }

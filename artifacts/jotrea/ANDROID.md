@@ -1,6 +1,6 @@
 # Jotrea Android
 
-Package: `com.sparky.jotrea`. Android release: version name **1.1**, version code **4**.
+Package: `com.sparky.jotrea`. Android release: version name **1.2**, version code **5**.
 This is the existing Capacitor app, not an Expo or React Native rewrite.
 
 ## Mac prerequisites
@@ -69,11 +69,11 @@ does not install the SDK Platform package used to compile the app.
 ## Create the Google Play bundle
 
 In Android Studio choose **Build → Generate Signed App Bundle / APK → Android App Bundle**.
-Create or select your upload keystore, choose **release**, and finish the wizard.
+Select the **same existing upload keystore used for version code 4**, choose **release**, and finish the wizard.
 Keep the keystore and passwords securely backed up outside Git; do not upload them
 to chat. Enable Play App Signing during the Play Console release flow.
 The output is normally `android/app/release/app-release.aab` (use the wizard's
-actual destination). Upload it to Jotrea's **Internal testing** track.
+actual destination). Upload this update to Jotrea's existing **Closed testing – Alpha** track.
 Increment `versionCode` in `android/app/build.gradle` for each subsequent upload.
 
 ## Scope and remaining release checks

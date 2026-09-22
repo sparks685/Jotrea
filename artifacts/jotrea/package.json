@@ -1,6 +1,6 @@
 {
   "name": "@workspace/jotrea",
-  "version": "0.0.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -83,6 +83,7 @@
   },
   "dependencies": {
     "@capacitor/android": "7.6.8",
+    "@capacitor/app": "^7.1.2",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@capacitor/filesystem": "^7.1.4",

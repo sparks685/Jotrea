@@ -23,3 +23,4 @@
 - [Native privacy verification](native-privacy-verification.md) — verify analytics in the submitted native bundle; source and website configuration do not establish mobile collection.
 - [Store capture provenance](store-capture-provenance.md) — use rendered app UI; browser platform shims are not native verification, and proxy banners must be excluded.
 - [Google Play category review](google-play-category-review.md) — Health & fitness correction led to published closed testing after the organization-account rejection.
+- [Fresh conversion checks](hmr-regression-verification.md) — HMR can preserve values from old conversion logic; verify fixes from explicit fresh inputs.

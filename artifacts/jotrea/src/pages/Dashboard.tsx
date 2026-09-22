@@ -27,6 +27,7 @@ import { cancelNotificationTag, rescheduleAllNotifications } from "@/utils/notif
 import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
+import { orderWeightEntries } from "@/utils/weightEntries";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
@@ -69,6 +70,7 @@ export default function Dashboard() {
   const [weightValue, setWeightValue] = useState("");
   const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [weightNotes, setWeightNotes] = useState("");
+  const [weightError, setWeightError] = useState("");
 
   const [pendingDoseId, setPendingDoseId] = useState<string | null>(null);
   const [selectedSideEffects, setSelectedSideEffects] = useState<string[]>([]);
@@ -115,8 +117,9 @@ export default function Dashboard() {
   const lastDose = getLastDose(currentDoses);
   const weightEntries = getLast7WeightEntries(weights);
   const nextThree = getNextThreeDoses(medication.startDate, medication.frequency, currentDoses);
-  const latestWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[0] ?? null;
-  const prevWeight = [...weights].sort((a, b) => b.date.localeCompare(a.date))[1] ?? null;
+  const orderedWeights = orderWeightEntries(weights);
+  const latestWeight = orderedWeights.at(-1) ?? null;
+  const prevWeight = orderedWeights.at(-2) ?? null;
   const weightDelta =
     latestWeight && prevWeight ? latestWeight.weight - prevWeight.weight : null;
 
@@ -261,19 +264,23 @@ export default function Dashboard() {
   };
 
   const handleAddWeight = () => {
-    const w = parseFloat(weightValue);
-    if (!w || isNaN(w)) return;
+    const w = Number(weightValue);
+    if (!weightValue.trim() || !Number.isFinite(w) || w <= 0) {
+      setWeightError("Please enter a valid weight.");
+      return;
+    }
     const entry: WeightEntry = {
       id: Date.now().toString(),
       date: weightDate,
       weight: w,
       notes: weightNotes || undefined,
     };
-    setWeights([...weights, entry]);
+    setWeights((previous) => [...(Array.isArray(previous) ? previous : []), entry]);
     trackEvent("weight_logged");
     setShowWeightForm(false);
     setWeightValue("");
     setWeightNotes("");
+    setWeightError("");
   };
 
   return (
@@ -333,7 +340,10 @@ export default function Dashboard() {
       {/* Quick action row */}
       <div className="grid grid-cols-2 gap-3">
         <button
-          onClick={() => setShowWeightForm(true)}
+          onClick={() => {
+            setWeightError("");
+            setShowWeightForm(true);
+          }}
           data-testid="add-weight-quick-btn"
           className="flex items-center gap-2.5 bg-card border border-border rounded-2xl px-4 py-3.5 shadow-sm hover:bg-muted/40 transition-colors"
         >
@@ -431,6 +441,8 @@ export default function Dashboard() {
               <button
                 key={item.key}
                 onClick={() => toggle(item.key)}
+                data-testid={`daily-target-${item.key}`}
+                aria-pressed={done}
                 className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all active:scale-95 ${
                   done
                     ? "border-secondary bg-secondary/10"
@@ -865,7 +877,10 @@ export default function Dashboard() {
                 <h3 className="text-lg font-bold text-foreground">Add Weight</h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
-                  onClick={() => setShowWeightForm(false)}
+                  onClick={() => {
+                    setWeightError("");
+                    setShowWeightForm(false);
+                  }}
                   data-testid="close-weight-form"
                 >
                   <X size={16} className="text-muted-foreground" />
@@ -883,9 +898,14 @@ export default function Dashboard() {
                       type="number"
                       placeholder={user.units === "lbs" ? "e.g. 195" : "e.g. 88"}
                       value={weightValue}
-                      onChange={(e) => setWeightValue(e.target.value)}
+                      onChange={(e) => {
+                        setWeightValue(e.target.value);
+                        if (weightError) setWeightError("");
+                      }}
                       className="rounded-xl"
                       data-testid="quick-weight-value"
+                      aria-invalid={weightError ? "true" : undefined}
+                      aria-describedby={weightError ? "quick-weight-error" : undefined}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -899,6 +919,16 @@ export default function Dashboard() {
                     />
                   </div>
                 </div>
+
+                {weightError && (
+                  <p
+                    id="quick-weight-error"
+                    role="alert"
+                    className="text-xs font-medium text-destructive"
+                  >
+                    {weightError}
+                  </p>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">Notes (optional)</label>
