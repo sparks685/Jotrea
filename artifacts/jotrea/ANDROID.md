@@ -60,7 +60,7 @@ icons, and modal backdrops on both an older WebView and the current Pixel emulat
 in light and dark themes. Build success alone does not verify device rendering.
 
 In Android Studio, let Gradle sync finish, then run on an emulator or Android phone.
-The generated native project requires Android 6/API 23 or later.
+The generated native project requires Android 7/API 24 or later, meeting Google Play automatic protection's minimum SDK requirement.
 The configuration targets Android 16/API 36 to meet the Google Play new-app
 requirement effective August 31, 2026. Build 1 targeted API 35 and was rejected;
 use build 2 or later for the replacement upload. Installing an emulator image
