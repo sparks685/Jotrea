@@ -69,6 +69,22 @@ function quickWeightText() {
 describe("Dashboard weight card", () => {
   beforeEach(() => localStorage.clear());
 
+  it("renders one targets section after one stats row in the natural-height Home column", () => {
+    seed("lbs", 190);
+    const { container } = render(<Dashboard />);
+    const page = container.querySelector(".dashboard-layout");
+    const targets = screen.getByRole("region", { name: "Today's Targets" });
+    const stats = screen.getByTestId("last-dose-stat").parentElement;
+    expect(targets.parentElement).toBe(page);
+    expect(stats?.parentElement).toBe(page);
+    expect(stats?.nextElementSibling).toBe(targets);
+    expect(screen.getAllByTestId("last-dose-stat")).toHaveLength(1);
+    expect(screen.getAllByTestId("daily-target-water")).toHaveLength(1);
+    expect(screen.getByTestId("add-weight-quick-btn")).toBeInTheDocument();
+    expect(screen.getByTestId("med-info-quick-btn")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("shows the latest same-day append and current-minus-previous delta immediately and after reload", () => {
     seed("lbs", 190);
     const firstRender = render(<Dashboard />);

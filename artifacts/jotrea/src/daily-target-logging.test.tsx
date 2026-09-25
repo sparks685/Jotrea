@@ -5,6 +5,8 @@ import { useDailyTargets } from "@/hooks/useDailyTargets";
 import { DailyTargetsCard } from "@/components/DailyTargetsCard";
 import { computeProgress, mergeLegacyCheckin, resolveGoals, sanitizeStore, emptyStore, DAILY_TARGETS_KEY, DAILY_TARGETS_BACKUP_KEY, isLoggableDate, sanitizeStoreWithReport } from "@/utils/dailyTargets";
 import type { UserData } from "@/types";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 vi.mock("wouter", () => ({ useLocation: () => ["/", vi.fn()] }));
 
@@ -85,13 +87,45 @@ describe("useDailyTargets", () => {
 });
 
 describe("DailyTargetsCard UI", () => {
+  it("gives every target its own full-width natural-height row and in-flow progress", () => {
+    render(<DailyTargetsCard user={user} />);
+    const card = screen.getByRole("region", { name: "Today's Targets" });
+    expect(within(card).getAllByRole("button")).toHaveLength(3);
+    for (const key of ["water", "protein", "steps"]) {
+      const row = screen.getByTestId(`daily-target-${key}`);
+      expect(row).toHaveClass("daily-target-row");
+      expect(row.parentElement).toHaveClass("daily-targets-list");
+      expect(row.querySelector(".daily-target-progress")).not.toBeNull();
+      expect(row).toHaveAttribute("aria-haspopup", "dialog");
+      expect(row.className).not.toContain("overflow-hidden");
+    }
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // jsdom cannot measure geometry. These assertions protect the structural
+    // contract separately from browser/native visual verification.
+    const dashboardLayoutCss = readFileSync(resolve(process.cwd(), "src/pages/dashboard-layout.css"), "utf8");
+    expect(dashboardLayoutCss).toMatch(/\.daily-targets-list\s*\{[^}]*flex-direction: column/s);
+    expect(dashboardLayoutCss).toMatch(/\.daily-target-row\s*\{[^}]*flex: none;[^}]*width: 100%;[^}]*height: auto;/s);
+    expect(dashboardLayoutCss).toMatch(/\.dashboard-layout\s*\{[^}]*gap: 24px;[^}]*height: auto;/s);
+    expect(dashboardLayoutCss).toMatch(/\.dashboard-layout > \*\s*\{[^}]*flex: none;/s);
+    expect(dashboardLayoutCss).not.toMatch(/position:\s*(absolute|fixed)|overflow:\s*hidden/);
+  });
+  it("announces logged amounts and goals, and handles an unset protein goal", () => {
+    render(<DailyTargetsCard user={{ ...user, proteinGoalG: undefined }} />);
+    expect(screen.getByTestId("daily-target-water")).toHaveAccessibleName(/Water: 0 cups logged, goal 2 cups/);
+    expect(screen.getByTestId("daily-target-protein")).toHaveAccessibleName(/no goal set/);
+    expect(screen.getByText("No protein goal set")).toBeInTheDocument();
+  });
   it("quick-adds water, completes goal, undoes", () => {
     render(<DailyTargetsCard user={user} />);
     fireEvent.click(screen.getByTestId("daily-target-water"));
     const sheet = screen.getByRole("dialog");
     fireEvent.click(within(sheet).getByTestId("button-quick-water-480"));
     expect(screen.getByTestId("daily-target-water")).toHaveAttribute("data-complete", "true");
-    expect(screen.getByTestId("text-logged-water")).toHaveTextContent("2 logged");
+    expect(screen.getByTestId("text-logged-water")).toHaveTextContent("2 cups logged");
+    const fill = screen.getByTestId("daily-target-water").querySelector(".daily-target-progress > span");
+    expect(fill).toHaveStyle({ width: "100%" });
+    expect(fill).not.toHaveAttribute("style", expect.stringContaining("transform"));
+    expect(fill?.className).not.toContain("transition");
     fireEvent.click(screen.getByTestId("button-undo"));
     expect(screen.getByTestId("daily-target-water")).toHaveAttribute("data-complete", "false");
   });
@@ -160,7 +194,7 @@ describe("audit hardening", () => {
     const btn = screen.getByTestId("button-quick-water-120");
     for (let i = 0; i < 6; i++) fireEvent.click(btn);
     expect(stored().days[today()].water).toHaveLength(6);
-    expect(screen.getByTestId("text-logged-water")).toHaveTextContent("3 logged");
+    expect(screen.getByTestId("text-logged-water")).toHaveTextContent("3 cups logged");
   });
   it("cup size change keeps a concurrent fresh write", () => {
     const a = renderHook(() => useDailyTargets());

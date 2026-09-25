@@ -1,0 +1,58 @@
+/* Home is a natural-height column, not a viewport-sized panel. Each section
+   owns its height, including when text wraps or the system font is enlarged.
+   Keep these structural rules explicit for native WebView CSS compatibility. */
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: auto;
+  min-width: 0;
+}
+
+.dashboard-layout > * {
+  flex: none;
+  min-width: 0;
+}
+
+.daily-targets-card {
+  height: auto;
+  min-width: 0;
+}
+
+.daily-targets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.daily-target-row {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  gap: 12px;
+  text-align: left;
+}
+
+.daily-target-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.daily-target-copy {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.daily-target-progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  flex: none;
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./dashboard-layout.css";
 import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -316,7 +317,7 @@ export default function Dashboard() {
   };
 
   return (
-    <PageContainer className="space-y-5">
+    <PageContainer className="dashboard-layout">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

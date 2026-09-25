@@ -11,9 +11,9 @@
  * up the change and re-render.
  *
  * Covers all three goal fields:
- *   - waterGoalCups  (Dashboard renders "${value}" + unit "cups")
- *   - proteinGoalG   (Dashboard renders "${value}g"  + unit "goal")
- *   - stepsGoal      (Dashboard renders toLocaleString() + unit "/day")
+ *   - waterGoalCups  (Dashboard renders "Daily goal: ${value} cups")
+ *   - proteinGoalG   (Dashboard renders "Daily goal: ${value} g")
+ *   - stepsGoal      (Dashboard renders "Daily goal: ${localizedValue} steps")
  */
 
 import { render, screen, act, fireEvent } from "@testing-library/react";
@@ -154,28 +154,29 @@ describe("Daily Targets — waterGoalCups sync", () => {
   it("shows the default water goal (8) when no waterGoalCups is stored", () => {
     seedUser();
     render(<Dashboard />);
-    // The card renders the value as text inside a button; "8" appears next to unit "cups"
-    expect(screen.getByText("8")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 8 cups")).toBeInTheDocument();
+    expect(screen.getByTestId("daily-target-water")).toHaveAccessibleName(/goal 8 cups/);
   });
 
   it("shows a custom waterGoalCups stored at mount time", () => {
     seedUser({ waterGoalCups: 12 });
     render(<Dashboard />);
-    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 12 cups")).toBeInTheDocument();
   });
 
   it("updates immediately when Settings writes a new waterGoalCups via StorageEvent", () => {
     seedUser({ waterGoalCups: 8 });
     render(<Dashboard />);
 
-    expect(screen.getByText("8")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 8 cups")).toBeInTheDocument();
 
     act(() => {
       simulateSettingsWrite({ waterGoalCups: 10 });
     });
 
-    expect(screen.getByText("10")).toBeInTheDocument();
-    expect(screen.queryByText("8")).not.toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 10 cups")).toBeInTheDocument();
+    expect(screen.getByTestId("daily-target-water")).toHaveAccessibleName(/goal 10 cups/);
+    expect(screen.queryByText("Daily goal: 8 cups")).not.toBeInTheDocument();
   });
 
   it("does NOT require a remount to reflect the new waterGoalCups", () => {
@@ -188,7 +189,7 @@ describe("Daily Targets — waterGoalCups sync", () => {
 
     // The value must have updated in the live render, not only after a re-render
     rerender(<Dashboard />);
-    expect(screen.getByText("9")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 9 cups")).toBeInTheDocument();
   });
 });
 
@@ -205,21 +206,22 @@ describe("Daily Targets — proteinGoalG sync", () => {
   it("shows the explicit proteinGoalG stored at mount time", () => {
     seedUser({ proteinGoalG: 120 });
     render(<Dashboard />);
-    expect(screen.getByText("120g")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 120 g")).toBeInTheDocument();
   });
 
   it("updates immediately when Settings writes a new proteinGoalG via StorageEvent", () => {
     seedUser({ proteinGoalG: 100 });
     render(<Dashboard />);
 
-    expect(screen.getByText("100g")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 100 g")).toBeInTheDocument();
 
     act(() => {
       simulateSettingsWrite({ proteinGoalG: 150 });
     });
 
-    expect(screen.getByText("150g")).toBeInTheDocument();
-    expect(screen.queryByText("100g")).not.toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 150 g")).toBeInTheDocument();
+    expect(screen.getByTestId("daily-target-protein")).toHaveAccessibleName(/goal 150 g/);
+    expect(screen.queryByText("Daily goal: 100 g")).not.toBeInTheDocument();
   });
 
   it("shows the computed default when proteinGoalG is cleared to undefined", () => {
@@ -228,7 +230,7 @@ describe("Daily Targets — proteinGoalG sync", () => {
     seedUser({ proteinGoalG: 100, currentWeightLbs: 198 });
     render(<Dashboard />);
 
-    expect(screen.getByText("100g")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 100 g")).toBeInTheDocument();
 
     act(() => {
       // Simulate the user clearing proteinGoalG (saving undefined → key absent)
@@ -242,7 +244,7 @@ describe("Daily Targets — proteinGoalG sync", () => {
     });
 
     // No explicit goal → computed from weight: Math.round(198 / 2.20462 * 0.8) = 72
-    const expected = `${Math.round((198 / 2.20462) * 0.8)}g`;
+    const expected = `Daily goal: ${Math.round((198 / 2.20462) * 0.8)} g`;
     expect(screen.getByText(expected)).toBeInTheDocument();
   });
 });
@@ -260,28 +262,31 @@ describe("Daily Targets — stepsGoal sync", () => {
   it("shows the explicit stepsGoal stored at mount time", () => {
     seedUser({ stepsGoal: 8000 });
     render(<Dashboard />);
-    expect(screen.getByText((8000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(8000).toLocaleString()} steps`)).toBeInTheDocument();
   });
 
   it("updates immediately when Settings writes a new stepsGoal via StorageEvent", () => {
     seedUser({ stepsGoal: 7000 });
     render(<Dashboard />);
 
-    expect(screen.getByText((7000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(7000).toLocaleString()} steps`)).toBeInTheDocument();
 
     act(() => {
       simulateSettingsWrite({ stepsGoal: 10000 });
     });
 
-    expect(screen.getByText((10000).toLocaleString())).toBeInTheDocument();
-    expect(screen.queryByText((7000).toLocaleString())).not.toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(10000).toLocaleString()} steps`)).toBeInTheDocument();
+    expect(screen.getByTestId("daily-target-steps")).toHaveAccessibleName(
+      expect.stringContaining(`goal ${(10000).toLocaleString()} steps`),
+    );
+    expect(screen.queryByText(`Daily goal: ${(7000).toLocaleString()} steps`)).not.toBeInTheDocument();
   });
 
   it("shows the activity-level default when stepsGoal is cleared to undefined", () => {
     seedUser({ stepsGoal: 9000, activityLevel: "sedentary" }); // sedentary → 5000
     render(<Dashboard />);
 
-    expect(screen.getByText((9000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(9000).toLocaleString()} steps`)).toBeInTheDocument();
 
     act(() => {
       const existing = JSON.parse(localStorage.getItem(USER_KEY) ?? "{}");
@@ -293,7 +298,7 @@ describe("Daily Targets — stepsGoal sync", () => {
       );
     });
 
-    expect(screen.getByText((5000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(5000).toLocaleString()} steps`)).toBeInTheDocument();
   });
 });
 
@@ -311,22 +316,22 @@ describe("Daily Targets — simultaneous update of all three goals", () => {
     seedUser({ waterGoalCups: 8, proteinGoalG: 100, stepsGoal: 7000 });
     render(<Dashboard />);
 
-    expect(screen.getByText("8")).toBeInTheDocument();
-    expect(screen.getByText("100g")).toBeInTheDocument();
-    expect(screen.getByText((7000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 8 cups")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 100 g")).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(7000).toLocaleString()} steps`)).toBeInTheDocument();
 
     act(() => {
       simulateSettingsWrite({ waterGoalCups: 12, proteinGoalG: 160, stepsGoal: 9000 });
     });
 
-    expect(screen.getByText("12")).toBeInTheDocument();
-    expect(screen.getByText("160g")).toBeInTheDocument();
-    expect(screen.getByText((9000).toLocaleString())).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 12 cups")).toBeInTheDocument();
+    expect(screen.getByText("Daily goal: 160 g")).toBeInTheDocument();
+    expect(screen.getByText(`Daily goal: ${(9000).toLocaleString()} steps`)).toBeInTheDocument();
 
     // Old values must be gone
-    expect(screen.queryByText("8")).not.toBeInTheDocument();
-    expect(screen.queryByText("100g")).not.toBeInTheDocument();
-    expect(screen.queryByText((7000).toLocaleString())).not.toBeInTheDocument();
+    expect(screen.queryByText("Daily goal: 8 cups")).not.toBeInTheDocument();
+    expect(screen.queryByText("Daily goal: 100 g")).not.toBeInTheDocument();
+    expect(screen.queryByText(`Daily goal: ${(7000).toLocaleString()} steps`)).not.toBeInTheDocument();
   });
 });
 
