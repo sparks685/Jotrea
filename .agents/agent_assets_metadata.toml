@@ -456,3 +456,17 @@ mtime_ms = 1789388531336
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/09c5b115-e61b-4067-aadc-15291bfa5015/4fdaba1d-64db-4f29-8522-390c0517382e"
 storage_version_token = "1789388540115648"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "7b1fKbjW06c6xubIGAuBu"
+uri = "file://.local/verification/home-stacked-393-dark.png"
+type = "image"
+title = "Updated Home layout — browser preview"
+description = "Water, protein, and steps now have separate full-width rows. This preview uses sample data; native Android rendering still needs a rebuilt emulator check."
+logical_id = "ef18b5f3-3590-4971-a79d-cc40bf08bc24"
+content_hash = "sha256:8ac9d969375d5d5b4f84da84d30a1c44262a4b450033896b325bf5aeedd2201f"
+size = 57624
+mtime_ms = 1790379839913
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/ef18b5f3-3590-4971-a79d-cc40bf08bc24/ccef4bbf-d308-460e-8213-35bccdabf13f"
+storage_version_token = "1790380110546348"
+content_type = "image/png"
