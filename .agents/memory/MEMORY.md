@@ -24,3 +24,4 @@
 - [Store capture provenance](store-capture-provenance.md) — use rendered app UI; browser platform shims are not native verification, and proxy banners must be excluded.
 - [Google Play category review](google-play-category-review.md) — Health & fitness correction led to published closed testing after the organization-account rejection.
 - [Fresh conversion checks](hmr-regression-verification.md) — HMR can preserve values from old conversion logic; verify fixes from explicit fresh inputs.
+- [Android paint verification](android-render-verification.md) — browser geometry and platform shims cannot confirm native WebView painting or system-bar contrast.

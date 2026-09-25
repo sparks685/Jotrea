@@ -162,6 +162,16 @@ describe(".page-enter CSS guard", () => {
     expect(css).toContain(".page-enter");
   });
 
+  it("does not attach the page-wide opacity animation on Android WebView", () => {
+    const app = fs.readFileSync(path.resolve(import.meta.dirname, "App.tsx"), "utf8");
+    // The same route wrapper serves Dashboard and Settings (and all other tabs).
+    // Keep the route key and remove only the animation on native Android; web
+    // and iOS should retain their existing page entrance.
+    expect(app).toMatch(/key=\{location\}\s+className=\{`\$\{isAndroidCapacitor\(\) \? "" : "page-enter "\}min-h-full w-full`\}/);
+    const css = fs.readFileSync(cssPath, "utf8");
+    expect(css).toMatch(/\.page-enter\s*\{[^}]*animation:\s*page-enter\b/);
+  });
+
   it(".page-enter does not contain a transform property", () => {
     const css = fs.readFileSync(cssPath, "utf8");
     const body = extractRuleBody(css, ".page-enter");

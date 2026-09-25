@@ -6,8 +6,10 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.view.View;
 import android.view.Window;
+
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -61,18 +63,18 @@ public class SystemBarsPlugin extends Plugin {
             window.setStatusBarContrastEnforced(false);
             window.setNavigationBarContrastEnforced(false);
         }
-        View decor = window.getDecorView();
-        int flags = decor.getSystemUiVisibility();
-        flags = dark ? flags & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                     : flags | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        // On API 30+ the window insets controller owns icon appearance. Writing
+        // legacy decor systemUiVisibility after a controller has been installed
+        // can leave the launch theme's dark-icon appearance stuck on a dark bar.
+        // Compat also maps this to the legacy flags on API 24–29.
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
+        controller.setAppearanceLightStatusBars(!dark);
         // Light navigation icons require API 26. On API 24–25 use dark nav bar
         // with the OS's white icons even if the rest of the app is light.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags = dark ? flags & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                         : flags | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            controller.setAppearanceLightNavigationBars(!dark);
         } else {
             window.setNavigationBarColor(DARK);
         }
-        decor.setSystemUiVisibility(flags);
     }
 }

@@ -25,4 +25,14 @@ public class MainActivity extends BridgeActivity {
         super.onResume();
         SystemBarsPlugin.apply(this);
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        // Splash dismissal and external activities can restore theme/system
+        // appearance after onResume; reassert the persisted selection on focus.
+        if (hasFocus) {
+            SystemBarsPlugin.apply(this);
+        }
+    }
 }

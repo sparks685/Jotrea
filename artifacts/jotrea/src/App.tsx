@@ -189,9 +189,11 @@ function AppRoutes() {
         className="flex-1 overflow-y-auto"
         style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
+        {/* Avoid a composited, opacity-animated scrollable page on Android
+            WebView; it can retain stale painted tiles after tab changes. */}
         <div
           key={location}
-          className="page-enter min-h-full w-full"
+          className={`${isAndroidCapacitor() ? "" : "page-enter "}min-h-full w-full`}
           style={!isOnboarding ? { paddingTop: "env(safe-area-inset-top)" } : {}}
         >
           <PageErrorBoundary key={location}>

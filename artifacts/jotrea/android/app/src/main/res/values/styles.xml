@@ -13,6 +13,11 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- BridgeActivity switches to this theme before loading the WebView.
+             Match the cream launch surface until the stored mode is reapplied. -->
+        <item name="android:statusBarColor">#FFFCF5</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#101023</item>
     </style>
 
 

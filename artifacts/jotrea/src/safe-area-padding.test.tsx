@@ -11,6 +11,17 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import React from "react";
 
+const platform = vi.hoisted(() => ({ android: false }));
+
+vi.mock("@/utils/capacitor", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/capacitor")>();
+  return {
+    ...actual,
+    isAndroidCapacitor: () => platform.android,
+    isNativeCapacitor: () => false,
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Module mocks (must be declared before any import that would trigger them)
 // ---------------------------------------------------------------------------
@@ -110,8 +121,20 @@ describe("BottomNav safe-area padding", () => {
 
 describe("App scroll container safe-area padding", () => {
   beforeEach(() => {
+    platform.android = false;
     localStorage.clear();
     seedMedication();
+  });
+
+  it("renders the shared route wrapper without page-wide animation on native Android only", () => {
+    platform.android = true;
+    const android = render(<App />);
+    expect(android.container.querySelector(".min-h-full.w-full")).not.toHaveClass("page-enter");
+    android.unmount();
+
+    platform.android = false;
+    const web = render(<App />);
+    expect(web.container.querySelector(".min-h-full.w-full")).toHaveClass("page-enter");
   });
 
   it("scroll container paddingBottom uses calc(5rem + env(safe-area-inset-bottom))", () => {
