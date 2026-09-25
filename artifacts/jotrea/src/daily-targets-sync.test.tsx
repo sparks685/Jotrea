@@ -339,15 +339,15 @@ describe("Daily Targets — check-in interaction", () => {
   });
 
   it.each(["water", "protein", "steps"] as const)(
-    "toggles %s without navigating",
+    "opens the %s logging sheet without navigating or toggling",
     (target) => {
       render(<Dashboard />);
       const button = screen.getByTestId(`daily-target-${target}`);
-
-      expect(button).toHaveAttribute("aria-pressed", "false");
+      expect(button).toHaveAttribute("data-complete", "false");
       fireEvent.click(button);
-
-      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByTestId(`daily-target-sheet-${target}`)).toBeInTheDocument();
+      expect(button).toHaveAttribute("data-complete", "false");
       expect(navigate).not.toHaveBeenCalled();
     },
   );

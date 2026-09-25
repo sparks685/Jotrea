@@ -26,6 +26,7 @@ import {
   Upload,
 } from "lucide-react";
 import { PageContainer } from "@/components/PageContainer";
+import { birthdayAge } from "@/utils/measurementValidation";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -55,6 +56,7 @@ import {
   isPremium,
 } from "@/utils/featureGates";
 import { exportHealthReportPdfs } from "@/utils/healthReportPdf";
+import { buildDailyTargetsCSV, readDailyTargetsForExport } from "@/utils/dailyTargetsExport";
 import { subscriptionService } from "@/services/subscriptionService";
 import {
   getSubscriptionManagementUrl,
@@ -128,11 +130,8 @@ const ALL_SIDE_EFFECTS = [
 ];
 
 function calcAge(birthday: string): string {
-  const birth = new Date(birthday);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
-  return String(age);
+  const age = birthdayAge(birthday);
+  return age === null ? "Update birthday" : String(age);
 }
 
 function fmtActivity(level: string): string {
@@ -157,6 +156,9 @@ export default function Settings() {
   const { permission, requestPermission } = useNotifications();
   const notificationsSupported = isNotificationSupported();
   const [changeMedOpen, setChangeMedOpen] = useState(false);
+  const [editingBirthday, setEditingBirthday] = useState(false);
+  const [birthdayDraft, setBirthdayDraft] = useState(user.birthday ?? "");
+  const [birthdayError, setBirthdayError] = useState("");
   const [editingField, setEditingField] = useState<"motivations" | "side-effects" | "daily-targets" | null>(null);
   const [healthAvailability, setHealthAvailability] = useState<HealthKitAvailability>("checking");
   const [healthAuthorization, setHealthAuthorization] = useState<HealthKitAuthorization>("notDetermined");
@@ -164,6 +166,7 @@ export default function Settings() {
   const [healthMessage, setHealthMessage] = useState<string | null>(null);
   const [failedHealthExports, setFailedHealthExports] = useState(() => getFailedHealthKitWeightExports(weights));
   const [dataExportAction, setDataExportAction] = useState<"pdf" | "csv" | null>(null);
+  const [csvExportError, setCsvExportError] = useState<string | null>(null);
   const [exportPaywallOpen, setExportPaywallOpen] = useState(false);
   const [appVersion, setAppVersion] = useState(WEB_APP_VERSION);
   const [subscriptionCheck, setSubscriptionCheck] = useState<"checking" | "ready" | "error">(
@@ -288,6 +291,7 @@ export default function Settings() {
       setExportPaywallOpen(true);
       return;
     }
+    setCsvExportError(null);
     setDataExportAction("csv");
     try {
       const exportedAt = new Date();
@@ -296,8 +300,11 @@ export default function Settings() {
         { filename: filenames.doses, content: buildDoseCSV(doses) },
         { filename: filenames.weights, content: buildWeightCSV(weights, user.units) },
         { filename: filenames.symptoms, content: buildSymptomCSV(doses) },
+        { filename: filenames.doses.replace("jotrea-doses-", "jotrea-daily-targets-"), content: buildDailyTargetsCSV(readDailyTargetsForExport()) },
       ]);
       trackEvent("data_exported", { format: "csv" });
+    } catch (error) {
+      setCsvExportError(error instanceof Error ? error.message : "CSV export failed. Please try again.");
     } finally {
       setDataExportAction(null);
     }
@@ -400,7 +407,7 @@ export default function Settings() {
     // Convert all weight entries
     const convertedWeights = weights.map((w) => ({
       ...w,
-      weight: parseFloat((w.weight * factor).toFixed(1)),
+      weight: Number.isFinite(w.weight) ? parseFloat((w.weight * factor).toFixed(1)) : w.weight,
     }));
     setWeights(convertedWeights);
 
@@ -417,11 +424,11 @@ export default function Settings() {
     // Convert stored height
     let newHeight: number | null = null;
     const currentHeightInches = (user.heightFt ?? 0) * 12 + (user.heightIn ?? 0) || user.height || null;
-    const currentHeightCm = user.heightCm ?? (currentHeightInches ? parseFloat((currentHeightInches * CM_PER_INCH).toFixed(1)) : null);
+    const currentHeightCm = user.heightCm ?? (currentHeightInches ? currentHeightInches * CM_PER_INCH : null);
     if (toLbs && currentHeightCm) {
-      newHeight = parseFloat((currentHeightCm / CM_PER_INCH).toFixed(1));
+      newHeight = currentHeightCm / CM_PER_INCH;
     } else if (!toLbs && currentHeightInches) {
-      newHeight = parseFloat((currentHeightInches * CM_PER_INCH).toFixed(1));
+      newHeight = currentHeightInches * CM_PER_INCH;
     }
 
     // Persist conversion into user
@@ -440,7 +447,7 @@ export default function Settings() {
       if (toLbs) {
         updatedUser.height = newHeight;
         updatedUser.heightFt = Math.floor(newHeight / 12);
-        updatedUser.heightIn = parseFloat((newHeight % 12).toFixed(1));
+        updatedUser.heightIn = newHeight % 12;
       } else {
         updatedUser.heightCm = newHeight;
         updatedUser.height = newHeight;
@@ -538,11 +545,25 @@ export default function Settings() {
         <SettingsRow label="Gender">
           <span className="text-sm text-muted-foreground capitalize">{user.gender?.replace(/_/g, " ") || "Not set"}</span>
         </SettingsRow>
-        {user.birthday && (
-          <SettingsRow label="Age">
-            <span className="text-sm text-muted-foreground">{calcAge(user.birthday)}</span>
-          </SettingsRow>
-        )}
+        <SettingsRow label="Age">
+          <button type="button" onClick={() => { setBirthdayDraft(user.birthday ?? ""); setBirthdayError(""); setEditingBirthday(true); }}
+            className="text-sm text-primary" data-testid="edit-birthday">
+            {user.birthday ? calcAge(user.birthday) : "Update birthday"}
+          </button>
+        </SettingsRow>
+        {editingBirthday && <div className="space-y-2 p-3 rounded-xl bg-muted">
+          <label htmlFor="birthday-editor" className="text-sm font-semibold">Birthday</label>
+          <input id="birthday-editor" type="date" value={birthdayDraft} onChange={e => { setBirthdayDraft(e.target.value); setBirthdayError(""); }}
+            className="w-full rounded-lg p-2 bg-card" data-testid="birthday-editor" />
+          {birthdayError && <p role="alert" className="text-xs text-destructive">{birthdayError}</p>}
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => {
+              if (birthdayAge(birthdayDraft) === null) { setBirthdayError("Enter a valid birthday that is not in the future."); return; }
+              setUser({ ...user, birthday: birthdayDraft }); setEditingBirthday(false);
+            }}>Save birthday</Button>
+            <Button size="sm" variant="outline" onClick={() => setEditingBirthday(false)}>Cancel</Button>
+          </div>
+        </div>}
         {user.activityLevel && (
           <SettingsRow label="Activity">
             <span className="text-sm text-muted-foreground">{fmtActivity(user.activityLevel)}</span>
@@ -1141,7 +1162,7 @@ export default function Settings() {
       <SettingsSection title="Export & Share" icon={<FileText size={14} className="text-muted-foreground" />}>
         <div className="space-y-3">
           <p className="text-base text-muted-foreground">
-            Share a formatted report with your healthcare provider, or export raw data for spreadsheets.
+            Share formatted medication and weight reports with your healthcare provider, or export all tracked data for spreadsheets.
           </p>
           <Button
             className="h-auto w-full justify-start gap-3 rounded-xl px-4 py-3 text-left"
@@ -1158,7 +1179,7 @@ export default function Settings() {
                 {dataExportAction === "pdf" ? "Preparing Reports…" : "Share 3 Reports (PDF)"}
               </span>
               <span className="mt-0.5 block whitespace-normal text-xs font-normal leading-relaxed text-primary-foreground/85">
-                Formatted, easy to read. Best for emailing or printing.
+                Medication, weight, and symptom summaries. Best for emailing or printing.
               </span>
             </span>
           </Button>
@@ -1167,7 +1188,7 @@ export default function Settings() {
             className="h-auto w-full justify-start gap-3 rounded-xl px-4 py-3 text-left"
             onClick={handleCsvExport}
             disabled={dataExportAction !== null}
-            aria-label="Export dose, weight, and symptom data as CSV files for spreadsheets"
+            aria-label="Export dose, weight, symptom, and daily target data as CSV files for spreadsheets"
             data-testid="export-data-btn"
           >
             {dataExportAction === "csv"
@@ -1178,10 +1199,11 @@ export default function Settings() {
                 {dataExportAction === "csv" ? "Preparing Data…" : "Export Data (CSV)"}
               </span>
               <span className="mt-0.5 block whitespace-normal text-xs font-normal leading-relaxed text-muted-foreground">
-                Raw spreadsheet data. Best for Excel or Google Sheets.
+                Dose, weight, symptom, and daily target records. Best for Excel or Google Sheets.
               </span>
             </span>
           </Button>
+          {csvExportError && <p role="alert" className="text-xs text-destructive">{csvExportError}</p>}
         </div>
       </SettingsSection>
 

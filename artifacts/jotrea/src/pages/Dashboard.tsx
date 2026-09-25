@@ -3,14 +3,15 @@ import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, differenceInWeeks } from "date-fns";
-import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, Droplets, Activity, Target, AlertCircle } from "lucide-react";
+import { Syringe, Flame, Calendar, Plus, X, Scale, BookOpen, FlaskConical, CheckCircle2, AlertCircle } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { PageContainer } from "@/components/PageContainer";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DailyTargetsCard } from "@/components/DailyTargetsCard";
 import { CountdownRing } from "@/components/CountdownRing";
-import { useMedication, useDoses, useWeights, useUser, useDailyCheckin } from "@/hooks/useMedication";
+import { useMedication, useDoses, useWeights, useUser } from "@/hooks/useMedication";
 import {
   getNextDoseDate,
   getDaysUntilDose,
@@ -28,16 +29,12 @@ import { medications } from "@/data/medications";
 import { isOralMedication } from "@/utils/medicationUtils";
 import { dosesForMedication, getMedicationTrackingId } from "@/utils/medicationDoses";
 import { orderWeightEntries } from "@/utils/weightEntries";
+import { needsWeightConfirmation, previousWeightEntry, validWeightEntries, weightError as validateWeight } from "@/utils/measurementValidation";
+import { WeightChangeConfirmation } from "@/components/WeightChangeConfirmation";
 import type { DoseEntry, WeightEntry } from "@/types";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 
-const STEPS_BY_ACTIVITY: Record<string, number> = {
-  sedentary: 5000,
-  lightly_active: 7000,
-  active: 9000,
-  very_active: 10000,
-};
 
 const SIDE_EFFECTS_LIST = [
   { id: "none", label: "Feeling great", emoji: "✅" },
@@ -71,11 +68,11 @@ export default function Dashboard() {
   const [weightDate, setWeightDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [weightNotes, setWeightNotes] = useState("");
   const [weightError, setWeightError] = useState("");
+  const [pendingWeight, setPendingWeight] = useState<{ value: string; date: string; notes: string; units: "lbs" | "kg" } | null>(null);
 
   const [pendingDoseId, setPendingDoseId] = useState<string | null>(null);
   const [selectedSideEffects, setSelectedSideEffects] = useState<string[]>([]);
 
-  const { checkin, toggle } = useDailyCheckin();
   const [whyDismissed, setWhyDismissed] = useLocalStorage<boolean>("jotrea_why_dismissed", false);
   const currentDoses = medication
     ? dosesForMedication(doses, medication, user.legacyDoseMedicationId)
@@ -87,6 +84,7 @@ export default function Dashboard() {
     setShowLogForm(false);
     setShowDoseConfirm(false);
     setShowWeightForm(false);
+    setPendingWeight(null);
   }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reschedule all notifications on every Dashboard mount (i.e. each app open)
@@ -115,9 +113,11 @@ export default function Dashboard() {
   const isDueToday = daysUntil === 0;
   const streak = calculateStreak(currentDoses, medication.startDate, medication.frequency);
   const lastDose = getLastDose(currentDoses);
-  const weightEntries = getLast7WeightEntries(weights);
+  const safeWeights = validWeightEntries(weights, user.units);
+  const invalidWeightCount = weights.length - safeWeights.length;
+  const weightEntries = getLast7WeightEntries(safeWeights);
   const nextThree = getNextThreeDoses(medication.startDate, medication.frequency, currentDoses);
-  const orderedWeights = orderWeightEntries(weights);
+  const orderedWeights = orderWeightEntries(safeWeights);
   const latestWeight = orderedWeights.at(-1) ?? null;
   const prevWeight = orderedWeights.at(-2) ?? null;
   const weightDelta =
@@ -263,24 +263,56 @@ export default function Dashboard() {
     setLogDoseAmount(medication?.dose ?? 0);
   };
 
-  const handleAddWeight = () => {
-    const w = Number(weightValue);
-    if (!weightValue.trim() || !Number.isFinite(w) || w <= 0) {
-      setWeightError("Please enter a valid weight.");
-      return;
-    }
+  const closeWeightForm = () => {
+    setPendingWeight(null);
+    setWeightError("");
+    setShowWeightForm(false);
+  };
+
+  const persistWeight = (snapshot: { value: string; date: string; notes: string; units: "lbs" | "kg" }) => {
     const entry: WeightEntry = {
       id: Date.now().toString(),
-      date: weightDate,
-      weight: w,
-      notes: weightNotes || undefined,
+      date: snapshot.date,
+      weight: Number(snapshot.value),
+      notes: snapshot.notes || undefined,
     };
     setWeights((previous) => [...(Array.isArray(previous) ? previous : []), entry]);
     trackEvent("weight_logged");
-    setShowWeightForm(false);
+    closeWeightForm();
     setWeightValue("");
     setWeightNotes("");
-    setWeightError("");
+  };
+
+  const handleAddWeight = () => {
+    const error = validateWeight(weightValue, user.units);
+    if (error) {
+      setWeightError(error);
+      setPendingWeight(null);
+      return;
+    }
+    const snapshot = { value: weightValue, date: weightDate, notes: weightNotes, units: user.units };
+    if (needsWeightConfirmation(weights, snapshot.date, Number(snapshot.value), snapshot.units)) {
+      setPendingWeight(snapshot);
+      return;
+    }
+    persistWeight(snapshot);
+  };
+
+  const confirmWeight = () => {
+    if (!pendingWeight || !showWeightForm) return;
+    const snapshot = pendingWeight;
+    if (snapshot.value !== weightValue || snapshot.date !== weightDate ||
+        snapshot.notes !== weightNotes || snapshot.units !== user.units) {
+      setPendingWeight(null);
+      return;
+    }
+    const error = validateWeight(snapshot.value, snapshot.units);
+    if (error) {
+      setWeightError(error);
+      setPendingWeight(null);
+      return;
+    }
+    persistWeight(snapshot);
   };
 
   return (
@@ -342,6 +374,7 @@ export default function Dashboard() {
         <button
           onClick={() => {
             setWeightError("");
+            setPendingWeight(null);
             setShowWeightForm(true);
           }}
           data-testid="add-weight-quick-btn"
@@ -381,6 +414,14 @@ export default function Dashboard() {
           </div>
         </button>
       </div>
+      {invalidWeightCount > 0 && (
+        <p role="status" className="text-xs text-amber-700">
+          {invalidWeightCount} invalid weight {invalidWeightCount === 1 ? "entry is" : "entries are"} hidden from your trend.{" "}
+          <button type="button" className="underline font-semibold" onClick={() => navigate("/weight")}>
+            Review weight history
+          </button> to repair.
+        </p>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
@@ -404,61 +445,7 @@ export default function Dashboard() {
       </div>
 
       {/* Today's Targets */}
-      <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
-        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Today's Targets</p>
-        <div className="grid grid-cols-3 gap-2">
-          {(
-            [
-              {
-                key: "water" as const,
-                icon: <Droplets size={16} className="text-blue-500" />,
-                label: "Water",
-                value: `${user.waterGoalCups ?? 8}`,
-                unit: "cups",
-              },
-              {
-                key: "protein" as const,
-                icon: <Activity size={16} className="text-red-400" />,
-                label: "Protein",
-                value: user.proteinGoalG
-                  ? `${user.proteinGoalG}g`
-                  : user.currentWeightLbs
-                  ? `${Math.round((user.currentWeightLbs / 2.20462) * 0.8)}g`
-                  : "—",
-                unit: "goal",
-              },
-              {
-                key: "steps" as const,
-                icon: <Target size={16} className="text-green-500" />,
-                label: "Steps",
-                value: (user.stepsGoal ?? (user.activityLevel ? STEPS_BY_ACTIVITY[user.activityLevel] : 7000) ?? 7000).toLocaleString(),
-                unit: "/day",
-              },
-            ] as const
-          ).map((item) => {
-            const done = checkin[item.key];
-            return (
-              <button
-                key={item.key}
-                onClick={() => toggle(item.key)}
-                data-testid={`daily-target-${item.key}`}
-                aria-pressed={done}
-                className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all active:scale-95 ${
-                  done
-                    ? "border-secondary bg-secondary/10"
-                    : "border-border bg-background"
-                }`}
-              >
-                <div className={done ? "opacity-100" : "opacity-50"}>{item.icon}</div>
-                <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest">{item.label}</p>
-                <p className={`text-sm font-bold ${done ? "text-secondary" : "text-foreground"}`}>{item.value}</p>
-                <p className="text-[9px] text-muted-foreground">{item.unit}</p>
-                {done && <CheckCircle2 size={12} className="text-secondary" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <DailyTargetsCard user={user} />
 
       {/* Medication reminder */}
       <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] space-y-2">
@@ -862,7 +849,7 @@ export default function Dashboard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, pointerEvents: "none" }}
             className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end"
-            onClick={(e) => e.target === e.currentTarget && setShowWeightForm(false)}
+            onClick={(e) => e.target === e.currentTarget && closeWeightForm()}
           >
             <motion.div
               initial={{ y: "100%" }}
@@ -877,10 +864,7 @@ export default function Dashboard() {
                 <h3 className="text-lg font-bold text-foreground">Add Weight</h3>
                 <button
                   className="p-1.5 rounded-xl bg-muted"
-                  onClick={() => {
-                    setWeightError("");
-                    setShowWeightForm(false);
-                  }}
+                  onClick={closeWeightForm}
                   data-testid="close-weight-form"
                 >
                   <X size={16} className="text-muted-foreground" />
@@ -889,6 +873,18 @@ export default function Dashboard() {
 
               {/* Scrollable form body */}
               <div className="flex-1 overflow-y-auto px-6 space-y-4 pb-2">
+                {pendingWeight ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      {pendingWeight.value} {pendingWeight.units} on {pendingWeight.date}
+                      {previousWeightEntry(weights, pendingWeight.date, pendingWeight.units) && (
+                        <> · Previous: {previousWeightEntry(weights, pendingWeight.date, pendingWeight.units)!.weight} {pendingWeight.units}</>
+                      )}
+                    </p>
+                    <WeightChangeConfirmation onEdit={() => setPendingWeight(null)} onConfirm={confirmWeight} />
+                  </>
+                ) : (
+                  <>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-muted-foreground">
@@ -900,6 +896,7 @@ export default function Dashboard() {
                       value={weightValue}
                       onChange={(e) => {
                         setWeightValue(e.target.value);
+                        setPendingWeight(null);
                         if (weightError) setWeightError("");
                       }}
                       className="rounded-xl"
@@ -913,7 +910,10 @@ export default function Dashboard() {
                     <Input
                       type="date"
                       value={weightDate}
-                      onChange={(e) => setWeightDate(e.target.value)}
+                      onChange={(e) => {
+                        setWeightDate(e.target.value);
+                        setPendingWeight(null);
+                      }}
                       className="rounded-xl"
                       data-testid="quick-weight-date"
                     />
@@ -940,22 +940,26 @@ export default function Dashboard() {
                     data-testid="quick-weight-notes"
                   />
                 </div>
+                  </>
+                )}
               </div>
 
               {/* Sticky footer — always visible above home indicator */}
-              <div
-                className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
-                style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
-              >
-                <Button
-                  className="w-full h-12 rounded-2xl font-semibold"
-                  onClick={handleAddWeight}
-                  data-testid="submit-weight-btn"
+              {!pendingWeight && (
+                <div
+                  className="px-6 pt-3 flex-shrink-0 border-t border-border/50"
+                  style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
                 >
-                  <Scale size={16} className="mr-2" />
-                  Save Entry
-                </Button>
-              </div>
+                  <Button
+                    className="w-full h-12 rounded-2xl font-semibold"
+                    onClick={handleAddWeight}
+                    data-testid="submit-weight-btn"
+                  >
+                    <Scale size={16} className="mr-2" />
+                    Save Entry
+                  </Button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

@@ -1,6 +1,7 @@
 # Jotrea Android
 
-Package: `com.sparky.jotrea`. Android release: version name **1.2**, version code **5**.
+Package: `com.sparky.jotrea`. Android release: version name **1.3**, version code **6**
+(`@workspace/jotrea` package version **1.3.0**).
 This is the existing Capacitor app, not an Expo or React Native rewrite.
 
 ## Mac prerequisites
@@ -54,6 +55,19 @@ unchanged. Its regression checks run with:
 ```bash
 node --test scripts/android-css-compat.test.mjs
 ```
+
+Android system bars follow Jotrea's Light, Dark, or System selection. The
+Android-only Capacitor bridge stores the selection natively and reapplies it
+when the app resumes or the device changes dark mode (including while the
+WebView is paused). On API 24–25 the navigation bar stays dark for legible
+white system icons; API 26+ uses dark icons on a light bar and light icons on
+a dark bar. Capacitor's automatic WebView margins handle Android 15/16
+edge-to-edge insets; older versions retain their normal system-window layout.
+The launch splash stays unchanged. Check status and navigation bars in all
+three theme settings, including gesture and three-button navigation, on an
+API 24/25 device, API 26–34 device, and API 35/36 device. Switch OS dark mode
+while System is selected and while an explicit theme is selected, and resume
+after backgrounding. Web tests/static checks cannot verify OEM bar rendering.
 
 Before public release, verify selected dose and injection-site text, dashboard
 icons, and modal backdrops on both an older WebView and the current Pixel emulator,

@@ -18,5 +18,10 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- The existing cream launch splash needs dark status icons before JS loads. -->
+        <item name="android:statusBarColor">#FFFCF5</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- White navigation icons are legible on API 24–25 too. -->
+        <item name="android:navigationBarColor">#101023</item>
     </style>
 </resources>

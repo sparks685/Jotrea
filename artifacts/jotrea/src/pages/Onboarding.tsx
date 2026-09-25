@@ -16,6 +16,7 @@ import { requestNotificationPermission, scheduleAllNotifications, isNotification
 import { format, addWeeks } from "date-fns";
 import { calculateBMI, calculateBMIFromKg } from "@/utils/calculations";
 import { canonicalWeights, convertWeightInput, type WeightUnit } from "@/utils/weightUnits";
+import { birthdayAge, metricHeightLabel, weightError } from "@/utils/measurementValidation";
 
 const INJECTION_SITES = ["Abdomen", "Thigh", "Upper Arm", "Buttocks"];
 const BRAND = "#D4A574";
@@ -46,7 +47,7 @@ function seedStartingWeight(
   startDateGlp: string,
   setWeights: (v: any) => void
 ) {
-  if (!currentWeight || isNaN(currentWeight)) return;
+  if (!Number.isFinite(currentWeight) || currentWeight <= 0) return;
   setWeights([
     {
       id: "w0",
@@ -100,6 +101,8 @@ export default function Onboarding() {
   const [bMonth, setBMonth] = useState("1");
   const [bDay, setBDay] = useState("1");
   const [bYear, setBYear] = useState("1990");
+  const [birthdayError, setBirthdayError] = useState("");
+  const [measurementError, setMeasurementError] = useState("");
 
   const [heightUnit, setHeightUnit] = useState<"imperial" | "metric">("imperial");
   const [heightFt, setHeightFt] = useState("5");
@@ -143,6 +146,7 @@ export default function Onboarding() {
   const rMax = heightUnit === "imperial" ? 400 : 200;
 
   const nav = (next: number) => { haptic(); setDirection(1); setStep(next); };
+  const weightUnit: WeightUnit = heightUnit === "imperial" ? "lbs" : "kg";
   const back = () => { haptic(); setDirection(-1); setStep(step === 10 ? 8 : step - 1); };
 
   const handleUnitChange = (nextUnit: "imperial" | "metric") => {
@@ -155,11 +159,11 @@ export default function Onboarding() {
 
     if (nextUnit === "metric") {
       const inches = parseFloat(heightFt) * 12 + parseFloat(heightIn);
-      setHeightCm(String(Math.round(inches * 2.54 * 100) / 100));
+      setHeightCm(String(inches * 2.54));
     } else {
       const inches = parseFloat(heightCm) / 2.54;
       setHeightFt(String(Math.floor(inches / 12)));
-      setHeightIn(String(Math.round((inches % 12) * 100) / 100));
+      setHeightIn(String(inches % 12));
     }
     setHeightUnit(nextUnit);
     haptic();
@@ -214,14 +218,31 @@ export default function Onboarding() {
     return { id: selectedMed.id, genericName: selectedMed.genericName, brandName: selectedMed.brandNames[0], dose: selectedDose, frequency: selectedMed.frequency, startDate, injectionSite: selectedMed.formulation === "injection" ? injectionSite : undefined, active: true };
   };
 
-  const handleComplete = () => {
-    if (completedRef.current) return;
-    const cw = parseFloat(currentWeight), sw = parseFloat(startWeight) || cw, gw = parseFloat(goalWeight);
+  const handleComplete = (): boolean => {
+    if (completedRef.current) return true;
+    if (birthdayAge(`${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`) === null) {
+      setBirthdayError("Enter a valid birthday that is not in the future.");
+      setStep(2);
+      return false;
+    }
+    for (const [value, target] of [[currentWeight, 3], [startWeight, 4], [goalWeight, 5]] as const) {
+      const error = weightError(value, weightUnit);
+      if (error) {
+        setMeasurementError(error);
+        setStep(target);
+        return false;
+      }
+    }
+    const cw = parseFloat(currentWeight), sw = parseFloat(startWeight), gw = parseFloat(goalWeight);
     const weightKg = heightUnit === "imperial" ? cw / 2.20462 : cw;
     const proteinGoalG = Math.round(weightKg * 0.8);
     const stepsGoal = STEPS_BY_ACTIVITY[activity] ?? 7000;
     const med = buildMedication();
-    if (!med) return;
+    if (!med) {
+      setMeasurementError("Medication details could not be saved. Please review your selection.");
+      setStep(10);
+      return false;
+    }
     const unit: WeightUnit = heightUnit === "imperial" ? "lbs" : "kg";
     const currentCanonical = canonicalWeights(cw, unit);
     const startingCanonical = canonicalWeights(sw, unit);
@@ -231,14 +252,14 @@ export default function Onboarding() {
       : parseFloat(heightCm) / 2.54;
     const canonicalHeightCm = heightUnit === "metric"
       ? parseFloat(heightCm)
-      : Math.round(heightInches * 2.54 * 10) / 10;
+      : heightInches * 2.54;
     const completedUser = {
       name: user.name || "User",
       gender: gender as any,
       birthday: `${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`,
       heightUnit,
       heightFt: Math.floor(heightInches / 12),
-      heightIn: Math.round((heightInches % 12) * 10) / 10,
+      heightIn: heightInches % 12,
       heightCm: canonicalHeightCm,
       currentWeightLbs: currentCanonical.lbs,
       currentWeightKg: currentCanonical.kg,
@@ -270,6 +291,7 @@ export default function Onboarding() {
       trackEvent("onboarding_complete");
       completedRef.current = true;
     }
+    return true;
   };
 
   /**
@@ -281,7 +303,7 @@ export default function Onboarding() {
   const finishOnboarding = (): boolean => {
     // Ensure completion ran (the step-12 timer normally does this, but iOS
     // can suspend timers if the app is backgrounded mid-animation).
-    handleComplete();
+    if (!handleComplete()) return false;
     if (verifyMedicationSaved()) return true;
     // Retry ONLY the medication write — one-time side effects (weight seeding,
     // analytics) must not re-fire on retry.
@@ -332,7 +354,7 @@ export default function Onboarding() {
     const t1 = setTimeout(() => { setLoadingTicks(1); haptic(); }, 700);
     const t2 = setTimeout(() => { setLoadingTicks(2); haptic(); }, 1500);
     const t3 = setTimeout(() => { setLoadingTicks(3); haptic(); }, 2200);
-    const t4 = setTimeout(() => { handleComplete(); haptic([10,30,10]); setStep(13); }, 3100);
+    const t4 = setTimeout(() => { if (handleComplete()) { haptic([10,30,10]); setStep(13); } }, 3100);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, [step]);
 
@@ -484,9 +506,9 @@ export default function Onboarding() {
 
             <div className="flex gap-3 bg-card p-6 rounded-3xl border border-border/60 mb-4" style={{ boxShadow:"0 4px 20px rgba(0,0,0,0.05)" }}>
               {[
-                { value:bMonth, set:(v:string)=>{setBMonth(v);haptic();}, options:Array.from({length:12},(_,i)=>({ v:String(i+1), l:new Date(2000,i,1).toLocaleString("default",{month:"short"}) })), label:"Month" },
-                { value:bDay, set:(v:string)=>{setBDay(v);haptic();}, options:Array.from({length:31},(_,i)=>({ v:String(i+1), l:String(i+1) })), label:"Day" },
-                { value:bYear, set:(v:string)=>{setBYear(v);haptic();}, options:Array.from({length:100},(_,i)=>{ const y=new Date().getFullYear()-i; return { v:String(y), l:String(y) }; }), label:"Year" },
+                { value:bMonth, set:(v:string)=>{setBMonth(v);setBirthdayError("");haptic();}, options:Array.from({length:12},(_,i)=>({ v:String(i+1), l:new Date(2000,i,1).toLocaleString("default",{month:"short"}) })), label:"Month" },
+                { value:bDay, set:(v:string)=>{setBDay(v);setBirthdayError("");haptic();}, options:Array.from({length:31},(_,i)=>({ v:String(i+1), l:String(i+1) })), label:"Day" },
+                { value:bYear, set:(v:string)=>{setBYear(v);setBirthdayError("");haptic();}, options:Array.from({length:100},(_,i)=>{ const y=new Date().getFullYear()-i; return { v:String(y), l:String(y) }; }), label:"Year" },
               ].map((col,ci) => (
                 <div key={ci} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{col.label}</span>
@@ -498,9 +520,15 @@ export default function Onboarding() {
             </div>
 
             <p className="text-center text-sm text-muted-foreground mb-2">
-              Age: <strong className="text-foreground">{new Date().getFullYear() - parseInt(bYear)}</strong>
+              Age: <strong className="text-foreground">{birthdayAge(`${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`) ?? "—"}</strong>
             </p>
-            <ContinueBtn onClick={() => nav(3)}>Continue</ContinueBtn>
+            {birthdayError && <p role="alert" className="text-sm text-destructive">{birthdayError}</p>}
+            <ContinueBtn onClick={() => {
+              if (birthdayAge(`${bYear}-${bMonth.padStart(2,"0")}-${bDay.padStart(2,"0")}`) === null) {
+                setBirthdayError("Enter a valid birthday that is not in the future."); return;
+              }
+              setBirthdayError(""); nav(3);
+            }}>Continue</ContinueBtn>
           </motion.div>
         )}
 
@@ -547,7 +575,7 @@ export default function Onboarding() {
                       if (!values.includes(heightCm)) values.push(heightCm);
                       return values
                         .sort((a, b) => Number(a) - Number(b))
-                        .map((value) => <option key={value} value={value}>{value} cm</option>);
+                        .map((value) => <option key={value} value={value}>{metricHeightLabel(Number(value))}</option>);
                     })()}
                   </select>
                 )}
@@ -591,7 +619,12 @@ export default function Onboarding() {
               );
             })()}
 
-            <ContinueBtn onClick={() => { if(!startWeight) setStartWeight(currentWeight); nav(4); }}>Continue</ContinueBtn>
+            {measurementError && <p role="alert" className="text-sm text-destructive">{measurementError}</p>}
+            <ContinueBtn onClick={() => {
+              const error = weightError(currentWeight, weightUnit);
+              if (error) { setMeasurementError(error); return; }
+              setMeasurementError(""); if (!startWeight) setStartWeight(currentWeight); nav(4);
+            }}>Continue</ContinueBtn>
           </motion.div>
         )}
 
@@ -628,7 +661,11 @@ export default function Onboarding() {
               </motion.div>
             )}
 
-            <ContinueBtn disabled={!startWeight} onClick={() => {
+            {measurementError && <p role="alert" className="text-sm text-destructive">{measurementError}</p>}
+            <ContinueBtn onClick={() => {
+              const error = weightError(startWeight, weightUnit);
+              if (error) { setMeasurementError(error); return; }
+              setMeasurementError("");
               if (!goalWeight) {
                 const raw = startWeight || currentWeight || "150";
                 setGoalWeight(Math.min(rMax, Math.max(rMin, parseInt(raw)||rMin)).toString());
@@ -831,7 +868,12 @@ export default function Onboarding() {
               );
             })()}
 
-            <ContinueBtn onClick={() => nav(6)}>Continue</ContinueBtn>
+            {measurementError && <p role="alert" className="text-sm text-destructive">{measurementError}</p>}
+            <ContinueBtn onClick={() => {
+              const error = weightError(goalWeight, weightUnit);
+              if (error) { setMeasurementError(error); return; }
+              setMeasurementError(""); nav(6);
+            }}>Continue</ContinueBtn>
           </motion.div>
         )}
 
@@ -980,6 +1022,7 @@ export default function Onboarding() {
               <p className="text-muted-foreground text-sm mt-1 mb-4">
                 {isCustomMed ? "Tell us what you're taking." : "Select your GLP-1 medication."}
               </p>
+              {measurementError && <p role="alert" className="text-sm text-destructive">{measurementError}</p>}
               {!isCustomMed && (
                 <div className="relative">
                   <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"/>

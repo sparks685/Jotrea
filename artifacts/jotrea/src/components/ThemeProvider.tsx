@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { ThemeContext, type Theme } from "@/hooks/useTheme";
+import { syncAndroidSystemBars } from "@/utils/androidSystemBars";
 
 const STORAGE_KEY = "jotrea_theme";
 
@@ -25,6 +26,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     applyTheme(theme);
   }, [theme, systemDark]);
+
+  // Persist the preference (not the resolved OS value) in Android too. The
+  // activity reapplies it on resume/configuration changes even without JS.
+  useEffect(() => {
+    syncAndroidSystemBars(theme);
+  }, [theme]);
 
   // Track system preference changes (relevant when theme === "system")
   useEffect(() => {

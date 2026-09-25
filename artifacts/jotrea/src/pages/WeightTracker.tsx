@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { Plus, Trash2, TrendingDown, Target, X } from "lucide-react";
+import { Plus, Trash2, TrendingDown, Target, X, Pencil } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -25,6 +25,8 @@ import {
 import { PageContainer } from "@/components/PageContainer";
 import type { UserData, WeightEntry } from "@/types";
 import { orderWeightEntries } from "@/utils/weightEntries";
+import { needsWeightConfirmation, previousWeightEntry, validWeightDate, validWeightEntries, weightError as validateWeight } from "@/utils/measurementValidation";
+import { WeightChangeConfirmation } from "@/components/WeightChangeConfirmation";
 
 const LBS_PER_KG = 2.20462;
 const CM_PER_INCH = 2.54;
@@ -39,8 +41,8 @@ function getDisplayHeight(user: UserData, units: "lbs" | "kg"): number | null {
     if (user.heightCm) return user.heightCm;
     // fall back: convert stored imperial
     const fromFields = (user.heightFt ?? 0) * 12 + (user.heightIn ?? 0);
-    if (fromFields > 0) return parseFloat((fromFields * CM_PER_INCH).toFixed(1));
-    if (user.height) return parseFloat((user.height * CM_PER_INCH).toFixed(1));
+    if (fromFields > 0) return fromFields * CM_PER_INCH;
+    if (user.height) return user.height * CM_PER_INCH;
     return null;
   }
 }
@@ -69,6 +71,9 @@ export default function WeightTracker() {
   const [inputDate, setInputDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [inputNotes, setInputNotes] = useState("");
   const [weightError, setWeightError] = useState("");
+  const [goalError, setGoalError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingEntry, setPendingEntry] = useState<WeightEntry | null>(null);
 
   // Close sheet immediately on navigation to prevent fixed backdrop blocking the incoming page
   useEffect(() => {
@@ -76,15 +81,15 @@ export default function WeightTracker() {
   }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
   const [goalInput, setGoalInput] = useState(initGoal != null ? String(initGoal) : "");
 
-  const sortedWeights = orderWeightEntries(weights);
+  const sortedWeights = orderWeightEntries(validWeightEntries(weights, units));
 
   const chartData = sortedWeights.map((w) => ({
     date: format(parseISO(w.date), "MMM d"),
     weight: w.weight,
   }));
 
-  const totalLost = calculateWeightLost(weights);
-  const avgWeekly = calculateAvgWeeklyLoss(weights);
+  const totalLost = calculateWeightLost(sortedWeights);
+  const avgWeekly = calculateAvgWeeklyLoss(sortedWeights);
   const currentWeight = sortedWeights.length > 0 ? sortedWeights[sortedWeights.length - 1].weight : null;
 
   const heightForBMI = getDisplayHeight(user, units) ?? 0;
@@ -96,7 +101,7 @@ export default function WeightTracker() {
         : calculateBMIFromKg(currentWeight, heightForBMI);
   }
 
-  const goalNum = parseFloat(goalInput) || 0;
+  const goalNum = validateWeight(goalInput, units) ? 0 : Number(goalInput);
 
   const goalProgress = (() => {
     if (!goalNum || goalNum <= 0 || !currentWeight || sortedWeights.length === 0) return 0;
@@ -134,14 +139,14 @@ export default function WeightTracker() {
     // Convert all weight entries
     const convertedWeights = weights.map((w) => ({
       ...w,
-      weight: parseFloat((w.weight * factor).toFixed(1)),
+      weight: Number.isFinite(w.weight) ? parseFloat((w.weight * factor).toFixed(1)) : w.weight,
     }));
     setWeights(convertedWeights);
 
     // Convert goal weight
     const currentGoal = parseFloat(goalInput);
     let newGoal: number | null = null;
-    if (!isNaN(currentGoal) && currentGoal > 0) {
+    if (!validateWeight(currentGoal, units)) {
       newGoal = parseFloat((currentGoal * factor).toFixed(1));
     } else {
       // try to source from the correct field in user
@@ -155,9 +160,7 @@ export default function WeightTracker() {
     const currentHeight = getDisplayHeight(user, units);
     let newHeight: number | null = null;
     if (currentHeight != null && currentHeight > 0) {
-      newHeight = toLbs
-        ? parseFloat((currentHeight / CM_PER_INCH).toFixed(1))
-        : parseFloat((currentHeight * CM_PER_INCH).toFixed(1));
+      newHeight = toLbs ? currentHeight / CM_PER_INCH : currentHeight * CM_PER_INCH;
     }
 
     // Persist conversion into user
@@ -176,33 +179,48 @@ export default function WeightTracker() {
       if (toLbs) {
         updatedUser.height = newHeight;
         updatedUser.heightFt = Math.floor(newHeight / 12);
-        updatedUser.heightIn = parseFloat((newHeight % 12).toFixed(1));
+        updatedUser.heightIn = newHeight % 12;
       } else {
         updatedUser.heightCm = newHeight;
         updatedUser.height = newHeight;
       }
     }
     setUser(updatedUser);
+    setPendingEntry(null);
+    setGoalError("");
   };
 
   // ── Form handlers ─────────────────────────────────────────────────────────
+  const persistEntry = (entry: WeightEntry) => {
+    setWeights((previous) => editingId
+      ? previous.map(w => w.id === editingId ? entry : w)
+      : [...(Array.isArray(previous) ? previous : []), entry]);
+    setInputWeight("");
+    setInputNotes("");
+    setWeightError("");
+    setPendingEntry(null);
+    setEditingId(null);
+    setShowForm(false);
+  };
+
   const handleAdd = () => {
     const w = Number(inputWeight);
-    if (!inputWeight.trim() || !Number.isFinite(w) || w <= 0) {
-      setWeightError("Please enter a valid weight.");
+    const error = validateWeight(inputWeight, units);
+    if (error) {
+      setWeightError(error);
       return;
     }
     const entry: WeightEntry = {
-      id: Date.now().toString(),
+      id: editingId ?? Date.now().toString(),
       date: inputDate,
       weight: w,
       notes: inputNotes || undefined,
     };
-    setWeights((previous) => [...(Array.isArray(previous) ? previous : []), entry]);
-    setInputWeight("");
-    setInputNotes("");
-    setWeightError("");
-    setShowForm(false);
+    if (needsWeightConfirmation(weights, inputDate, w, units, editingId ?? undefined)) {
+      setPendingEntry(entry);
+      return;
+    }
+    persistEntry(entry);
   };
 
   const handleDeleteWeight = (id: string) => {
@@ -210,7 +228,15 @@ export default function WeightTracker() {
   };
 
   const handleSaveGoal = (val: string) => {
-    const g = parseFloat(val);
+    if (!val.trim()) {
+      setGoalError("");
+      setUser({ ...user, goalWeight: undefined, goalWeightLbs: undefined, goalWeightKg: undefined });
+      return;
+    }
+    const error = validateWeight(val, units);
+    if (error) { setGoalError(error); return; }
+    setGoalError("");
+    const g = Number(val);
     const updatedUser: UserData = { ...user };
     if (isNaN(g) || g <= 0) {
       updatedUser.goalWeight = undefined;
@@ -229,7 +255,7 @@ export default function WeightTracker() {
     setUser(updatedUser);
   };
 
-  const displayWeights = [...sortedWeights].reverse();
+  const displayWeights = [...orderWeightEntries(weights.filter(entry => entry && typeof entry === "object"))].reverse();
 
   return (
     <PageContainer className="space-y-5">
@@ -318,7 +344,7 @@ export default function WeightTracker() {
       </div>
 
       {/* Chart */}
-      {weights.length > 0 ? (
+      {sortedWeights.length > 0 ? (
         <div className="bg-card rounded-3xl p-4 shadow-sm border border-border">
           <p className="text-sm font-semibold text-foreground mb-3">Progress</p>
           <ResponsiveContainer width="100%" height={140}>
@@ -392,6 +418,7 @@ export default function WeightTracker() {
             data-testid="goal-weight-input"
           />
         </div>
+        {goalError && <p role="alert" className="text-xs text-destructive">{goalError}</p>}
         {goalNum > 0 && currentWeight && (
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -427,6 +454,11 @@ export default function WeightTracker() {
             className="rounded-xl gap-1"
             onClick={() => {
               setWeightError("");
+              setPendingEntry(null);
+              setEditingId(null);
+              setInputWeight("");
+              setInputNotes("");
+              setInputDate(format(new Date(), "yyyy-MM-dd"));
               setShowForm(!showForm);
             }}
             data-testid="add-weight-btn"
@@ -445,11 +477,12 @@ export default function WeightTracker() {
               className="bg-card rounded-2xl p-4 border-2 border-primary/30 space-y-3"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">New Entry</p>
+                <p className="text-sm font-semibold text-foreground">{editingId ? "Edit Entry" : "New Entry"}</p>
                 <button
                   className="p-1 rounded-lg hover:bg-muted transition-colors"
                   onClick={() => {
                     setWeightError("");
+                    setPendingEntry(null);
                     setShowForm(false);
                   }}
                 >
@@ -467,6 +500,7 @@ export default function WeightTracker() {
                     value={inputWeight}
                     onChange={(e) => {
                       setInputWeight(e.target.value);
+                      setPendingEntry(null);
                       if (weightError) setWeightError("");
                     }}
                     className="rounded-xl"
@@ -480,7 +514,7 @@ export default function WeightTracker() {
                   <Input
                     type="date"
                     value={inputDate}
-                    onChange={(e) => setInputDate(e.target.value)}
+                    onChange={(e) => { setInputDate(e.target.value); setPendingEntry(null); }}
                     className="rounded-xl"
                     data-testid="weight-date-input"
                   />
@@ -502,18 +536,21 @@ export default function WeightTracker() {
                 <Input
                   placeholder="Morning weight, post-workout..."
                   value={inputNotes}
-                  onChange={(e) => setInputNotes(e.target.value)}
+                  onChange={(e) => { setInputNotes(e.target.value); setPendingEntry(null); }}
                   className="rounded-xl"
                   data-testid="weight-notes-input"
                 />
               </div>
-              <Button
+              {pendingEntry && <WeightChangeConfirmation onEdit={() => setPendingEntry(null)} onConfirm={() => persistEntry(pendingEntry)}
+                previousWeight={previousWeightEntry(weights, pendingEntry.date, units, editingId ?? undefined)?.weight}
+                proposedWeight={pendingEntry.weight} unit={units} />}
+              {!pendingEntry && <Button
                 className="w-full h-11 rounded-xl font-semibold"
                 onClick={handleAdd}
                 data-testid="save-weight-btn"
               >
-                Save Entry
-              </Button>
+                {editingId ? "Save Changes" : "Save Entry"}
+              </Button>}
             </motion.div>
           )}
         </AnimatePresence>
@@ -535,10 +572,10 @@ export default function WeightTracker() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-foreground">
-                    {entry.weight} {units}
+                    {validateWeight(entry.weight, units) ? `Invalid weight (${entry.weight} ${units}) — update or delete` : `${entry.weight} ${units}`}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {format(parseISO(entry.date), "EEEE, MMM d")}
+                    {validWeightDate(entry.date) ? format(parseISO(entry.date), "EEEE, MMM d") : "Invalid date — update or delete"}
                   </p>
                   {entry.notes && (
                     <p className="text-xs text-muted-foreground italic mt-0.5">
@@ -546,6 +583,13 @@ export default function WeightTracker() {
                     </p>
                   )}
                 </div>
+                <div className="flex">
+                <button type="button" aria-label="Edit weight" className="p-2 rounded-xl hover:bg-muted"
+                  onClick={() => {
+                    setEditingId(entry.id); setInputWeight(String(entry.weight));
+                    setInputDate(entry.date); setInputNotes(entry.notes ?? "");
+                    setPendingEntry(null); setWeightError(""); setShowForm(true);
+                  }} data-testid={`edit-weight-${entry.id}`}><Pencil size={14} /></button>
                 <button
                   className="p-2 rounded-xl hover:bg-destructive/10 transition-colors"
                   onClick={() => handleDeleteWeight(entry.id)}
@@ -553,6 +597,7 @@ export default function WeightTracker() {
                 >
                   <Trash2 size={14} className="text-destructive" />
                 </button>
+                </div>
               </div>
             </div>
           ))

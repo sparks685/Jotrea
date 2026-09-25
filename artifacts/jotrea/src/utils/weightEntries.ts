@@ -13,7 +13,7 @@ export function orderWeightEntries(entries: WeightEntry[]): WeightEntry[] {
     .map((entry, index) => ({ entry, index }))
     .sort(
       (a, b) =>
-        a.entry.date.localeCompare(b.entry.date) ||
+        String(a.entry?.date ?? "").localeCompare(String(b.entry?.date ?? "")) ||
         a.index - b.index,
     )
     .map(({ entry }) => entry);

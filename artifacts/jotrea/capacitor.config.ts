@@ -6,6 +6,9 @@ const config: CapacitorConfig = {
   webDir: "dist",
   android: {
     backgroundColor: "#FFFCF5",
+    // API 35+ enforces edge-to-edge: inset the WebView there. Earlier Android
+    // versions already fit system windows; forcing margins would double-inset.
+    adjustMarginsForEdgeToEdge: "auto",
     // Apple Health remains iOS-only; do not bundle unused Health Connect permissions.
     includePlugins: [
       "@capacitor/app",
