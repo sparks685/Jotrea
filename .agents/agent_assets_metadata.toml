@@ -498,3 +498,17 @@ mtime_ms = 1790431248093
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/2d4907af-a0a4-407a-931b-e80b5318c5ad/1503aca3-c64f-48bf-839e-d006d8c082f9"
 storage_version_token = "1790431409213527"
 content_type = "image/png"
+
+[[outputs]]
+id = "PylPe1W25Iz7y1FMZhh0l"
+uri = "file://.local/verification/android-branding-approved.png"
+type = "image"
+title = "Your Jotrea artwork — Android icon and splash"
+description = "Asset preview using the exact uploaded artwork, including a simulated Android circular mask. Not a native device screenshot."
+logical_id = "f0371133-36e7-4068-b833-93643682d9f8"
+content_hash = "sha256:a9e97f6eead2db94f7c4ef11ddaf2e8d3b5d59717199cd30956edc6dd01f26a8"
+size = 1243148
+mtime_ms = 1790431945200
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/f0371133-36e7-4068-b833-93643682d9f8/57c6ce68-3e16-48cd-bab6-96c14c00a9fd"
+storage_version_token = "1790432064571620"
+content_type = "image/png"
