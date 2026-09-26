@@ -40,6 +40,10 @@ A premium GLP-1 medication tracker PWA — mobile-first, feels like a native iOS
 
 ## Product
 
+### App icon and splash branding
+
+Use the owner-supplied cream artwork with the gold syringe and ring, green leaves, and JOTREA wordmark for native launcher icons and splash screens. Preserve the complete artwork and proportions; size it safely for platform masks. Do not replace it with the welcome screen's white Lucide syringe or a simplified redesign. The owner explicitly confirmed this artwork as the app identity on 2026-09-26.
+
 A complete GLP-1 medication tracker with:
 - 3-step onboarding (welcome → select med → set dose)
 - Dashboard with circular countdown ring, dose log button, streak counter, mini weight chart

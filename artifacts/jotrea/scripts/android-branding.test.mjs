@@ -8,31 +8,27 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const res = `${root}android/app/src/main/res/`;
 const read = (path) => readFileSync(`${res}${path}`, "utf8");
 
-test("Android launcher and splash are exported from the existing onboarding syringe tile, not Capacitor", () => {
-  const onboarding = readFileSync(`${root}src/pages/Onboarding.tsx`, "utf8");
-  assert.match(onboarding, /const BRAND = "#D4A574"/);
-  assert.match(onboarding, /linear-gradient\(135deg, #e8b989, \$\{BRAND\}\)/);
-  assert.match(onboarding, /<Syringe size=\{42\} className="text-white" strokeWidth=\{1\.8\}/);
-
+test("all launcher/splash densities come from the exact approved image without ImageMagick at test time", () => {
+  const manifest = JSON.parse(readFileSync(`${root}scripts/android-branding-assets.json`, "utf8"));
+  assert.equal(manifest.source.sha256, "9951f5aa727d3c25ce5d87f5f8e5487922e86454b5343af3400e594c0f8a4662");
+  assert.deepEqual([manifest.source.width, manifest.source.height], [1024, 1024]);
   const generated = spawnSync(process.execPath, ["scripts/generate-android-branding.mjs", "--check"], {
     cwd: root, encoding: "utf8", env: { ...process.env, PATH: "" },
   });
   assert.equal(generated.status, 0, generated.stderr || generated.stdout);
-  assert.match(generated.stdout, /Verified 27 Android branded PNGs \(Node-only SHA-256 and dimensions\)/);
+  assert.match(generated.stdout, /Verified 27 approved Android branded PNGs \(Node-only SHA-256 and dimensions\)/);
   for (const name of ["ic_launcher.xml", "ic_launcher_round.xml"]) {
     const xml = read(`mipmap-anydpi-v26/${name}`);
     assert.match(xml, /@drawable\/ic_launcher_background/);
     assert.match(xml, /@mipmap\/ic_launcher_foreground/);
-    assert.match(xml, /@drawable\/ic_launcher_monochrome/);
+    assert.doesNotMatch(xml, /monochrome/);
   }
-  const foreground = read("drawable-v24/ic_launcher_foreground.xml");
-  const mono = read("drawable/ic_launcher_monochrome.xml");
-  assert.match(foreground, /M19,9 L8\.7,19\.3/);
-  assert.match(mono, /M19,9 L8\.7,19\.3/);
-  assert.doesNotMatch(foreground + mono, /55B8FF|46\.4,24\.7/);
-  assert.match(read("drawable/ic_stat_icon_config_sample.xml"), /M19,9 L8\.7,19\.3/);
-  assert.match(read("drawable/ic_launcher_background.xml"), /#E8B989/);
-  assert.match(read("drawable/ic_launcher_background.xml"), /#D4A574/);
+  assert.match(read("drawable/ic_launcher_background.xml"), /#FFFCF5/);
+  assert.equal(manifest.assets["drawable-nodpi/jotrea_splash_icon.png"].width, 288);
+  assert.equal(manifest.assets["drawable-nodpi/jotrea_splash_icon.png"].height, 288);
+  const originalNotification = read("drawable/ic_stat_icon_config_sample.xml");
+  assert.match(originalNotification, /M46\.4,24\.7L61\.2,39\.5/);
+  assert.doesNotMatch(originalNotification, /M19,9 L8\.7,19\.3/);
 });
 
 test("launch theme uses Android 12 icon/background/post-theme and retains status/navigation contrast", () => {
