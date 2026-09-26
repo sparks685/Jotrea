@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keep the theme used at splash exit aligned with SystemBarsPlugin. -->
+    <style name="JotreaSystemBarsLight" parent="">
+        <item name="android:statusBarColor">#FFFCF5</item>
+        <item name="android:navigationBarColor">#FFFCF5</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+    <style name="JotreaSystemBarsDark" parent="">
+        <item name="android:statusBarColor">#101023</item>
+        <item name="android:navigationBarColor">#101023</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

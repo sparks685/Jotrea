@@ -53,6 +53,14 @@ public class SystemBarsPlugin extends Plugin {
                         (activity.getResources().getConfiguration().uiMode &
                                 Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES);
 
+        // AndroidX/platform splash exit restores bars from Activity theme
+        // attributes, potentially AFTER our Window/controller assignments.
+        // Keep that restoration source in sync as well. Apply on every mode
+        // change (including Auto), not just on initial Activity creation.
+        // These overlays contain only bar attributes, never splash artwork.
+        activity.getTheme().applyStyle(
+                dark ? R.style.JotreaSystemBarsDark : R.style.JotreaSystemBarsLight, true);
+
         Window window = activity.getWindow();
         int color = dark ? DARK : LIGHT;
         // On API 35+ the OS makes the bars transparent. The window surface behind

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 24–25 only supports white navigation icons, so retain a dark
+         navigation background even when the app uses Light mode. -->
+    <style name="JotreaSystemBarsLight" parent="">
+        <item name="android:statusBarColor">#FFFCF5</item>
+        <item name="android:navigationBarColor">#101023</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="JotreaSystemBarsDark" parent="">
+        <item name="android:statusBarColor">#101023</item>
+        <item name="android:navigationBarColor">#101023</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

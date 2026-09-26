@@ -9,7 +9,7 @@ test("Android release and edge-to-edge configuration", () => {
   const gradle = read("android/app/build.gradle");
   const vars = read("android/variables.gradle");
   const config = read("capacitor.config.ts");
-  assert.match(gradle, /versionCode 8\b/);
+  assert.match(gradle, /versionCode 9\b/);
   assert.match(gradle, /versionName "1\.3"/);
   assert.equal(JSON.parse(read("package.json")).version, "1.3.0");
   assert.match(vars, /minSdkVersion = 24/);
@@ -35,6 +35,39 @@ test("native bridge tracks preferences, system changes and icon contrast", () =>
   assert.match(plugin, /setStatusBarColor\(color\)[\s\S]*?setNavigationBarColor\(color\)[\s\S]*?getInsetsController\([\s\S]*?setAppearanceLightStatusBars\(!dark\)/);
   assert.match(plugin, /if \(Build\.VERSION\.SDK_INT >= Build\.VERSION_CODES\.O\)\s*\{\s*controller\.setAppearanceLightNavigationBars\(!dark\);\s*\} else \{\s*window\.setNavigationBarColor\(DARK\)/);
   assert.doesNotMatch(plugin, /(?:get|set)SystemUiVisibility\(|SYSTEM_UI_FLAG_LIGHT_/);
+});
+
+test("splash exit restores the selected bar theme, not fixed launch colors", () => {
+  const plugin = read("android/app/src/main/java/com/sparky/jotrea/SystemBarsPlugin.java");
+  assert.match(plugin, /activity\.getTheme\(\)\.applyStyle\(\s*dark \? R\.style\.JotreaSystemBarsDark : R\.style\.JotreaSystemBarsLight, true\)/);
+  assert.ok(plugin.indexOf("getTheme().applyStyle(") < plugin.indexOf("window.setStatusBarColor(color)"));
+  // No delayed retry/polling: the splash's own theme restoration must be right.
+  assert.doesNotMatch(plugin, /postDelayed|Thread\.sleep|Timer/);
+  assert.match(plugin, /getSharedPreferences\(PREFS, Context\.MODE_PRIVATE\)[\s\S]*?putString\(KEY_MODE, mode\)[\s\S]*?apply\(getActivity\(\)\)/);
+});
+
+test("bar-only overlays match native colors and preserve pre-26 navigation contrast", () => {
+  const plugin = read("android/app/src/main/java/com/sparky/jotrea/SystemBarsPlugin.java");
+  const nativeColor = (name) => {
+    const rgb = plugin.match(new RegExp(`${name} = Color\\.rgb\\((\\d+), (\\d+), (\\d+)\\)`));
+    assert.ok(rgb);
+    return "#" + rgb.slice(1).map((value) => Number(value).toString(16).padStart(2, "0")).join("").toUpperCase();
+  };
+  for (const directory of ["values", "values-v26"]) {
+    const xml = read(`android/app/src/main/res/${directory}/system_bars.xml`);
+    assert.doesNotMatch(xml, /<item name="(?:windowSplash|postSplash|android:windowBackground|android:background)/);
+    for (const mode of ["Light", "Dark"]) {
+      const body = xml.match(new RegExp(`<style name="JotreaSystemBars${mode}" parent="">([\\s\\S]*?)</style>`))?.[1];
+      assert.ok(body);
+      const items = Object.fromEntries([...body.matchAll(/<item name="([^"]+)">([^<]+)<\/item>/g)].map((match) => [match[1], match[2]]));
+      const color = nativeColor(mode === "Dark" ? "DARK" : "LIGHT");
+      assert.equal(items["android:statusBarColor"], color);
+      assert.equal(items["android:navigationBarColor"], directory === "values" ? nativeColor("DARK") : color);
+      assert.equal(items["android:windowLightStatusBar"], String(mode === "Light"));
+      assert.equal(items["android:windowLightNavigationBar"], directory === "values" ? undefined : String(mode === "Light"));
+      assert.equal(Object.keys(items).length, directory === "values" ? 3 : 4);
+    }
+  }
 });
 
 test("Android renderer diagnostics are opt-in and debug-only", () => {
