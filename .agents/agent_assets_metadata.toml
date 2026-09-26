@@ -470,3 +470,17 @@ mtime_ms = 1790379839913
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/ef18b5f3-3590-4971-a79d-cc40bf08bc24/ccef4bbf-d308-460e-8213-35bccdabf13f"
 storage_version_token = "1790380110546348"
 content_type = "image/png"
+
+[[outputs]]
+id = "mN_ZWZ3rtwVQyjEOfu-KH"
+uri = "file://.local/verification/notice-scroll-393-dark-home-bottom.png"
+type = "image"
+title = "Dark-mode reminder — browser preview"
+description = "Updated muted panel and readable text; sample data shown. This is a browser preview, not native Android verification."
+logical_id = "4d98f336-ce85-4308-ab3f-deef307a55fe"
+content_hash = "sha256:63c7d5100dc93a3a66fb67d0396346c0c85c76e06f02fb9e58d98e935d433f60"
+size = 55378
+mtime_ms = 1790424303360
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/4d98f336-ce85-4308-ab3f-deef307a55fe/9efd8ec0-8b7c-4a85-b58c-04734d5fb7b8"
+storage_version_token = "1790424533885594"
+content_type = "image/png"
