@@ -17,10 +17,12 @@ export function DailyTargetsCard({ user }: { user: UserData }) {
 
   useEffect(() => setOpen(null), [location]);
 
+  // sRGB equivalents of the Tailwind palette: older Android WebViews ignore
+  // its OKLCH tokens, making these currentColor icons inherit black or white.
   const items = [
-    { key: "water" as const, icon: <Droplets size={20} className="text-blue-500" />, label: "Water", goal: `${goals.waterCups} cups`, logged: `${formatCups(progress.water.current)} cups logged` },
-    { key: "protein" as const, icon: <Activity size={20} className="text-red-400" />, label: "Protein", goal: goals.proteinG ? `${goals.proteinG} g` : null, logged: `${progress.protein.current} g logged` },
-    { key: "steps" as const, icon: <Target size={20} className="text-green-500" />, label: "Steps", goal: `${goals.steps.toLocaleString()} steps`, logged: `${progress.steps.current.toLocaleString()} steps logged` },
+    { key: "water" as const, icon: <Droplets size={20} style={{ color: "#2b7fff" }} />, label: "Water", goal: `${goals.waterCups} cups`, logged: `${formatCups(progress.water.current)} cups logged` },
+    { key: "protein" as const, icon: <Activity size={20} style={{ color: "#ff6467" }} />, label: "Protein", goal: goals.proteinG ? `${goals.proteinG} g` : null, logged: `${progress.protein.current} g logged` },
+    { key: "steps" as const, icon: <Target size={20} style={{ color: "#00c950" }} />, label: "Steps", goal: `${goals.steps.toLocaleString()} steps`, logged: `${progress.steps.current.toLocaleString()} steps logged` },
   ];
 
   return (

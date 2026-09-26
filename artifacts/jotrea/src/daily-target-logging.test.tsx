@@ -87,6 +87,24 @@ describe("useDailyTargets", () => {
 });
 
 describe("DailyTargetsCard UI", () => {
+  it.each(["light", "dark"])("keeps target icon colors in legacy sRGB in %s mode", (theme) => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    try {
+      render(<DailyTargetsCard user={user} />);
+      for (const [key, color] of Object.entries({
+        water: "rgb(43, 127, 255)",
+        protein: "rgb(255, 100, 103)",
+        steps: "rgb(0, 201, 80)",
+      })) {
+        const icon = screen.getByTestId(`daily-target-${key}`).querySelector("svg");
+        expect(icon).toHaveStyle({ color });
+        expect(icon).toHaveAttribute("stroke", "currentColor");
+        expect(icon?.getAttribute("class")).not.toMatch(/text-(blue|red|green)-/);
+      }
+    } finally {
+      document.documentElement.classList.remove("dark");
+    }
+  });
   it("gives every target its own full-width natural-height row and in-flow progress", () => {
     render(<DailyTargetsCard user={user} />);
     const card = screen.getByRole("region", { name: "Today's Targets" });

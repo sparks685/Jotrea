@@ -16,3 +16,9 @@ Keep a legacy-compatible gradient fallback as well as opacity fallbacks.
 **Why:** On 2026-09-13, the user's AYN Odin photo confirmed the Plus header's colored background and readable text after the gradient fallback, replacing its nearly white faded appearance. Opacity compatibility alone had not fixed that separate issue.
 
 **How to apply:** Preserve both compatibility behaviors in Android preparation. This confirms light-theme rendering on the Odin, not dark-theme rendering or testing on Android phones; a photographed screen does not establish exact color matching.
+
+Opacity compatibility does not cover Tailwind's OKLCH palette tokens. Essential semantic colors must also have legacy sRGB values.
+
+**Why:** Odin photos showed black/white daily-target icons while HSL brand colors and emoji remained colored; the packaged palette for those icons used OKLCH. This is a separate compatibility risk from opacity and compositor ghosting.
+
+**How to apply:** Avoid unsupported color tokens for critical native indicators, and check shipped values as well as modern-browser appearance. Actual device confirmation is still needed after a color correction.
