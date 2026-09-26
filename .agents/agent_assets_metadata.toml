@@ -484,3 +484,17 @@ mtime_ms = 1790424303360
 storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/4d98f336-ce85-4308-ab3f-deef307a55fe/9efd8ec0-8b7c-4a85-b58c-04734d5fb7b8"
 storage_version_token = "1790424533885594"
 content_type = "image/png"
+
+[[outputs]]
+id = "q8_2Zo_ULWcA4xgJL3IFd"
+uri = "file://.local/verification/android-branding.png"
+type = "image"
+title = "Jotrea Android icon and splash assets"
+description = "Asset preview of the updated launcher icons and splash artwork, using the existing welcome-screen branding. Not an Android device screenshot."
+logical_id = "2d4907af-a0a4-407a-931b-e80b5318c5ad"
+content_hash = "sha256:b76b7b4825ae3fd58572d8757c602441824a06b9faa2bd1754412941c36e74ca"
+size = 423496
+mtime_ms = 1790431248093
+storage_uri = "gcs://replit-rams-assets-picard/rams/assets/repl:57b63e9c-8db2-40fa-8bd6-e88bcdaa1487/2d4907af-a0a4-407a-931b-e80b5318c5ad/1503aca3-c64f-48bf-839e-d006d8c082f9"
+storage_version_token = "1790431409213527"
+content_type = "image/png"
