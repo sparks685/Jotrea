@@ -1,8 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color: #fffcf5">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+    <style id="jotrea-canvas-theme">
+      /* First-paint fallbacks match index.css. Keep the full-width canvas on
+         the same theme as the centered app, including after rotation. */
+      :root { --background: 40 100% 98%; color-scheme: light; }
+      .dark { --background: 240 39% 10%; color-scheme: dark; }
+      html, body, #root { background-color: hsl(var(--background)); }
+      body { margin: 0; }
+    </style>
     <title>Jotrea</title>
     <meta name="description" content="Jotrea — built on Replit. Update this description to reflect the app." />
     <meta name="robots" content="index, follow" />
@@ -29,7 +37,7 @@
       })();
     </script>
   </head>
-  <body style="margin: 0; background-color: #fffcf5">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

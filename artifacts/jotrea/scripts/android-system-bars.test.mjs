@@ -9,7 +9,7 @@ test("Android release and edge-to-edge configuration", () => {
   const gradle = read("android/app/build.gradle");
   const vars = read("android/variables.gradle");
   const config = read("capacitor.config.ts");
-  assert.match(gradle, /versionCode 6\b/);
+  assert.match(gradle, /versionCode 8\b/);
   assert.match(gradle, /versionName "1\.3"/);
   assert.equal(JSON.parse(read("package.json")).version, "1.3.0");
   assert.match(vars, /minSdkVersion = 24/);
