@@ -21,4 +21,6 @@ Opacity compatibility does not cover Tailwind's OKLCH palette tokens. Essential 
 
 **Why:** Odin photos showed black/white daily-target icons while HSL brand colors and emoji remained colored; the packaged palette for those icons used OKLCH. This is a separate compatibility risk from opacity and compositor ghosting.
 
-**How to apply:** Avoid unsupported color tokens for critical native indicators, and check shipped values as well as modern-browser appearance. Actual device confirmation is still needed after a color correction.
+**How to apply:** Avoid unsupported color tokens for critical native indicators, and check shipped values as well as modern-browser appearance.
+
+Physical-device confirmation on 2026-09-26: subsequent Odin photos showed blue Water, coral-red Protein, and green Steps icons in both light and dark modes after the sRGB correction. This validates that compatibility approach on the device, not exact photographic color accuracy. Bright side strips remain visible in dark mode; the separate emulator painting issue is not established as resolved.
