@@ -16,3 +16,5 @@ Further evidence (2026-09-26): stacked full-width targets did not eliminate the 
 Device screenshots subsequently reproduced the problem after background/scroll changes: the Settings heading/disclaimer occupied the expected Steps area and the reminder was clipped. Live Android inspection showed zero Settings headings, one Steps button, and one page scroller despite the visible Settings text. This supports a paint issue rather than missing Steps markup.
 
 User screenshots on 2026-09-26 confirmed clean targets, a complete reminder, and an opening Steps sheet after enabling the debug-only software layer and navigating. This establishes a useful diagnostic workaround, not a permanent release fix. Switching layers can itself clear stale content, so compare repeated navigation/theme changes in default versus software mode before concluding hardware acceleration must be disabled.
+
+Follow-up light/dark screenshots were clean after the default-mode comparison was requested. The screenshots alone do not verify the active layer type, and fresh-launch persistence was not established. Do not infer that permanent software rendering is necessary from this temporary recovery.
