@@ -12,6 +12,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -57,6 +58,14 @@ public class SystemBarsPlugin extends Plugin {
         // On API 35+ the OS makes the bars transparent. The window surface behind
         // the inset WebView must match the selected theme, including 3-button nav.
         window.setBackgroundDrawable(new ColorDrawable(color));
+        // The window only paints *behind* the WebView. Keep Chromium's native
+        // backing surface opaque and in sync too, including persisted dark mode.
+        if (activity instanceof BridgeActivity) {
+            com.getcapacitor.Bridge bridge = ((BridgeActivity) activity).getBridge();
+            if (bridge != null && bridge.getWebView() != null) {
+                bridge.getWebView().setBackgroundColor(color);
+            }
+        }
         window.setStatusBarColor(color);
         window.setNavigationBarColor(color);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -168,6 +168,13 @@
   --tip-info-bg: #fef9ec;
   --tip-info-border: #f3e5b0;
   --tip-info-text: #78350f;
+  --med-notice-bg: #fdf8ee;
+  --med-notice-border: #eee1c9;
+  --med-notice-heading: #78542b;
+  --med-notice-body: #473a2a;
+  --med-notice-icon-bg: #f8ebd1;
+  --med-notice-icon: #916436;
+  --med-notice-link: #78542b;
 }
 
 .dark {
@@ -228,6 +235,30 @@
   --tip-info-bg: hsl(240 39% 18%);
   --tip-info-border: hsl(240 39% 28%);
   --tip-info-text: hsl(40 100% 85%);
+  --med-notice-bg: #252639;
+  --med-notice-border: #5b4c3e;
+  --med-notice-heading: #f2d49b;
+  --med-notice-body: #eee9df;
+  --med-notice-icon-bg: #403a38;
+  --med-notice-icon: #eacb90;
+  --med-notice-link: #f2d49b;
+}
+
+/* Solid semantic colors keep these medical notices legible on older Android WebViews. */
+@layer components {
+  .med-notice {
+    background-color: var(--med-notice-bg);
+    border-color: var(--med-notice-border);
+  }
+  .med-notice-heading { color: var(--med-notice-heading); }
+  .med-notice-body { color: var(--med-notice-body); }
+  .med-notice-icon {
+    background-color: var(--med-notice-icon-bg);
+    color: var(--med-notice-icon);
+  }
+  .med-notice-icon-color { color: var(--med-notice-icon); }
+  .med-notice-link { color: var(--med-notice-link); }
+  .med-notice-link:hover { color: var(--med-notice-heading); }
 }
 
 @layer base {

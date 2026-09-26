@@ -449,16 +449,16 @@ export default function Dashboard() {
       <DailyTargetsCard user={user} />
 
       {/* Medication reminder */}
-      <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] space-y-2">
+      <div className="med-notice border rounded-3xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] space-y-2" data-testid="medication-reminder-notice">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
-            <FlaskConical size={16} className="text-amber-600" />
+          <div className="med-notice-icon w-8 h-8 rounded-xl flex items-center justify-center">
+            <FlaskConical size={16} />
           </div>
-          <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Medication Reminder</p>
+          <p className="med-notice-heading text-xs font-semibold uppercase tracking-wider">Medication Reminder</p>
         </div>
-        <p className="text-sm text-amber-900 leading-relaxed">{tip}</p>
+        <p className="med-notice-body text-sm leading-relaxed">{tip}</p>
         <button
-          className="text-[10px] text-amber-700 underline underline-offset-2"
+          className="med-notice-link text-[10px] underline underline-offset-2"
           onClick={() => navigate("/sources")}
           data-testid="tip-source-link"
         >
@@ -644,18 +644,18 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                    <div className="med-notice border rounded-2xl p-4 space-y-1.5" data-testid="prescription-check-notice">
                       <div className="flex items-center gap-2">
-                        <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Check Your Prescription</p>
+                        <FlaskConical size={14} className="med-notice-icon-color flex-shrink-0" />
+                        <p className="med-notice-heading text-xs font-semibold uppercase tracking-wider">Check Your Prescription</p>
                       </div>
-                      <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                      <p className="med-notice-body text-sm leading-relaxed" data-testid="pharmacist-note-text">
                         Confirm that this medication and dose match your prescription. Jotrea records
                         your entry; it does not recommend or change dosages.
                       </p>
                       <button
                         data-testid="view-med-guide-link"
-                        className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                        className="med-notice-link text-xs font-semibold underline underline-offset-2 mt-0.5 transition-colors"
                         onClick={() => { handleCloseLogForm(); navigate("/med-info"); }}
                       >
                         View medication information →

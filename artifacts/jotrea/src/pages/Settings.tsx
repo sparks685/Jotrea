@@ -519,8 +519,8 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
       </div>
 
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-        <p className="text-xs leading-relaxed text-amber-900">
+      <div className="med-notice rounded-2xl border px-4 py-3" data-testid="settings-medical-disclaimer">
+        <p className="med-notice-body text-xs leading-relaxed">
           <strong>Jotrea is a tracking and reminder tool only.</strong> It does not provide medical
           advice, calculate dosages, or replace your healthcare provider. Always follow your
           doctor's prescribed instructions.

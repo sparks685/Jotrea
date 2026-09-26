@@ -418,18 +418,18 @@ export default function DoseLog() {
                       </div>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+                    <div className="med-notice border rounded-2xl p-4 space-y-1.5" data-testid="prescription-check-notice">
                       <div className="flex items-center gap-2">
-                        <FlaskConical size={14} className="text-amber-600 flex-shrink-0" />
-                        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Check Your Prescription</p>
+                        <FlaskConical size={14} className="med-notice-icon-color flex-shrink-0" />
+                        <p className="med-notice-heading text-xs font-semibold uppercase tracking-wider">Check Your Prescription</p>
                       </div>
-                      <p className="text-sm text-amber-900 leading-relaxed" data-testid="pharmacist-note-text">
+                      <p className="med-notice-body text-sm leading-relaxed" data-testid="pharmacist-note-text">
                         Confirm that this medication and dose match your prescription. Jotrea records
                         your entry; it does not recommend or change dosages.
                       </p>
                       <button
                         data-testid="view-med-guide-link"
-                        className="text-xs font-semibold text-amber-700 underline underline-offset-2 mt-0.5 hover:text-amber-900 transition-colors"
+                        className="med-notice-link text-xs font-semibold underline underline-offset-2 mt-0.5 transition-colors"
                         onClick={() => { handleCloseAddForm(); navigate("/med-info"); }}
                       >
                         View medication information →

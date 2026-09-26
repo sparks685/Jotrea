@@ -132,6 +132,24 @@ describe("Dashboard – prescription check after logging a dose", () => {
     localStorage.clear();
   });
 
+  it("uses the same semantic notice styling for the reminder and prescription check", () => {
+    seedOzempic();
+    render(<Dashboard />);
+    const reminder = screen.getByTestId("medication-reminder-notice");
+    expect(reminder).toHaveClass("med-notice");
+    expect(reminder.querySelector(".med-notice-heading")).toHaveTextContent("Medication Reminder");
+    expect(reminder.querySelector(".med-notice-body")).toBeInTheDocument();
+    expect(screen.getByTestId("tip-source-link")).toHaveClass("med-notice-link");
+
+    fireEvent.click(screen.getByTestId("log-dose-btn"));
+    fireEvent.click(screen.getByTestId("submit-log-dose"));
+    const check = screen.getByTestId("prescription-check-notice");
+    expect(check).toHaveClass("med-notice");
+    expect(check.querySelector(".med-notice-heading")).toHaveTextContent("Check Your Prescription");
+    expect(screen.getByTestId("pharmacist-note-text")).toHaveClass("med-notice-body");
+    expect(screen.getByTestId("view-med-guide-link")).toHaveClass("med-notice-link");
+  });
+
   it("shows the neutral prescription check for Ozempic", () => {
     seedOzempic();
     render(<Dashboard />);
@@ -204,6 +222,16 @@ describe("Dashboard – prescription check after logging a dose", () => {
 describe("DoseLog – prescription check after logging a dose", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("uses the shared semantic notice styling on the calendar confirmation", () => {
+    seedOzempic();
+    render(<DoseLog />);
+    fireEvent.click(screen.getByTestId("add-dose-btn"));
+    fireEvent.click(screen.getByTestId("save-dose-btn"));
+    expect(screen.getByTestId("prescription-check-notice")).toHaveClass("med-notice");
+    expect(screen.getByTestId("pharmacist-note-text")).toHaveClass("med-notice-body");
+    expect(screen.getByTestId("view-med-guide-link")).toHaveClass("med-notice-link");
   });
 
   it("shows the neutral prescription check for Ozempic", () => {

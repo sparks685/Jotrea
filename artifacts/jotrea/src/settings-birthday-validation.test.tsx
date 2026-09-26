@@ -36,6 +36,15 @@ beforeEach(() => {
 });
 
 describe("rendered Settings birthday repair", () => {
+  it("renders the medical disclaimer with the shared semantic notice styling", () => {
+    render(<Settings />);
+    const notice = screen.getByTestId("settings-medical-disclaimer");
+    expect(notice).toHaveClass("med-notice");
+    expect(notice.querySelector(".med-notice-body")).toHaveTextContent(
+      "Jotrea is a tracking and reminder tool only.",
+    );
+  });
+
   it("identifies invalid legacy birthday, rejects another impossible date and saves correction", () => {
     render(<Settings />);
     fireEvent.click(screen.getByTestId("edit-birthday"));

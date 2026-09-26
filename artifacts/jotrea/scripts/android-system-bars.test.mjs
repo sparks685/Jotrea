@@ -31,9 +31,30 @@ test("native bridge tracks preferences, system changes and icon contrast", () =>
   assert.match(plugin, /"dark"\.equals\(mode\)[\s\S]*?"system"\.equals\(mode\)[\s\S]*?UI_MODE_NIGHT_MASK[\s\S]*?UI_MODE_NIGHT_YES/);
   assert.match(plugin, /int color = dark \? DARK : LIGHT/);
   assert.match(plugin, /setBackgroundDrawable\(new ColorDrawable\(color\)\)/);
+  assert.match(plugin, /getWebView\(\)\.setBackgroundColor\(color\)/);
   assert.match(plugin, /setStatusBarColor\(color\)[\s\S]*?setNavigationBarColor\(color\)[\s\S]*?getInsetsController\([\s\S]*?setAppearanceLightStatusBars\(!dark\)/);
   assert.match(plugin, /if \(Build\.VERSION\.SDK_INT >= Build\.VERSION_CODES\.O\)\s*\{\s*controller\.setAppearanceLightNavigationBars\(!dark\);\s*\} else \{\s*window\.setNavigationBarColor\(DARK\)/);
   assert.doesNotMatch(plugin, /(?:get|set)SystemUiVisibility\(|SYSTEM_UI_FLAG_LIGHT_/);
+});
+
+test("Android renderer diagnostics are opt-in and debug-only", () => {
+  const activity = read("android/app/src/main/java/com/sparky/jotrea/MainActivity.java");
+  const plugin = read("android/app/src/main/java/com/sparky/jotrea/RenderDiagnosticsPlugin.java");
+  assert.match(activity, /if \(\(getApplicationInfo\(\)\.flags & ApplicationInfo\.FLAG_DEBUGGABLE\) != 0\)\s*\{\s*registerPlugin\(RenderDiagnosticsPlugin\.class\)/);
+  assert.match(plugin, /ApplicationInfo\.FLAG_DEBUGGABLE\) == 0/);
+  assert.equal((plugin.match(/if \(!allow\(call\)\) return;/g) || []).length, 2);
+  assert.match(plugin, /LAYER_TYPE_SOFTWARE : View\.LAYER_TYPE_NONE/);
+  assert.match(plugin, /getCurrentWebViewPackage\(\)/);
+  assert.match(plugin, /view\.isOpaque\(\)/);
+  assert.doesNotMatch(plugin, /clearCache\(|clearHistory\(|reload\(|setJavaScriptEnabled\(/);
+  assert.doesNotMatch(read("android/app/src/main/AndroidManifest.xml"), /hardwareAccelerated="false"/);
+});
+
+test("Android page uses a constrained opaque scroller without changing iOS", () => {
+  const app = read("src/App.tsx");
+  assert.match(app, /isAndroidCapacitor\(\) \? "h-\[100dvh\]" : "min-h-\[100dvh\]"/);
+  assert.match(app, /data-jotrea-page-scroll/);
+  assert.match(app, /isAndroidCapacitor\(\) \? " min-h-0 bg-background" : ""/);
 });
 
 test("Capacitor insets handler adjusts WebView margins, not icon appearance", () => {

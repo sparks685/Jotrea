@@ -1,6 +1,7 @@
 package com.sparky.jotrea;
 
 import android.content.res.Configuration;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
@@ -9,6 +10,10 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SystemBarsPlugin.class);
+        // Never expose renderer controls in release builds.
+        if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            registerPlugin(RenderDiagnosticsPlugin.class);
+        }
         super.onCreate(savedInstanceState);
         SystemBarsPlugin.apply(this);
     }

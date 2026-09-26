@@ -175,8 +175,8 @@ function AppRoutes() {
   }, []);
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-    // The document itself can also be the scroller (root uses min-height),
-    // so reset the window scroll as well.
+    // Browser/iOS retain the existing document-scroll behavior. Android uses
+    // a viewport-bound root and this element as its sole page scroller.
     window.scrollTo(0, 0);
   }, [location]);
 
@@ -186,7 +186,8 @@ function AppRoutes() {
       <NativeSubscriptionSync />
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto"
+        data-jotrea-page-scroll
+        className={`flex-1 overflow-y-auto${isAndroidCapacitor() ? " min-h-0 bg-background" : ""}`}
         style={!isOnboarding ? { paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" } : {}}
       >
         {/* Avoid a composited, opacity-animated scrollable page on Android
@@ -258,7 +259,7 @@ function App() {
   return (
     <TooltipProvider>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-        <div className="max-w-md mx-auto min-h-[100dvh] bg-background shadow-2xl relative flex flex-col overflow-hidden">
+        <div className={`max-w-md mx-auto ${isAndroidCapacitor() ? "h-[100dvh]" : "min-h-[100dvh]"} bg-background shadow-2xl relative flex flex-col overflow-hidden`}>
           <AppRoutes />
         </div>
       </WouterRouter>
