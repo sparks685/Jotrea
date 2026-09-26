@@ -1,0 +1,140 @@
+{
+  "recipeSha256": "f8d6124e61576f64a6616fa3d4efed6eb4c807e7bc8c9b0d9562a51519205df2",
+  "assets": {
+    "drawable-land-hdpi/splash.png": {
+      "width": 1200,
+      "height": 720,
+      "sha256": "3a2df14e337d202702f4b0fea9f0302288fa9a9ac45142441e64f4013ee775d6"
+    },
+    "drawable-land-mdpi/splash.png": {
+      "width": 800,
+      "height": 480,
+      "sha256": "737963a6470531db97d57fc9ddb8d40d3a9ffc9777e5279fa5bbf42ebf039592"
+    },
+    "drawable-land-xhdpi/splash.png": {
+      "width": 1600,
+      "height": 960,
+      "sha256": "b7e400af9f8d29768c8ce0225285a0737f86f9fa41f35be10904ae9f90e97ee4"
+    },
+    "drawable-land-xxhdpi/splash.png": {
+      "width": 2400,
+      "height": 1440,
+      "sha256": "d058707a43c204e79a041064f62f1dc08f88e9ff70ea8d5e37e70ae946c1f530"
+    },
+    "drawable-land-xxxhdpi/splash.png": {
+      "width": 3200,
+      "height": 1920,
+      "sha256": "ab77541983dcfff4781673c8f4fa717369413d780cb40f0e06245a9a04e4a45a"
+    },
+    "drawable-nodpi/jotrea_splash_icon.png": {
+      "width": 288,
+      "height": 288,
+      "sha256": "a67671951a104a45434b7cbce4ef8924ca46581732f071b3d1cb07fefb242e31"
+    },
+    "drawable-port-hdpi/splash.png": {
+      "width": 720,
+      "height": 1200,
+      "sha256": "ff81e56772239c4f449f2b0cd709e3b1addaf8e2702dd7e3299f8259922e01d5"
+    },
+    "drawable-port-mdpi/splash.png": {
+      "width": 480,
+      "height": 800,
+      "sha256": "244f137b5c1a2f97f87137d50548e27034ab6ffffeaa32b88b14872fb4f7f204"
+    },
+    "drawable-port-xhdpi/splash.png": {
+      "width": 960,
+      "height": 1600,
+      "sha256": "dab4c8229f94e7d1b680be895e5376939b3e2ceb4c0136e0cd27ccba7cfcbb72"
+    },
+    "drawable-port-xxhdpi/splash.png": {
+      "width": 1440,
+      "height": 2400,
+      "sha256": "cdc18210422f399260a42ffccbd747c681d31868ccf2136df88666241b4912f3"
+    },
+    "drawable-port-xxxhdpi/splash.png": {
+      "width": 1920,
+      "height": 3200,
+      "sha256": "b622bd5b7e6c543335a6f8d238835037df14d9aed356f6bfe5d2bad5ab14f591"
+    },
+    "drawable/splash.png": {
+      "width": 480,
+      "height": 320,
+      "sha256": "3c6c7a159e9a58a9c1ca235b22c4a9e91e40f0fa321e7d22575cf08f60623cbb"
+    },
+    "mipmap-hdpi/ic_launcher.png": {
+      "width": 72,
+      "height": 72,
+      "sha256": "21ed9361f9df76b4ca7cd7be0fffd90c0bea5a67a8c64ff6cecdfb0de8ad8cae"
+    },
+    "mipmap-hdpi/ic_launcher_foreground.png": {
+      "width": 162,
+      "height": 162,
+      "sha256": "3d67c0384b4ee13cc0f610a56c74f2e54f65fa13cca19d06167281781a2ae4f8"
+    },
+    "mipmap-hdpi/ic_launcher_round.png": {
+      "width": 72,
+      "height": 72,
+      "sha256": "be3705058c822f8886b9df9589571b57d76670459e0adb46e60ff238051e4043"
+    },
+    "mipmap-mdpi/ic_launcher.png": {
+      "width": 48,
+      "height": 48,
+      "sha256": "06b03b0085b4ee6dc95d3ab789bda7003ff10edef72b6a97af36bc06a12814f4"
+    },
+    "mipmap-mdpi/ic_launcher_foreground.png": {
+      "width": 108,
+      "height": 108,
+      "sha256": "bf113f78fe592d748ebd4b3d9ef012c5f0e55c96da90b729e29c291e22e9e9ea"
+    },
+    "mipmap-mdpi/ic_launcher_round.png": {
+      "width": 48,
+      "height": 48,
+      "sha256": "572200cbd77aaabe97e862109a9de9d6097a489f2b03a2e872eef26be53c5402"
+    },
+    "mipmap-xhdpi/ic_launcher.png": {
+      "width": 96,
+      "height": 96,
+      "sha256": "454a4d97e670d2b59546008c223dca1c28dd4481873334ffd54cf6335efa49f7"
+    },
+    "mipmap-xhdpi/ic_launcher_foreground.png": {
+      "width": 216,
+      "height": 216,
+      "sha256": "373d8b7c5fcb563f4c6272a03889c78cd39aec822d06f28ea0938c78d16cb1b1"
+    },
+    "mipmap-xhdpi/ic_launcher_round.png": {
+      "width": 96,
+      "height": 96,
+      "sha256": "5b00f4219416d959fef6a478ca5c8087d241c1493261a0a5afe530164c24aa03"
+    },
+    "mipmap-xxhdpi/ic_launcher.png": {
+      "width": 144,
+      "height": 144,
+      "sha256": "4609c168593cab68bb9e9bade4d088cdfc301a25f626aac3f0c5bda6a3991ea9"
+    },
+    "mipmap-xxhdpi/ic_launcher_foreground.png": {
+      "width": 324,
+      "height": 324,
+      "sha256": "774f53f49689ea5b14527bb4722104a1b2e0c21798fc9751fb04038fa499c896"
+    },
+    "mipmap-xxhdpi/ic_launcher_round.png": {
+      "width": 144,
+      "height": 144,
+      "sha256": "3ab7e62296cf167615a016b3185bcefd9ee9896a1d8d2d502b3882482b0376e3"
+    },
+    "mipmap-xxxhdpi/ic_launcher.png": {
+      "width": 192,
+      "height": 192,
+      "sha256": "02dd4c8d6a866c14abd18cc537b2e7936a2c2cba96eed437058d090ddae82872"
+    },
+    "mipmap-xxxhdpi/ic_launcher_foreground.png": {
+      "width": 432,
+      "height": 432,
+      "sha256": "8772a097280de5ba1c8aaa484075caeaa6c87be13cfffde86d3c12fbdceaf130"
+    },
+    "mipmap-xxxhdpi/ic_launcher_round.png": {
+      "width": 192,
+      "height": 192,
+      "sha256": "127a77d48962e0bab9d9d0827bb088099b2bd1aa40b0393617cdc385d8f1e605"
+    }
+  }
+}

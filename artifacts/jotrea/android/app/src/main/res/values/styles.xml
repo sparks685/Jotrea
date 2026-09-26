@@ -22,7 +22,10 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <!-- Android 12+ uses a centered icon, not the full-screen legacy bitmap. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/jotrea_splash_icon</item>
+        <item name="windowSplashScreenBackground">#FFFCF5</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
         <!-- The existing cream launch splash needs dark status icons before JS loads. -->
         <item name="android:statusBarColor">#FFFCF5</item>
         <item name="android:windowLightStatusBar">true</item>
